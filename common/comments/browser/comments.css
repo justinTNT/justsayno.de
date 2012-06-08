@@ -1,0 +1,176 @@
+
+/**** Speech Bubble Icons *****/
+.spch-bub-inside,
+.spch-bub-outside {
+  position: relative;
+}
+a.spch-bub-inside,
+a.spch-bub-outside {
+  color: #842;
+  text-decoration: none;
+}
+.spch-bub-inside em,
+.spch-bub-outside em {
+  font-style: normal;
+}
+.spch-bub-inside em {
+  background: #842;
+  color: #FFF;
+	padding: 0.4em;
+  -moz-border-radius: 0.25em;
+  -webkit-border-radius: 0.25em;
+  border-radius: 0.25em;
+  position: relative;
+}
+.spch-bub-inside .point,
+.spch-bub-outside .point {
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 1.5em;
+  right: 0.5em;
+  display: block;
+  border-right: 0.66em solid #842; 
+  border-bottom: 0.66em solid #000; /* IE fix */
+  border-bottom: 0.66em solid rgba(0,0,0,0); 
+  overflow: hidden; /* IE fix */
+}
+.spch-bub-outside {
+ padding-left: 2.0em;
+}
+.spch-bub-outside .bubble {
+  top: 0;
+  left: 0;
+  display: block;
+  position: absolute;
+  height: 1.1em;
+  width: 1.8em;
+  background: #842;
+  -moz-border-radius: 0.25em;
+  -webkit-border-radius: 0.25em;
+  border-radius: 0.25em;
+}
+a.spch-bub-inside:hover,
+a.spch-bub-outside:hover {
+  color: #ddad80;
+}
+a.spch-bub-inside:hover em,
+a.spch-bub-outside:hover .bubble  {
+  cursor: pointer;
+  background: #ddad80;
+  color: #201;
+}
+a.spch-bub-inside:hover .point,
+a.spch-bub-outside:hover .point {
+  border-right: 0.66em solid #ddad80; 
+}
+div.spch-bub-outside {
+  height: 1.5em;
+  width: 0;
+}
+
+
+div.speachpoint {
+  width: 0;
+  height: 0;
+  font-size:33px;
+  position: absolute;
+  bottom: -12px;
+  left: 17%;
+  display: block;
+  z-index:4;
+  border-left: 1.45em solid #ddad80; 
+  border-bottom: 0.45em solid #ddad80; /* IE fix */
+  border-bottom: 0.45em solid rgba(0,0,0,0); 
+  overflow: hidden; /* IE fix */
+}
+
+div.border-point {
+  width: 0;
+  height: 0;
+  font-size:33px;
+  position: absolute;
+  top: 100%;
+  left: 17%;
+  display: block;
+  z-index:3;
+  border-left: 1.45em solid #74473c; 
+  border-bottom: 0.45em solid #74473c; /* IE fix */
+  border-bottom: 0.45em solid rgba(0,0,0,0); 
+  overflow: hidden; /* IE fix */
+}
+
+div.border-bubble {
+	border: 1px solid #74473c; border-bottom-color: #74473c;
+	-moz-border-radius: 0.66em;
+	-webkit-border-radius: 0.66em;
+	border-radius: 0.66em;
+}
+
+
+
+
+div.comment {
+	position:relative;
+	font-family: Arial Narrow, Arial;
+	margin-bottom:8px;
+	background: #ddad80;
+	padding-left:2em;
+	padding-right:2em;
+	padding-top:0.5em;
+	padding-bottom:0.5em;
+}
+
+div.eachcomment {
+	padding-left:5%;
+}
+div.addacomment {
+	padding-left:5%;
+}
+
+div.commentname {
+	margin-left:2em;
+	font-style:italic;
+	z-index:3;
+}
+div.commentsubject {
+	font-weight:bold;
+	z-index:3;
+}
+
+div.comment_reply {
+	margin-left:5%;
+}
+
+
+div.addcomments {
+	padding:1em;
+	margin:1em;
+	font-size:16px;
+	min-height:20em;
+	height:auto !important;
+	height:40em;
+}
+
+p.commentcomment {
+	color:#f33;
+	z-index:3;
+}
+
+
+div.comment-links {
+	visibility:hidden;
+}
+
+div.comment-list {
+	padding-bottom:3em;
+}
+
+div.comments {
+	margin:1em;
+	min-height:5em;
+	height:auto !important;
+	height:5em;
+}
+
+

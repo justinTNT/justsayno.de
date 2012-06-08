@@ -1,0 +1,36 @@
+#menu-lnac .sf-menu a, .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#edc;
+}
+#menu-lnac .sf-menu li {
+	background:		#565;
+}
+#menu-lnac .sf-menu li li {
+	background:		#575;
+}
+#menu-lnac .sf-menu li li li {
+	background:		#585;
+}
+#menu-lnac .sf-menu li:hover, #menu-lnac .sf-menu li.sfHover,
+#menu-lnac .sf-menu a:focus, #menu-lnac .sf-menu a:hover, #menu-lnac .sf-menu a:active {
+	background:		#676;
+}
+
+/*** arrows **/
+#menu-lnac .sf-menu a.sf-with-ul {
+	padding-right: 	2.25em;
+	min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
+}
+#menu-lnac .sf-sub-indicator {
+	background:		url('/browser/images/menu/arrows-ffffff.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+
+/*** shadows for all but IE6 ***/
+#menu-lnac .sf-shadow ul {
+	background:	url('/browser/images/menu/shadow.png') no-repeat bottom right;
+}
+
+#menu-lnac .sf-menu a {
+    border-left:    1px solid #353;
+    border-top:     1px solid #353;
+}
+

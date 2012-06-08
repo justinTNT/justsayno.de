@@ -1,0 +1,100 @@
+body     { background-color:#fdf6e3; }
+
+div#maintab {
+	position:absolute;
+	left:0px;
+	top:99px;
+	z-index:3;
+	width:100%;
+	height:80%;
+	overflow-y:scroll;
+}
+
+div#othermaintab {
+	display:none;
+}
+
+
+div#hidden_url {
+	display:none;
+}
+
+div.modal_file_list {
+	position: absolute;
+	height: 100%;
+	width: 800px;
+	left: 50%;
+	top: 50%;
+	margin-left: -400px;
+	margin-top: -300px;
+	z-index: 9;
+	box-shadow: rgba(0,0,0,1.8) 0px 0px 53px;
+	border-radius: 6px;
+	background-color:#fff;
+}
+
+div.title_file_list {
+	margin-top: 9px;
+	margin-bottom: 23px;
+	font-size: 200%;
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+}
+div.title_file_list p {
+	text-align:center;
+	margin-bottom:0px;
+	margin-top:1em;
+}
+
+
+div.file_list_list {
+	margin-left: 4em;
+	margin-right: 6em;
+	overflow-y: scroll;
+	bottom: 0px;
+	position: relative;
+	height: 80%;
+	width: 90%;
+	margin-bottom: 0em;
+	padding-top:13px;
+	border-top: 1px solid #EEE8D5;
+}
+
+div.file_list_file {
+	height:18px;
+	padding:2px;
+}
+
+div.filelist_name {
+	font-size: 14px;
+	width:45%;
+	float:left;
+	margin-left:2em;
+}
+div.filelist_size {
+	font-size: 14px;
+	float:left;
+	text-align:right;
+	width:20%;
+	padding-right:2em;
+}
+div.file_list_file div.filelist_size {
+	border-left: 1px solid #fdf6e3;
+	border-right: 1px solid #fdf6e3;
+}
+div.filelist_date {
+	font-size: 14px;
+	text-align:right;
+	float:right;
+	margin-right:1em;
+}
+
+div.title_file_list div.filelist_name, div.title_file_list div.filelist_size, div.title_file_list div.filelist_date {
+	color: #586e75;
+}
+
+
+div#file_list_close {
+	margin-top:3px;
+}
