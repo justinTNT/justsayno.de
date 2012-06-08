@@ -33,7 +33,7 @@ function finishFileLoad(from, to, count, cb) {
 			}
 			to = to + '_' + count.toString();
 			count++;
-			finishFileLoad(from, to, count, res);
+			finishFileLoad(from, to, count, cb);
 		} else {
 			fs.rename(from, to);
 			while ((i = to.indexOf('/')) >= 0)
@@ -158,15 +158,14 @@ function statdirlist(path, files, stats, cb) {
 
 	env.app.post('/ck_upload', requiresLogin, function(req,res) {
 		var topath = process.cwd() + '/apps/static/public/' + env.targetapp + '/admcke/'
-		var form = new formidable.IncomingForm();
 		var funcNum = req.param('CKEditorFuncNum');
 		var url = 'http://' + env.staticurl + '/' + env.targetapp + '/admcke/';
-		form.parse(req, function(err, fields, files) {
-			finishFileLoad(files.upload.path, topath + files.upload.name, 0, function(to) {
-				res.write("<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(" + funcNum + ", '" + url + files.upload.name + "', '');</script>");
+
+			finishFileLoad(req.files.upload.path, topath + req.files.upload.name, 0, function(to) {
+				res.write("<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(" + funcNum + ", '" + url + req.files.upload.name + "', '');</script>");
 				res.end(); 
 			});
-		});
+
 		return;
 	});
 
