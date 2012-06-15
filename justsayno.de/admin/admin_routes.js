@@ -6,8 +6,6 @@ var	mongoose = require('mongoose')
  ,	schemetools = require('../schemetools')
  ,	_ = require('underscore')
  ,	fs = require('fs')
- ,	sys = require('util')
- ,	formidable = require('formidable')
 ;
 
 module.exports = function(env, appenv, admdb){
@@ -223,8 +221,9 @@ function statdirlist(path, files, stats, cb) {
 				for (var i in all_objs) {
 					if (!snd_obj[all_objs[i].vocab])
 						snd_obj[all_objs[i].vocab] = [];
-					if (all_objs[i].taxon.length)
-						snd_obj[all_objs[i].vocab].push(all_objs[i].taxon);
+					if (all_objs[i].taxon)
+						if (all_objs[i].taxon.length)
+							snd_obj[all_objs[i].vocab].push(all_objs[i].taxon);
 				}
 				env.respond(req, res, null, null, snd_obj);
 			});
@@ -449,7 +448,7 @@ console.log('SESSION CLEARED');
 	/*
 	 * note: this comes last to ensure it doesn't hijack single-word routes
 	 */
-	env.app.get("/:table", requiresLogin, function(req, res, next){
+	env.app.get("/:table", function(req, res, next){
 		var app;
 		if (req.params.table.indexOf('.') > 0)
 			next(); // not really a table name, prolly favicon.ico ...

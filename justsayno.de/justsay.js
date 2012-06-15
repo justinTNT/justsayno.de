@@ -7,8 +7,8 @@
 if (typeof $ == 'undefined') {
 var jsdom = require('jsdom')
   , myWindow = jsdom.jsdom().createWindow()
-  $ = require('jquery').create(myWindow);
-  _ = require('underscore');
+  , $ = require('jquery').create(myWindow)
+  , _ = require('underscore');
 }
 
 
@@ -45,7 +45,7 @@ function weldItem (dat, selection) {
 	if (typeof dat == 'string' || typeof dat == 'number') {
 		setItem(selection,dat);
 	} else {
-		for (keyatt in dat) {
+		for (var keyatt in dat) {
 		var tmpa = keyatt.split('.')
 		 ,  key = tmpa[0]
 		 ,  attrib = tmpa[1]		// recognises key.attribute
@@ -67,13 +67,14 @@ function weldItem (dat, selection) {
 
 					case 'object':
 						if (str.getMonth) {
-							var y = str.getYear();
-							var m = str.getMonth() + 1;
+							var d
+                             ,  y = str.getYear()
+							 ,  m = str.getMonth() + 1;
 							m++;
 							if (m < 10) m = '0'+m;
-							var d = str.getDate() + 1;
+							d = str.getDate() + 1;
 							if (d < 10) d = '0'+d;
-							var d = str.getYear();
+							d = str.getYear();
 							str = y + ' - ' + m + '-' + d;
 						} else {
 							str = '[ obj ]';
@@ -84,7 +85,7 @@ function weldItem (dat, selection) {
 				}
 
 				if (styl) {
-					tmpstyle = $item.attr('style') || "";
+					var tmpstyle = $item.attr('style') || "";
 					$item.attr('style', styl + ':' + str + ';' + tmpstyle);
 				} else if (attrib) $item.attr(attrib, str);
 				else setItem($item,str);
@@ -125,7 +126,7 @@ function weldTemps(templates, objects, data, sendEmOff) {
 				dat=objects[sel]
 				if (typeof dat == 'string' || typeof dat == 'number') {
 					weldItem(dat, $s);
-				} else if (l=dat.length) {
+				} else if ((l=dat.length)) {
 					var $newone;
 					for (var i=0; i<l; i++) {
 						if (i<l-1) {
@@ -184,7 +185,7 @@ var hash=null; // boilerplate hash (filename)
 	}
 	if (hash) {
 		data = $('<html>');
-		str = envplates[hash];
+		var str = envplates[hash];
 		data[0].innerHTML = "<html>"+str.substr(str.indexOf("</head>")+7);
 		header_text = str.substr(0, str.indexOf("</head>")+7);
 	} else if (templates.length > 0) {

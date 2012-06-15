@@ -19,13 +19,13 @@ module.exports = function(e, admdb) {
 	}
 
 	var env = { app : express.createServer(
-					express.bodyParser()
-					, express.cookieParser()
-					, express.session({
-						store: new MongStore({db: e.appname})
-						, secret: os.hostname() + '_' + e.appname
-					})
-					, logger
+//					express.bodyParser()
+//					, express.cookieParser()
+//					, express.session({
+//						store: new MongStore({db: e.appname})
+//						, secret: os.hostname() + '_' + e.appname
+//					}),
+					logger
 				)
 				,  dir : __dirname
 				,  appname : 'admin'

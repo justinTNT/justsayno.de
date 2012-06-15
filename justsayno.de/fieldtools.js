@@ -1,5 +1,6 @@
 
-var mongoose = require('mongoose'); // needed for forEach
+require('mongoose'); // needed for forEach
+var _ = require('underscore');
 
 /*
  * findFields
@@ -16,7 +17,7 @@ var just_fields = [];
 		len=fields.length;
 		if (len) { // its a list
 			for (var i=0; i<len; i++) {
-				f = fields[i];
+				var f = fields[i];
 				if (_.isString(f)) // just a fieldname
 					just_fields.push(f);
 				else for (var key in f) // an object mapping fieldname keys to selector.property values
@@ -38,7 +39,7 @@ function eachTxlate(eachd, fields) {
 	if (len) {
 			
 		for (var i=0; i<len; i++) {
-			next_field = fields[i];
+			var next_field = fields[i];
 			if (_.isString(next_field)) {
 				if (_.isString(eachd))
 					next_obj[next_field] = eachd;
@@ -56,7 +57,7 @@ function eachTxlate(eachd, fields) {
 						} catch(e) {
 							console.log('error getting ' + key);
 						}
-					} 			// maybe it's virtual ...
+                    }   // maybe it's virtual ...
 				}
 			}
 		}

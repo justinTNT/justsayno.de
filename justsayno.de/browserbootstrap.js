@@ -18,6 +18,7 @@ function updateLinks(frag){
 					if (h.charAt(0) != '/') h='/'+h;		// make sure there's a leading slash
 					$(this).data('ajax_link', h);
 					$(this).click(function(){							// when it's clicked,
+						$(this).blur();									// might be important to lose focus; eg menus, buttons
 						location.hash = $(this).data('ajax_link');		// rewrite the fragment
 						return false;						// trust the router to make the server call
 					});	
@@ -99,12 +100,14 @@ var almostReady, animReveal = null, updatePageWhenReady = null;
 						weldTemps(txdata.templates, txdata.objects, data, function(responsetxt) {
 							callAfter(servercall, $temp_cont);
 							if (animReveal) {
-								updatePageWhenReady = function() {
-									$dest_cont.html($temp_cont.html());
-									updateLinks($dest_cont);
-									animReveal();
-								};
-								almostReady();
+								if (typeof animReveal == 'function') {
+									updatePageWhenReady = function() {
+										$dest_cont.html($temp_cont.html());
+										updateLinks($dest_cont);
+										animReveal();
+									};
+									almostReady();
+								} else updateLinks($temp_cont);
 							} else updateLinks($dest_cont);
 						});
 					}, $temp_cont);

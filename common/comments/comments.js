@@ -2,6 +2,7 @@
 var ft = require('../../justsayno.de/fieldtools');
 var commm = require('./schema/comment').name;
 var mailer = require('nodemailer');
+var _ = require('underscore')
 
 module.exports = function(env){
 
@@ -24,7 +25,7 @@ module.exports = function(env){
 		c.save(function(err){
 			if (err) {
 				// if it is a validation error, send something sensible back to the client...
-				 res.send('failed to save comment: ' + err, 404);
+                res.send('failed to save comment: ' + err, 404);
 				throw err;
 			}
 

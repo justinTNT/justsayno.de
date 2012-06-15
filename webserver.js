@@ -3,12 +3,12 @@ var wserver = require('./justsayno.de/wserver');
 var wscfg = require('./wscfg').options;
 
 
-
-for (i=2; n=process.argv[i]; i++)
-        if (p=parseInt(n, 10)) {
+var i, n, p;
+for (i=2; (n=process.argv[i]); i++)
+        if ((p=parseInt(n, 10))) {
                 if (wscfg.server_port == 80)
                         wscfg.server_port = p;
-                else proxy_port = p;
+                else wscfg.proxy_port = p;
         } else {
 		if (n == 'help' || n == '-h' || n == '--help') {
 console.log('USAGE:');
@@ -32,9 +32,6 @@ console.log('hostnames- list of hostnames served by proxy');
 if (wscfg.proxy_name)
         wserver.getProxy(wscfg.proxy_name, wscfg.proxy_port, wscfg.clandestine, wscfg.proxies);
 else wserver.setProxy(wscfg.proxy_port, wscfg.ip, wscfg.clandestine);
-
-if (wscfg.debug)
-	var v8profiler = require('v8-profiler');
 
 wserver.setupServer(wscfg.server_port, wscfg.apps, wscfg.ip, { mailopts: wscfg.mailopts,
 																adminemail: wscfg.adminemail });

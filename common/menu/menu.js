@@ -4,7 +4,7 @@ var ft = require('../../justsayno.de/fieldtools');
 module.exports = function(env) {
 
 	var menu = require('./schema/menu').name;
-	Menu = env.db.model(menu);
+	var Menu = env.db.model(menu);
 
 	env.app.get('/menu/:menu_name', function(req,res) {
 		Menu.find({name:req.params.menu_name})
@@ -30,7 +30,7 @@ module.exports = function(env) {
 				}
 				if (docs.length) {
 					var str="<p>";
-					for (key in docs) {
+					for (var key in docs) {
 						str += "<a href='" + docs[key].link + "'>" + docs[key].title + "</a><br>";
 					}
 					str += "</p>";

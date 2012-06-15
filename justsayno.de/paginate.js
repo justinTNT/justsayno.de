@@ -4,7 +4,7 @@
  */
 function showPaginatedList(env, req, res, model, query, fields, sort, direction, limit, skip, cb, skipRoute) {
 	var newq = {};
-	for (i in query) {
+	for (var i in query) {
 		if (query[i].substr(0,11) == 'req.params.') {
 			newq[i] = req.params[query[i].substr(11)];
 		} else newq[i] = query[i];

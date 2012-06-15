@@ -10,14 +10,6 @@ function superify($ul, where) {
 	$ul.css('display', 'inline'); // for ie6 double indent bug
 	updateLinks($ul);
 
-	$ul.find('a').each(function(){	// this clause ensures it closes when we select
-		var f=$(this).click;
-		$(this).click(function(){
-			$(this).blur();
-			f();
-		});
-	});
-
 	var w = $ul.width();
 	if ($(where).width() > w) {
 		$(where).css('left','50%');
@@ -56,12 +48,8 @@ var $ul;
 						if (!e.parent_item || !e.parent_item.length || $('li#' + e.parent_item).length) {
 							$item = $('<li>');
 							$item.attr('id', e.item);
-							if (e.link.length) {
-								$item.html('<a>' + e.title + '</a>');
-								$item.find('a').attr('href', e.link);
-							} else {
-								$item.text(e.title);
-							}
+							$item.html('<a>' + e.title + '</a>');
+							$item.find('a').attr('href', e.link);
 							if (e.parent_item && e.parent_item.length) {
 								$o = $('li#' + e.parent_item);
 								if ($o.find('ul').length) $o = $o.find('ul');
