@@ -1,5 +1,5 @@
 
-require('mongoose'); // needed for forEach
+var mongoose = require('mongoose'); // needed for forEach
 var _ = require('underscore');
 
 /*
@@ -17,7 +17,7 @@ var just_fields = [];
 		len=fields.length;
 		if (len) { // its a list
 			for (var i=0; i<len; i++) {
-				var f = fields[i];
+				f = fields[i];
 				if (_.isString(f)) // just a fieldname
 					just_fields.push(f);
 				else for (var key in f) // an object mapping fieldname keys to selector.property values
@@ -39,7 +39,7 @@ function eachTxlate(eachd, fields) {
 	if (len) {
 			
 		for (var i=0; i<len; i++) {
-			var next_field = fields[i];
+			next_field = fields[i];
 			if (_.isString(next_field)) {
 				if (_.isString(eachd))
 					next_obj[next_field] = eachd;
@@ -57,7 +57,7 @@ function eachTxlate(eachd, fields) {
 						} catch(e) {
 							console.log('error getting ' + key);
 						}
-                    }   // maybe it's virtual ...
+					} 			// maybe it's virtual ...
 				}
 			}
 		}
@@ -87,7 +87,13 @@ var objs=[];
 	} else {
 		if (! d.length) d = [d];
 		d.forEach(function(eachd){
-			objs.push(eachTxlate(eachd, fields));
+			if (!fields) {
+				if (! _.isString(eachd)) {
+					fields = _.keys(eachd._doc);
+				}
+			}
+			var o = eachTxlate(eachd, fields);
+			objs.push(o);
 		});
 	}
 

@@ -6,6 +6,8 @@ var	mongoose = require('mongoose')
  ,	schemetools = require('../schemetools')
  ,	_ = require('underscore')
  ,	fs = require('fs')
+ ,	sys = require('util')
+ ,	formidable = require('formidable')
 ;
 
 module.exports = function(env, appenv, admdb){
@@ -43,11 +45,9 @@ function finishFileLoad(from, to, count, cb) {
 
 
 function authenticate(name, pass, appname, cb) {
-console.log('trying to authenticate '  + name + ' with ' + pass + ' on ' + appname);
 	admins.find({'appname':appname, 'login':name }, function(err, docs) {
 		if (err) throw err;
 		if (docs.length == 0) {
-console.log('ERROR ::: no admin records found');
 			return cb();
 		}
 		if (docs[0].passwd == pass) {
@@ -61,14 +61,11 @@ console.log('ERROR ::: no admin records found');
 
 
 function requiresLogin(req, res, next) {
-console.log('AUTH checking');
 	if (! req.session) {
 		next();
 	} else if (req.session.user) {
-console.log('AUTH cool');
 		next();
 	} else {
-console.log('AUTH fail');
 		res.redirect('/sessions/new');
 	}
 };
@@ -99,11 +96,12 @@ function statdirlist(path, files, stats, cb) {
 	} else cb(stats);
 }
 
-	var appdb = mongoose.createConnection('mongodb://localhost/' + env.targetapp);
 
+	var appdb = mongoose.createConnection('mongodb://localhost/' + env.targetapp);
 
 	/*
 	 * this route middleware makes sure the admin functionality on the admin table is only available to the admin user
+	 * NOTE it also works out which schema we're working on
 	 */
 	function onlyAdminCanAdminAdmin(req, res, next) {
 		if (req.params.table == 'admin') {
@@ -163,7 +161,6 @@ function statdirlist(path, files, stats, cb) {
 				res.write("<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(" + funcNum + ", '" + url + req.files.upload.name + "', '');</script>");
 				res.end(); 
 			});
-
 		return;
 	});
 
@@ -283,7 +280,11 @@ function statdirlist(path, files, stats, cb) {
 
 
 	env.app.get("/:table/list/:skip", requiresLogin, onlyAdminCanAdminAdmin, function(req, res, next){
-			req.params.theTable.find({}).limit(20).skip(req.params.skip).run(function(err, docs) {
+			var o = {};
+			if (req.params.table == 'admin') {
+				o = { appname: env.targetapp }
+			}
+			req.params.theTable.find(o).limit(20).skip(req.params.skip).run(function(err, docs) {
 					if (err) throw err;
 					env.respond(req, res, null, null, docs);
 				});
@@ -326,7 +327,6 @@ function statdirlist(path, files, stats, cb) {
 		Fields.find({ appname : env.targetapp, table : req.params.table})
 			.run(function(err, docs) {
 				if (err) throw err;
-
 				var o = JSON.parse(req.body.obj);
 				for (var key in docs) {
 					if (docs[key].name == 'modified_date') {
@@ -334,7 +334,7 @@ function statdirlist(path, files, stats, cb) {
 					}
 				}
 
-				req.params.theTable.update({_id:req.body.id}, o, function(err){
+				req.params.theTable.update({_id:req.body.id}, {$set:o}, function(err){
 					if (err) {
 						// if it is a validation error, send something sensible back to the client...
 						throw err;
@@ -397,11 +397,9 @@ function statdirlist(path, files, stats, cb) {
 	env.app.post('/sessions', function(req,res) {
 		authenticate(req.body.login, req.body.password, env.targetapp, function(user){
 			if (user) {
-console.log('SESSION SET');
-console.log(user);
 				req.session.user = {};
 				for (var keys = Object.keys(user), l = keys.length; l; --l) {
-				   req.session.user[keys[l-1]] = user[keys[l-1]];
+					req.session.user[keys[l-1]] = user[keys[l-1]];
 				}
 				res.redirect('/list');
 			} else {
@@ -411,7 +409,6 @@ console.log(user);
 	});
 
 	env.app.post('/session/end', function(req,res) {
-console.log('SESSION CLEARED');
 		req.session.destroy(function() {});
 		res.clearCookie('user');
 		res.redirect('/sessions/new');
@@ -441,12 +438,33 @@ console.log('SESSION CLEARED');
 				res.writeHead(200, {'content-type': 'text/plain', 'final-filename': to});
 				res.end(); 
 			});
-	   }); 
+		}); 
 	});
 
 
+	env.app.get("/keys/:table", onlyAdminCanAdminAdmin, function(req, res, next){
+		Fields.findOne({ appname : env.targetapp, table : req.params.table, listed : true })
+			.sort('listorder', 1).run(function(err, doc) {
+				if (err) throw err;
+				req.params.theTable.find({}, [doc.name])
+					.run(function(err, docs) {
+						if (err) throw err;
+						var idkeys = [];
+						_.each(docs, function(d) { idkeys.push({name:d[doc.name], id:d._id}); });
+						env.respond(req, res, null, null, idkeys);
+					});
+			});
+	});
+
+	env.app.get("/", function(req, res, next){
+		var temps = [{selector:'#maintab', filename:'login.htm'}
+				];
+		env.respond(req, res, env.basetemps, temps, null);
+	});
+
 	/*
 	 * note: this comes last to ensure it doesn't hijack single-word routes
+	 * - no requireslogin, cos we might get hitup for favicon etc 
 	 */
 	env.app.get("/:table", function(req, res, next){
 		var app;

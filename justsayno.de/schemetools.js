@@ -2,13 +2,14 @@
  * update the admin database collection to reflect the schema
  */
 
-require('mongoose');
-require('./admin/schema/admin');
-var Admins, AdminFields;
+var	mongoose = require('mongoose');
 
+var	fs = require('fs');
 var util=require('util');
 var dirt = require('./dirtools');
 
+var	adminschema = require('./admin/schema/admin');
+var Admins, AdminFields;
 
 
 /*
@@ -62,7 +63,7 @@ function addAdField(app, tab, field, cnt, cb) {
 function addFields(app, tab, fields, cnt, cb) {
 	if (fields.length) {
 		cnt++;
-		var nf = fields.shift();
+		nf = fields.shift();
 		addAdField(app, tab, nf, cnt, function(){ addFields(app, tab, fields, cnt, cb); });
 	} else if (cb) cb();
 }
@@ -93,7 +94,6 @@ var fields = []
 		/* now, hide fields which are in table but not schema */
 	AdminFields.find({appname:e.appname, table:filename}, function(err, docs) {
 		docs.forEach(function(eachd){
-            
 			var key, save=true, ok=false;
 			for (key=0; key<fields.length; key++) {
 				if (fields[key].name == eachd.name) {
@@ -101,28 +101,103 @@ var fields = []
 					break;
 				}
 			}
-
-            if (!ok) {
+			if (!ok) {
 				eachd.listed = eachd.edited = false;
-			} else if (fields[key].type != 'String') {	// make sure non-strings have their true type updated
+			} else if (key<fields.length && fields[key].type != 'String') {
 				eachd.listflags = fields[key].type;
-			} else save = false;
-
-            if (save) {
+			} else save=false;
+			if (save) {
 				eachd.save(function(err){
 					if (err) {
-	console.log('ERROR adding ' + eachd.name + ' in ' + filename + ' for ' + e.appname);
+	console.log('ERROR adding ' + fields[key].name + ' in ' + tab + ' for ' + e.appname);
 	console.log(err);
 						throw err;
 					}
 				});
 			}
-
 		});
 	});
 
 	addFields(e.appname, filename, fields.slice(0), 0, cb);
 }
+
+
+/*
+ * reads contents of named file from specified directory,
+ * and returns the contents (as a string) to the callback
+ */
+function read_file(dname, fname, cback) {
+	fs.readFile(dname + '/' + fname, function (err, data) {	// read in the file contents
+		if (err) {
+	console.log(err);	// debug
+	console.log(dname + '/' + fname);	// debug
+			throw err;
+		} else cback(fname, String(data));
+	});
+}
+
+/*
+ * for a list of files already derived from the named directory,
+ * iterate through the list, calling cb with the contents of each file,
+ * then calling fcb once they're all processed
+ */
+function eachfile(dirname, files, cb, fcb) {
+	fn = files.shift();
+	if (fn) {
+		read_file(dirname, fn, function(cbfname, text) {
+			cb(cbfname, text);
+			eachfile(dirname, files, cb, fcb);
+		});
+	} else if (fcb) fcb();
+}
+
+/*
+ * similar : for a list of files already derived from the named directory,
+ * iterate through the list, calling cb with the name of each file,
+ * then calling fcb once they're all processed
+ */
+function touch_file(dirname, files, op, fcb) {
+	fn = files.shift();
+	if (fn) {
+		op(fn, function() {
+			touch_file(dirname, files, op, fcb);
+		});
+	} else if (fcb) fcb();
+}
+
+/*
+ * get the list of files found in the named directory,
+ * and pass on for processing.
+ * cb is passed the contents of each file,
+ * fcb is called when we're all done
+ */
+function read_dir (dirname, cb, fcb) {
+	fs.readdir(dirname, function(err, files){
+		if (err) {
+	console.log('failed to read : ' + dirname);
+			throw err;
+		}
+		eachfile(dirname, files, cb, fcb);
+	});
+}
+
+/*
+ * similar : get the list of files found in the named directory,
+ * and pass on for processing.
+ * op is passed the name of each file, and a continuation callback
+ * fcb is called when we're all done
+ */
+function touch_dir (dirname, op, fcb) {
+	fs.readdir(dirname, function(err, files){
+		if (err) {
+	console.log('failed to touch : ' + dirname);
+			throw err;
+		}
+		touch_file(dirname, files, op, fcb);
+	});
+}
+
+
 
 
 /*
@@ -163,8 +238,8 @@ function ensureAdminAccess(e, cb) {
  * TTD: we might want to take command line parameters to specify to only add fields for those schema not already there
  */
 function ensureAdFieldCfg(e, appdir, commondir, fcb) {
-	var dn = appdir + '/schema';
-	dirt.touch_dir ( dn
+	var i, dn = appdir + '/schema';
+	touch_dir ( dn
 				, function(fn, ocb){ load_schema(e, dn, fn, ocb); }
 				, function(){
 					if (appdir != commondir) {

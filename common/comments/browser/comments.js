@@ -22,7 +22,7 @@ function replaceAddComm($addtarget) {
 					$f.find('input').show();
 				}, $c.serialize());
 			}, function(e) {
-				alert('authentication failed: ' + e);
+				if (e) if (e.length) alert('authentication failed: ' + e);
 			});
 		return false;
 	});
@@ -75,7 +75,7 @@ function getComments(r) {
 									, function(c){ return (c.parent?false:true); }
 								), '_id'));
 
-			var rep_c_str = c_str + "<div> <a class='addcomment spch-bub-inside' href='" + route.replace(/\//g," ") + "/comment/'> \
+			var rep_c_str = c_str + "<div class='addnewcomment'> <a class='addcomment spch-bub-inside' href='" + route.replace(/\//g," ") + "/comment/'> \
 									<span class='point'></span> \
 									<em>add a new comment</em> </a></div>";
 

@@ -2,7 +2,7 @@
 var ft = require('../../justsayno.de/fieldtools');
 var commm = require('./schema/comment').name;
 var mailer = require('nodemailer');
-var _ = require('underscore')
+var _ = require('underscore');
 
 module.exports = function(env){
 
@@ -10,14 +10,15 @@ module.exports = function(env){
 
 	// this function is returned when the module is applied
 	// so that the including app can use it to add a comment count to other requests
-	function countComments(subject, cb) {
-		Comment.count({subject:subject}, cb);
+	function countComments(s, cb) {
+		if (s) s = s.replace(/\//g," ");
+		Comment.count({subject:s}, cb);
 	}
 
 
 	function comment(req, res, p) {
 		var o = {subject:req.params.subject
-				, name:req.session.user.login
+				, name:req.session.user.handle
 				, link:req.session.user.link
 				, comment:req.body.comment};
 		if (p) o.parent = p;
@@ -25,14 +26,14 @@ module.exports = function(env){
 		c.save(function(err){
 			if (err) {
 				// if it is a validation error, send something sensible back to the client...
-                res.send('failed to save comment: ' + err, 404);
+				 res.send('failed to save comment: ' + err, 404);
 				throw err;
 			}
 
 			var smtpTransport = mailer.createTransport("SMTP", _.clone(env.mailopts));
 
 			smtpTransport.sendMail( {
-					from: 'welcome@larrakia.com'
+					from: 'Comments <website@' + env.url + '>'
 					, to:env.adminemail
 					, subject:'new comment on ' + env.appname
 					, html: "<p>New comment from: " + o.name + "<br>" + o.comment + "<br> at " + o.subject + "</p>"

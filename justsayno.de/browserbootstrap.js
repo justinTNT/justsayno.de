@@ -18,7 +18,7 @@ function updateLinks(frag){
 					if (h.charAt(0) != '/') h='/'+h;		// make sure there's a leading slash
 					$(this).data('ajax_link', h);
 					$(this).click(function(){							// when it's clicked,
-						$(this).blur();									// might be important to lose focus; eg menus, buttons
+						$(this).blur();
 						location.hash = $(this).data('ajax_link');		// rewrite the fragment
 						return false;						// trust the router to make the server call
 					});	
@@ -88,7 +88,7 @@ var almostReady, animReveal = null, updatePageWhenReady = null;
 			} else {							// template data comes in an object with objs, temps and dest
 
 				if (txdata && servercall.length)
-					$dest_cont = $(txdata.templates[0].selector);
+					$dest_cont = $(txdata.templates[0].selector).first();
 				else $dest_cont = $('div#boilerplate-container');
 
 				if (animReveal)							 // ie.  we called first, and it did something

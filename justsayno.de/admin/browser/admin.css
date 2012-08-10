@@ -125,6 +125,11 @@ div#modalmask {
 	z-index:2;
 }
 
+div.greyout {
+	opacity:0.5;
+	background-color:#888;
+}
+
 div#context-menu {
 	background-color: #EEE8D5;
 	position: absolute;

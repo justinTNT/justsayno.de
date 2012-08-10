@@ -1,14 +1,7 @@
 var fs = require('fs');
 var justsay = require('./justsay');
 var dirt = require('./dirtools');
-var zlib = require('zlib');
 
-
-
-function replaceTags(data, e) {
-	return String(data).replace(/\{\{APP\}\}/g, e.appname)
-				.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
-}
 
 /*
  * for a list of files already derived from the named directory, iterate through the list
@@ -61,7 +54,7 @@ function genericDynamicLoadAppFiles(e, suffix, appendattr, fcb) {
 	var re = new RegExp(".*\\." + suffix + "$");
 	fs.readFile(e.dir + '/browser/' + e.appname + '.' + suffix, function (err, data) {
 		if (err) { throw err; }
-		e[appendattr] += replaceTags(data, e);											// might need to know static url in main script
+		e[appendattr] += String(data);
 		fs.readdir(e.dir + '/browser/' + suffix + '/', function(err, files){			// get list of files in templates dir
 			if (err) { throw err; }
 			eachMatchedFile(e.dir + '/browser/' + suffix + '/', files
@@ -103,16 +96,8 @@ var libd = __dirname+'/browserlibs';
 				e.scriptplatestring += "var justsayskeleta = JSON.parse(\'" + txt + "\');\n\n";
 				genericDynamicLoadAppFiles(e, "js", "scriptplatestring",
 					function(){
-						zlib.gzip(e.scriptplatestring, function(err, b) {
-							e.scriptzplatestring = b;
-						});
 						e.cssstring = "";
-						genericDynamicLoadAppFiles(e, "css", "cssstring", function(){
-							zlib.gzip(e.cssstring, function(err, b) {
-								e.csszstring = b;
-							});
-							if (cb) cb();
-						});
+						genericDynamicLoadAppFiles(e, "css", "cssstring", cb);
 					});
 									});
 							});
@@ -136,7 +121,9 @@ function populatipi (e, dirname, whichplate, done) {
 		eachMatchedFile(dirname, files,
 				function(fn){ return (/.*\.html?$/.test(fn) || /.*\.tpl$/.test(fn)); },		// if its .htm or .html or .tpl
 				function(txt, fn){			// pull off each dir entry
-                    e[whichplate][fn] = replaceTags(txt, e);
+                    e[whichplate][fn] = String(txt)			// and keep em in the templatipi store
+						.replace(/\{\{APP\}\}/g, e.appname)
+						.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
 				}, done);
 	});
 }
@@ -157,7 +144,8 @@ var bpfn = 'boilerplate.tpl';
 	 if (err) { d2 = ''; }
 
 		var i, s;
-		s = replaceTags(data, e);
+		s = String(data).replace(/\{\{APP\}\}/g, e.appname)
+					.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
 		i = s.indexOf('<meta');
 		s = s.substr(0,i) + String(d2) + s.substr(i);
 		e.templatipi[bpfn] = s;
@@ -174,15 +162,16 @@ var bpfn = 'boilerplate.tpl';
 					txt = JSON.stringify(e.skeletipi);
 					txt = txt.replace(/\\\\\'/g, "\\'");
 					buildScripts(e, txt, cb);
+
 				});
 			});
-		});
+	 });
 	});
 
 
 	e.respond = function(){							// respond calls the basic welder with this env.
 			var args = [this.templatipi];
-			for (var i=0; i<arguments.length; i++)
+			for (i=0; i<arguments.length; i++)
 				args.push(arguments[i]);
 			justsay.respond.apply(this, args);
 		};

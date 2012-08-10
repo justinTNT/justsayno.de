@@ -1,3 +1,6 @@
+
+module.exports = function(env) {
+
 var Guest;
 
 /*
@@ -39,9 +42,6 @@ function validateNewRego(name, email, cb) {
 	});
 }
 
-
-
-module.exports = function(env) {
 
 	var crypto = require('crypto');
 	var guest = require('./schema/guest').name;
@@ -147,7 +147,7 @@ module.exports = function(env) {
 
 				var smtpTransport = mailer.createTransport("SMTP", _.clone(env.mailopts));
 				var msg = {
-						from: 'Accounts <website@larrakia.com>'
+						from: 'Accounts <website@' + env.url + '>'
 						, to: req.body.login + ' <' + req.body.email + '>'
 						, subject:'Please confirm your account'
 						, html: "<p>Click on this link to verify your account:<br>"
@@ -203,7 +203,4 @@ module.exports = function(env) {
 	});
 
 };
-
-
-
 

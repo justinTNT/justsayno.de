@@ -78,6 +78,7 @@ div#loginbox input[type='text'] {
 div#loginbox input[type='submit'] {
 	margin:13px;
 	margin-left:53px;
+	float:left;
 }
 div#loginbox input[type='button'] {
 	margin:13px;

@@ -7,26 +7,7 @@ module.exports = function(e, admdb) {
 
 	var xprts = {};
 
-	function logger(req, res, next) {
-		console.log('    >   ' + req.url);
-		if (req.session) {
-			console.log('SESSION ' + req.session.id);
-			console.log(req.session.user);
-		} else {
-			console.log('NO SESSION');
-		}
-		next();
-	}
-
-	var env = { app : express.createServer(
-//					express.bodyParser()
-//					, express.cookieParser()
-//					, express.session({
-//						store: new MongStore({db: e.appname})
-//						, secret: os.hostname() + '_' + e.appname
-//					}),
-					logger
-				)
+	var env = { app : express.createServer()
 				,  dir : __dirname
 				,  appname : 'admin'
 				,  targetapp : e.appname

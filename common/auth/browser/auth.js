@@ -34,7 +34,7 @@ function drawLogin() {
 	var login = "<div id='loginbackdrop'></div><div id='loginpage'><div id='loginbox'>"
 + "<form action='/login'>"
 + "Name: <input type='text' name='login' /><br>Password: <input type='password' name='password' />"
-+ "<input type='submit' value='Login'/> <input type='button' name='cancel' value='Cancel'/> <input type='submit' name='register' value='Register'/>"
++ "<div style='clear:both'><input type='submit' value='Login'/> <input type='button' name='cancel' value='Cancel'/> <input type='submit' name='register' value='Register'/></div>"
 + "</form></div></div>";
 	var $l = $(login);
 	$('body').prepend($l);
@@ -54,7 +54,7 @@ function loudLogin(succ, fail) {
 			var newstuff = "<div class='expendable'>"
 	+ "<span>Confirm:</span> <input type='password' name='confirm' /><br>"
 	+ "<span>Email:</span> <input type='text' name='email' />"
-	+ "<i>we'll send you an activation email</i> </div>";
+	+ "<div><i>we'll send you an activation email</i></div> </div>";
 			$login.animate({height:'380px'});
 			$login.find("input[name='password']").after($(newstuff));
 			$login.find("input[name='register']").val('Submit');

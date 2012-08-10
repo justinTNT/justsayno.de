@@ -1,6 +1,8 @@
 
 var admin_table_fields = null; // list of fields for the current schema
 var admin_table_records = []; // list of loaded data for the current schema
+var admin_table_names = []; // list of table names
+var idvals = {};
 var vocabularies;
 var which_route = ''; // keeps track of which schema in which app we're werking on : leading slash
 var adminflag = false; // do we think we're superadmin?
@@ -115,6 +117,7 @@ function setupNewField($f, wtf) {
  */
 function uploadGood($who) {
 	$who.css({color:'#284', backgroundColor:'#fff'});
+	$('div#modalmask').remove();
 }
 
 function uploadProgress($who) {
@@ -123,6 +126,7 @@ function uploadProgress($who) {
 
 function uploadBad($who) {
 	$who.css('backgroundColor', '#fba');
+	$('div#modalmask').remove();
 }
 
 function showAllInstanceFields () {
@@ -141,9 +145,7 @@ function setupNewInstanceField($f, context_flag) {
 		$('input#input_' + field.name).parent().remove();	
 	});
 	$f.find(':first').bind('contextmenu', function(){
-		if (context_flag) {
-			showContextMenu($(this).parent().attr('id'));
-		}
+		showContextMenu($(this).parent().attr('id'), context_flag == 'String' ? edit_flags : null);
 		return false;
 	});
 }
@@ -184,10 +186,9 @@ function drawFieldBox() {
 			var fieldname = $(this).attr('id');
 			fieldname = fieldname.substr(fieldname.indexOf('_')+1);
 			if (fieldname != 'id' && fieldname != '_id') {
+				var f = _.detect(admin_table_fields, function(field) { return field.name == fieldname; } );
 				$(this).append('<div id="close-' + fieldname + '" class="button-close"></div>');
-				setupNewInstanceField($(this),
-					_.detect(admin_table_fields, function(field) { return field.name == fieldname; } ).listflags == 'String'
-				);
+				setupNewInstanceField($(this), f.listlags);
 			}
 		});
 
@@ -204,8 +205,8 @@ function drawFieldBox() {
 			minWidth:123,
 			maxWidth:444,
 			stop:function(e, ui) {
-				_.detect(admin_table_fields, function(f){ return f.name == '_id'; }).editwidth = $(e.target).width();
-				$(e.target).css({left:'',top:''}); // reset these styles, cos they mess with dragging ...
+				_.detect(admin_table_fields, function(f){ return f.name == '_id'; }).editwidth = ui.element.width();
+				ui.element.css({left:'',top:''}); // reset these styles, cos they mess with dragging ...
 				showSave();
 			}
 		});
@@ -343,7 +344,7 @@ function makeUploadValueBox($newin, field)
 	//
 	// activate the browse button
 	//
-	$newin.find('input').click(function(){
+	$newin.find('input').one('click', function(){
 		$whichin = $(this);
 		$.ajax({
 			url:'/browse' + which_route + '?subdir=' + field.uploadpath,
@@ -368,13 +369,15 @@ function makeUploadValueBox($newin, field)
 
 					$('div#file_list_close').click(function(){
 						$m.remove();
+						makeUploadValueBox($newin, field);
 					}).animate({opacity:'0.5'}, 1234)
 					.hover(function(){ $(this).stop().animate({opacity:'1'}, 123); }
 						  ,function(){ $(this).stop().animate({opacity:'0.5'}, 1234); })
 
 					addFiles(file_list, $b, function(fn){
-						$whichin.val(fn);
+						$whichin.val(fn).addClass('altered');
 						$m.remove();
+						makeUploadValueBox($newin, field);
 					});
 
 					// sortable columns
@@ -403,8 +406,9 @@ function makeUploadValueBox($newin, field)
 						});
 						$b.html('');
 						addFiles(new_list, $b, function(fn){
-							$whichin.val(fn);
+							$whichin.val(fn).addClass('altered');
 							$m.remove();
+							makeUploadValueBox($newin, field);
 						});
 					});
 
@@ -429,13 +433,15 @@ function makeUploadValueBox($newin, field)
 								if (xhr2.status != 200) alert('Error: ' + xhr2.status);
 								$whichin.val(xhr2.getResponseHeader('final-filename')).addClass('altered');
 								uploadGood($whichin);
-								$m.remove();
+								makeUploadValueBox($newin, field);
 							};
 
 						xhr2.setRequestHeader("Cache-Control", "no-cache");
 						xhr2.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 						xhr2.setRequestHeader("X-File-Name", fn);
 
+							$('div#context-menu').after('<div id="modalmask" class="greyout"></div>');
+							$m.remove();
 							xhr2.send(this.files[0]);
 							return false;
 						});
@@ -448,6 +454,7 @@ function makeUploadValueBox($newin, field)
 
 			error:function(jqXHR, ststxt, err){
 				/* alert('AJAX ERROR: ' +ststxt + ':' + err); */
+				makeUploadValueBox($newin, field);
 			}
 		});
 		return false;
@@ -468,16 +475,30 @@ function date2str(d) {
 	return d;
 }
 
-
-function makeSelect(field, k) {
-var i, s = '<select id="input_' + field.name + '">';
-	s += '<option class="emptyprompt"></option>';
-	for (i in vocabularies[k]) {
-		s += '<option value="' + vocabularies[k][i] + '">' + vocabularies[k][i] + '</option>';
-	}
-	s += '</select>';
-	return s;
+function wrapSelect(field, s) {
+return '<select id="input_' + field.name + '">'
+	+ '<option class="emptyprompt"></option>'
+	+ s
+	+ '</select>';
 }
+
+function makeIDselect(field) {
+var i, s='', a=idvals[field.editflags];
+	for (i in a) {
+		s += '<option value="' + a[i].id + '">' + a[i].name + '</option>';
+	}
+	return wrapSelect(field, s);
+}
+
+
+function makeVoxSelect(field) {
+var i, s='', a=vocabularies[field.editflags];
+	for (i in a) {
+		s += '<option value="' + a[i] + '">' + a[i] + '</option>';
+	}
+	return wrapSelect(field, s);
+}
+
 
 function createDifferentInput(field, cb) {
 	/* create input element */
@@ -491,22 +512,13 @@ function createDifferentInput(field, cb) {
 		case 'upload':
 			if (! field.uploadpath)
 				field.uploadpath='upload';
-			cb($( '<div class="uploadfields"><span class="uploadurl">...</span>&nbsp;/<span class="uploadpath">' + field.uploadpath + '</span>/&nbsp;'
+			cb($( '<div class="uploadfields" id="upload_' + field.name + '"><span class="uploadurl">...</span>&nbsp;/<span class="uploadpath">' + field.uploadpath + '</span>/&nbsp;'
 					+ '<input type="text" name="' + field.name + '" id="input_' + field.name + '"></input>'
 					+ '</div>' ));
 			break;
 
-		default:
-			var k, f=false;
-			for (k in vocabularies) {
-				if (k == field.editflags) {
-					f=true;
-					if (vocabularies[k].length) 
-						cb($( makeSelect(field, k) ));
-					break;
-				}
-			}
-			if (!f) switch (field.listflags) { // listflags selects different supported mongo data types (from schema)
+		case '':
+			switch (field.listflags) { // listflags selects different supported mongo data types (from schema)
 				case 'Boolean':
 					cb($( '<input type="checkbox" name="' + field.name + '" id="input_' + field.name + '"/>'+field.name ));
 					break;
@@ -517,7 +529,21 @@ function createDifferentInput(field, cb) {
 
 				default:
 					cb ($( '<input type="text" name="' + field.name + '" id="input_' + field.name + '"></input>' ));
+					break;
 			}
+			break;
+
+		default:									// dynamic editflags
+			switch (field.listflags) {
+				case 'ObjectId':
+					cb($( makeIDselect(field) ));
+					break;
+
+				default:
+					cb($( makeVoxSelect(field) ));
+					break;
+			}
+			break;
 	}
 
 }
@@ -541,7 +567,9 @@ function addValueBox(field, $newin, $where, eto_i) {
 		if (field.listflags == 'Date')
 			valtoset = date2str(valtoset);
 
-		$setthisone.val(valtoset);
+		if (field.listflags == 'Boolean') {
+			$setthisone.attr('checked', valtoset);
+		} else $setthisone.val(valtoset);
 	} else $newin.val('');
 
 	$newin.width(field.editwidth);
@@ -706,18 +734,29 @@ var eto_i = -1;
 				$('#'+instance).addClass('altered');
 			}
 		}
+
 		$('.instanceinput .altered').each(function(){
 			var fieldname = $(this).attr('id');
 			fieldname = fieldname.substr(fieldname.indexOf('_')+1);
 			var field = _.detect(admin_table_fields, function(f) { return f.name == fieldname; });
-			if (field.listflags == 'Date') {
-				newobj[fieldname] = new Date($(this).val());
-			} else newobj[fieldname] = $(this).val();
+
+			switch (field.listflags) {
+				case 'Date':
+					newobj[fieldname] = new Date($(this).val());
+					break;
+				case 'Boolean':
+					newobj[fieldname] = $(this).attr('checked');
+					break;
+				default:
+					newobj[fieldname] = $(this).val();
+					break;
+			}
 			if (eto_i >= 0) {
 				admin_table_records[eto_i][fieldname] = newobj[fieldname];
 				$eto.find('div.record_field_'+fieldname).text($(this).val());
 			}
 		});
+
 		$('input.hasDatepicker').each(function(){
 			$(this).datepicker('destroy');
 		});
@@ -799,21 +838,21 @@ function drawWithVox() {
 }
 
 function drawInstancePage() {
-
-		vocabularies = {};
-		justsayAJAJ('/vox_n_tax', function(o){
-			vocabularies = o;
-			drawWithVox();
-		});
+	closePlusMenu();
+	vocabularies = {};
+	justsayAJAJ('/vox_n_tax', function(o){
+		vocabularies = o;
+		drawWithVox();
+	});
 }
 
 function drawListPage() {
 
-	$('div.admin_table_records').html(''); // ... and the dom representation of it ...
+	$('div.admin_table_records').html(''); // clear the dom representation of the list ...
 	if (which_route == '/vocabs' || which_route.substr(0,7) == '/vocab/')
 		drawData(0);
 	else {
-		admin_table_records.length = 0; // clear the list
+		admin_table_records.length = 0; // clear the list itself
 	 //	$('.stayVisible').removeClass('stayVisible').css('visibility', 'hidden'); // and remove any sorting options
 		getData();
 	}
@@ -830,33 +869,55 @@ function closeContextMenu() {
 	return false;
 }
 
-function showContextMenu(field_id) {
+function addContextField(id, name, title) {
+	if (!title) title=name;
+	$('div#context-menu-fields').append(
+		$('<div class="context-field" id="' + id + '_context_' + name + '">' + title + '</div>')
+	);
+}
+
+
+/*
+ * constructs the context menu for changing field types (editflags)
+ * takes an optional list of (string) type overrides:
+ * otherwise, it might uses tablenames as types for objectid
+ */
+function showContextMenu(field_id, whichtags) {
 var $loc = $('div#'+field_id+' >div');
+field_id = field_id.substr(9);
 
 	$('div#context-menu')
 		.html('<div id="context-menu-fields"></div>')
 		.css({left:23+$loc.offset().left, top:$loc.offset().top})
 		.after('<div id="modalmask"></div>');
 
-	_.each(edit_flags, function(flag) {
-		$('div#context-menu-fields').append(
-			$('<div class="context-field" id="' + field_id.substr(9) + '_context_' + flag.name + '">'
-				+ flag.title + '</div>')
-		);
-	});
-	
-	var plusvoxflag = true;
-	for (vocab in vocabularies) {
-		if (vocabularies[vocab].length) {
-			if (plusvoxflag) {
-				$('div#context-menu-fields').append("<div class='contextmenubreak'></div>");
-				plusvoxflag = false;
+	if (whichtags) {
+
+		_.each(whichtags, function(tag) { addContextField(field_id, tag.name, tag.title); });
+
+		var plusvoxflag = true;
+		for (vocab in vocabularies) {
+			if (vocabularies[vocab].length) {
+				if (plusvoxflag) {
+					$('div#context-menu-fields').append("<div class='contextmenubreak'></div>");
+					plusvoxflag = false;
+				}
+				addContextField(field_id, vocab);
 			}
-			$('div#context-menu-fields').append(
-				$('<div class="context-field" id="' + field_id.substr(9) + '_context_' + vocab + '">'
-					+ vocab + '</div>')
-			);
 		}
+
+	} else {
+
+		addContextField(field_id, '', 'raw ID');
+		$('div#context-menu-fields').append("<div class='contextmenubreak'></div>");
+
+		var tt = $('a#table-name').text();	// this tablename
+		_.each(admin_table_names, function(t){		// each tablename
+			if (t != tt) {
+				addContextField(field_id, t);
+			}
+		});
+
 	}
 
 	$('div#modalmask').click(function(){
@@ -895,7 +956,13 @@ var $loc = $('div#'+field_id+' >div');
 
 			$where = $('div#instin_' + field.name);
 			$where.empty();
-			makeValueBox(field, $where, eto_i);
+
+			if (field.listflags == 'ObjectId' && field.editflags != '' && !idvals[field.editflags]) {
+				justsayAJAJ('/keys/' + field.editflags, function(a){
+					idvals[field.editflags] = a;
+					makeValueBox(field, $where, eto_i);
+				});
+			} else makeValueBox(field, $where, eto_i);
 		}
 		return closeContextMenu();
 	});
@@ -1134,8 +1201,16 @@ var field;
 		_.each(admin_table_fields, function(field) {
 			var list_content;
 			if (field.listed) {
-				if (field.listflags == 'Date') {
+				if (field.listflags == 'Date') { 
 					list_content = date2str(admin_table_records[i][field.name]);
+				} else if (field.listflags == 'ObjectId' && field.editflags != '') {
+					var a=idvals[field.editflags];
+					for (var j=0; j<a.length; j++) {
+						if (a[j].id == admin_table_records[i][field.name]) {
+							list_content = a[j].name;
+							break;
+						}
+					}
 				} else {
 					list_content = admin_table_records[i][field.name];
 					if (list_content)
@@ -1225,6 +1300,7 @@ function getData() {
 			drawData(i);
 		},
 		error:function(jqXHR, ststxt, err){
+			drawData(0);
 /*
 * DEBUGGING
 					alert('AJAX ERROR: ' +ststxt + ':' + err);
@@ -1275,26 +1351,30 @@ var field;
 
 
 /*
- * callAfter: callback for when hash changes and new data  is called up
+ * callAfter: callback for when hash changes and new data is called up
  * (either array of obs or anti-template data)
- * -just loads the table: all the real work happens on the page
+ * - just loads the table: all the real work happens on the page
  */
 
 function callAfter(route, from) {
 
 	which_route = '/' + route;
 
-	if (! _.isArray(from)) {
+	if (! _.isArray(from)) { // just the list of tables ...
 
-		from.find('a.table').each(function(){
-			if ($(this).text() == 'admin') {
-				adminflag = true;	// if the server sent the admin table, that means we're logged in as the superadmin
-				showRefreshButt();
-			}
-		});
+		admin_table_names.length = 0;
 		admin_table_records.length = 0;
 		$('div.admin_table_records').html('');
 		$('a#table-name').html('');
+		from.find('a.table').each(function(){
+			var t = $(this).text();
+			if (t == 'admin') {
+				adminflag = true;	// if the server sent the admin table, that means we're logged in as the superadmin
+				showRefreshButt();
+			} else {
+				admin_table_names.push(t);
+			}
+		});
 
 	} else {
 
@@ -1321,6 +1401,13 @@ function callAfter(route, from) {
 		} else {
 			admin_table_fields = from;
 			drawFields();
+			_.each(admin_table_fields, function(field) {
+				if (field.listflags == 'ObjectId' && field.editflags != '' && !idvals[field.editflags]) {
+					justsayAJAJ('/keys/' + field.editflags, function(a){
+						idvals[field.editflags] = a;
+					});
+				}
+			});
 			getData();
 		}
 		$('a#table-name').html(route);
@@ -1350,8 +1437,12 @@ var $b = $('button#loginlogout');
 justsayUpdate(callAfter);
 $('button#loginlogout').click(function() { logOut(); });
 
-$.getScript('http://la.rrak.in/ckeditor/ckeditor.js', function(d, s){
-	$.getScript('http://la.rrak.in/ckeditor/adapters/jquery.js', function(data, status){
+/*
+** mjor problm: this should not be hardcoded!
+*/
+$.getScript('http://larak.in/ckeditor/ckeditor.js', function(d, s){
+	$.getScript('http://larak.in/ckeditor/adapters/jquery.js', function(data, status){
 	});
 });
 
+		$('input#login').focus();

@@ -9,16 +9,16 @@ module.exports = function(env) {
 	env.app.get('/menu/:menu_name', function(req,res) {
 		Menu.find({name:req.params.menu_name})
 			.sort('parent_item', 1)
-			.sort('prev_item', 1)
+			.sort('order', 1)
 			.execFind( function(err, docs) {
 				if (err) {
 					console.log(err);
 				}
 				if (docs.length) {
-					var which_fields = ['item', 'parent_item', 'prev_item', 'title', 'link'];
+					var which_fields = ['item', 'parent_item', 'order', 'title', 'link'];
 					var all_objs = ft.translateFields(docs, which_fields);
 					env.respond(req, res, null, null, all_objs);
-				} else res.send('Invalid menu name', 404);
+				} else res.send('Invalid menu name: ' + req.params.menu_name, 404);
 			});
 	});
 
@@ -30,7 +30,7 @@ module.exports = function(env) {
 				}
 				if (docs.length) {
 					var str="<p>";
-					for (var key in docs) {
+					for (key in docs) {
 						str += "<a href='" + docs[key].link + "'>" + docs[key].title + "</a><br>";
 					}
 					str += "</p>";

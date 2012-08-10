@@ -1,5 +1,5 @@
+var	fs = require('fs');
 var	os = require('os');
-var fs = require('fs');
 var net = require('net');
 var http = require('http');
 var express = require('express');
@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 var temptools = require('./temptools');
 var schemetools = require('./schemetools');
 
-var webserver_app;
+var webserver_app, proxy_server;
 var proxies = {};
 
 
@@ -27,40 +27,18 @@ function configureAppEnv(e) {
 		e.app.use('/browser/', express.static(e.dir + '/browser/'));
 		e.app.use(express.bodyParser());
 		e.app.use(express.cookieParser());
-        
-        var clandestine = os.hostname() + '_' + e.appname;
-        if (e.targetapp) {
-            clandestine = clandestine + '_' + e.targetapp;
-        }
-		e.app.use(express.session({ secret: clandestine }));
+		var clandestine = os.hostname() + '_' + e.appname;
+		if (e.targetapp) clandestine = clandestine + '_' + e.targetapp;
+		e.app.use(express.session({secret:clandestine}));
 	});
 
     e.app.get("/" + e.appname + ".css", function(req, res){
-		var acceptEncoding = req.headers['accept-encoding'] || ''
-		  , ua = req.headers['user-agent'] || '';
 		res.contentType('text/css');
-		if (!~acceptEncoding.indexOf('gzip')
-			|| ~ua.indexOf('MSIE 6') && !~ua.indexOf('SV1')) {
-			res.send(e.cssstring);
-		} else {
-			res.setHeader('Content-Encoding', 'gzip');
-			res.setHeader('Vary', 'Accept-Encoding');
-			res.send(e.csszstring);
-		}
+    	res.send(e.cssstring);
 	});
-    
     e.app.get("/" + e.appname + ".js", function(req, res){
-		var acceptEncoding = req.headers['accept-encoding'] || ''
-		  , ua = req.headers['user-agent'] || '';
 		res.contentType('text/javascript');
-		if (!~acceptEncoding.indexOf('gzip')
-			|| ~ua.indexOf('MSIE 6') && !~ua.indexOf('SV1')) {
-			res.send(e.scriptplatestring);
-		} else {
-			res.setHeader('Content-Encoding', 'gzip');
-			res.setHeader('Vary', 'Accept-Encoding');
-			res.send(e.scriptzplatestring);
-		}
+    	res.send(e.scriptplatestring);
 	});
 
 	e['hook'] = [];
@@ -96,6 +74,7 @@ function setupServer(port, applist, ip, passon) {
 var webserver_app = express.createServer();
 var eachapp, e;
 var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
+var dbs = [admdb];
 
 	for (var l=applist.length-1; l>=0; l--) {
 		var n = applist[l].appname;
@@ -114,8 +93,8 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 			setAppEnvRoot(this_aapp, this_admin.env);
 			this_aapp.use(express.favicon());
 			webserver_app.use(express.vhost("admin." + applist[l].dname, this_aapp));
-
 			e.db = mongoose.createConnection('mongodb://localhost/' + n);
+            dbs.push(e.db);
 			for (var i in e.plugins) {
 				e.hook[e.plugins[i]] =  // some common modules return a hook, or array of hooks 
 					require('../common/' + e.plugins[i] + '/' + e.plugins[i] + '.js')(e);  // common routing (server script)
@@ -126,12 +105,9 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 
 			var d = __dirname+'/../apps/' + n;
 			eachapp.app.use(express.static(d));
-			fs.stat(d + '/favicon.ico', function(err, stat) {
-				if (err) {
-					eachapp.app.use(express.favicon());
-				} else {
-					eachapp.app.use(express.favicon(d));
-				}
+			fs.stat(d, function(err, stat) {
+				if (err) eachapp.app.use(express.favicon());
+				else eachapp.app.use(express.favicon(d));
 			});
 
 			for (var key in passon) {
@@ -144,7 +120,7 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 		applist[l].app = eachapp.app;
 		webserver_app.use(express.vhost(applist[l].dname, applist[l].app));
 		webserver_app.use(express.vhost("www." + applist[l].dname, applist[l].app));
-    }
+  	}
 
   webserver_app.use(express.logger());
   webserver_app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
@@ -155,8 +131,8 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 	// either it's one we're proxying for, or it's a mystery host ...
 	*/
 	webserver_app.all('*', function(req, res){
+        var p;
 		if (proxies) {
-            var p;
 			if ((p = proxies[req.header('Host')])) {
 				var proxy = http.createClient(80, p);
 				proxy.addListener('error', function() {
@@ -170,7 +146,7 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 						res.write(chunk, 'binary');
 					});
 					proxy_response.addListener('end', function() {
-    console.log('passing ' + req.url + ' response from ' + req.header('Host') + ' via proxy.');
+	 console.log('passing ' + req.url + ' response from ' + req.header('Host') + ' via proxy.');
 						res.end();
 					});
 					proxy_response.addListener('error', function(e) {
@@ -185,7 +161,7 @@ var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
 					proxy_request.write(chunk, 'binary');
 				});
 				req.addListener('end', function() {
-    console.log('PASSING ' + req.url + ' request for ' + req.header('Host') + ' via proxy.');
+	 console.log('PASSING ' + req.url + ' request for ' + req.header('Host') + ' via proxy.');
 					proxy_request.end();
 				});
 				req.addListener('error', function(e) {
@@ -213,8 +189,30 @@ console.log('also seen: ' + JSON.stringify(req.headers));
 
 	});
 
-	console.log('listening to ' + (ip?ip:'localhost') + ' on ' + port);
+	console.log('listen to ' + (ip?ip:'localhost') + ' on ' + port);
 	webserver_app.listen(port, ip);
+	webserver_app.on('listening', function(){
+		console.log('stepping down to noder');
+		process.setuid('noder');
+	});
+    
+    process.on("SIGINT", function(){
+        console.log('closing server ...');
+        webserver_app.close();
+        if (proxy_server) {
+            proxy_server.close();
+        }
+        for (var i=0; i<dbs.length; i++) {
+            dbs[i].close();
+        }
+    });
+    
+    webserver_app.on('close', function() {
+        console.log('webserver closing')
+    });
+    proxy_server.on('close', function() {
+        console.log('proxyserver closing')
+    });
 }
 
 
@@ -237,6 +235,8 @@ function getProxy(name, port, clandestine, proxies) {
 		console.log('config connection to proxy server failed.');
 		throw e;
 	});
+
+    proxy_server = null;
 }
 
 function setProxy(port, ip, clandestine) {
@@ -244,7 +244,7 @@ function setProxy(port, ip, clandestine) {
 	// listen to port.
 	// when someone connects, match their IP to the nominated list of hosts to serve for them
 	// so that anything that comes to a vhost can be sent back to them as required
-    net.createServer(function(s){
+   	proxy_server = net.createServer(function(s){
 		console.log('creating proxy server');
 		var remote_ip = s.remoteAddress;
 		s.on('data', function(d){
