@@ -39,59 +39,75 @@ function setItem($i, str) {
  * weld data to an item
  * ====================
  * dat : the data
- * selection : the item
+ * $s : the item
  */
-function weldItem (dat, selection) {
+function weldItem (dat, $s) {
 	if (typeof dat == 'string' || typeof dat == 'number') {
-		setItem(selection,dat);
+		setItem($s,dat);
 	} else {
 		for (keyatt in dat) {
 		var tmpa = keyatt.split('.')
 		 ,  key = tmpa[0]
 		 ,  attrib = tmpa[1]		// recognises key.attribute
-		 ,  styl = tmpa[2]		// recognises key..style or key.ignorethis.style
 		 ,  $item;
 
-			if (selection.hasClass(key) || selection.attr('id') == key)
-				$item = selection;
+			if ($s.hasClass(key) || $s.attr('id') == key)
+				$item = $s;
 			else {
-				$item = selection.find("#" + key);
-				if (! $item.length) $item = selection.find("." + key);
+				$item = $s.find("#" + key);
+				if (! $item.length) $item = $s.find("." + key);
 			}
 			if ($item.length) {
 				var str = dat[keyatt];
-				switch (typeof str) {
-					case 'function':
-						throw 'unexpected function : ' + str.substr(23) + '...';
-						break;
-
-					case 'object':
-						if (str.getMonth) {
-							var y = str.getYear();
-							var m = str.getMonth() + 1;
-							m++;
-							if (m < 10) m = '0'+m;
-							var d = str.getDate() + 1;
-							if (d < 10) d = '0'+d;
-							var d = str.getYear();
-							str = y + ' - ' + m + '-' + d;
-						} else {
-							str = '[ obj ]';
+				if ($item.hasClass(key) && _.isArray(str)) {
+					var l = str.length;
+					var $newone;
+					for (var i=0; i<l; i++) {
+						if (i<l-1) {
+							$newone=$item.clone();
 						}
-						break;
+						weldItem(str[i], $item);
+						if (i<l-1) {
+							$item.after($newone);
+							$item=$newone;
+						}
+					}
+				} else {
+					switch (typeof str) {
+						case 'function':
+							throw 'unexpected function : ' + str.substr(23) + '...';
+							break;
 
-					default:
+						case 'object':
+							if (str.getMonth) {
+								var y = str.getYear();
+								var m = str.getMonth() + 1;
+								m++;
+								if (m < 10) m = '0'+m;
+								var d = str.getDate() + 1;
+								if (d < 10) d = '0'+d;
+								var d = str.getYear();
+								str = y + ' - ' + m + '-' + d;
+							} else {
+								for (var k in str) {
+									weldItem(str[k], $item);		
+								}
+								delete str; // nothing more to do with it
+							}
+							break;
+
+						default:
+					}
+
+					if (str) {
+						if (attrib) $item.attr(attrib, str);
+						else setItem($item,str);
+					}
 				}
-
-				if (styl) {
-					tmpstyle = $item.attr('style') || "";
-					$item.attr('style', styl + ':' + str + ';' + tmpstyle);
-				} else if (attrib) $item.attr(attrib, str);
-				else setItem($item,str);
 			}
 		}
 	}
-	selection.addClass('item_welded_on');
+	$s.addClass('item_welded_on');
 }
 
 /*
@@ -122,7 +138,7 @@ function weldTemps(templates, objects, data, sendEmOff) {
 //			if (! $s.length) throw "bad selector " + sel + " in template " + select;
 			$s = $s.not('.item_welded_on');
 			if ($s.length) {
-				dat=objects[sel]
+				dat=objects[sel];
 				if (typeof dat == 'string' || typeof dat == 'number') {
 					weldItem(dat, $s);
 				} else if (l=dat.length) {

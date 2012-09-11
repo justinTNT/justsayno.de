@@ -188,7 +188,7 @@ function drawFieldBox() {
 			if (fieldname != 'id' && fieldname != '_id') {
 				var f = _.detect(admin_table_fields, function(field) { return field.name == fieldname; } );
 				$(this).append('<div id="close-' + fieldname + '" class="button-close"></div>');
-				setupNewInstanceField($(this), f.listlags);
+				setupNewInstanceField($(this), f.listflags);
 			}
 		});
 
@@ -518,6 +518,7 @@ function createDifferentInput(field, cb) {
 			break;
 
 		case '':
+		case 'default':
 			switch (field.listflags) { // listflags selects different supported mongo data types (from schema)
 				case 'Boolean':
 					cb($( '<input type="checkbox" name="' + field.name + '" id="input_' + field.name + '"/>'+field.name ));
@@ -609,7 +610,7 @@ function addValueBox(field, $newin, $where, eto_i) {
 					helper:'ghostedinput',
 					stop:function(e, ui) {
 						var $the_in = ui.element;
-						if ($the_in[0].tagName != 'INPUT')
+						if ($the_in[0].tagName != 'INPUT' && $the_in[0].tagName != 'SELECT')
 							$the_in = $the_in.find('INPUT');
 						var id = $the_in.attr('id');
 						id =  id.substr(id.indexOf('_')+1);
@@ -742,7 +743,7 @@ var eto_i = -1;
 
 			switch (field.listflags) {
 				case 'Date':
-					newobj[fieldname] = new Date($(this).val());
+					newobj[fieldname] = new Date($(this).val().replace('-','/'));
 					break;
 				case 'Boolean':
 					newobj[fieldname] = $(this).attr('checked');

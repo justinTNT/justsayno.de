@@ -59,6 +59,15 @@ function justsayAJAJ (route, succ, fail, data) {
 }
 
 
+/*
+ * just get frament
+ */
+function justGetFrag (fragname) {
+	return($(justsayskeleta[fragname]));
+}
+
+
+
 
 /*
  * justsayMakeTheCall - this is the function called by our script in the browser to setup hashchange.

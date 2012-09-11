@@ -54,7 +54,11 @@ function genericDynamicLoadAppFiles(e, suffix, appendattr, fcb) {
 	var re = new RegExp(".*\\." + suffix + "$");
 	fs.readFile(e.dir + '/browser/' + e.appname + '.' + suffix, function (err, data) {
 		if (err) { throw err; }
+
+		if (suffix == 'css') data = replaceStaticApp(e, data);
+
 		e[appendattr] += String(data);
+
 		fs.readdir(e.dir + '/browser/' + suffix + '/', function(err, files){			// get list of files in templates dir
 			if (err) { throw err; }
 			eachMatchedFile(e.dir + '/browser/' + suffix + '/', files
@@ -106,6 +110,18 @@ var libd = __dirname+'/browserlibs';
 }
 
 
+
+/*
+ * reusable snippet to fill in templatable variables in fragments, css
+ */
+function replaceStaticApp(e, txt) {
+	return String(txt)			// and keep em in the templatipi store
+		.replace(/\{\{APP\}\}/g, e.appname)
+		.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
+}
+
+
+
 /*
  * populatipi - populate the app env's templatipi template array
  * 		from the contents of all /.*\.html?/ files in the specified directory
@@ -121,9 +137,7 @@ function populatipi (e, dirname, whichplate, done) {
 		eachMatchedFile(dirname, files,
 				function(fn){ return (/.*\.html?$/.test(fn) || /.*\.tpl$/.test(fn)); },		// if its .htm or .html or .tpl
 				function(txt, fn){			// pull off each dir entry
-                    e[whichplate][fn] = String(txt)			// and keep em in the templatipi store
-						.replace(/\{\{APP\}\}/g, e.appname)
-						.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
+                    e[whichplate][fn] = replaceStaticApp(e, txt);
 				}, done);
 	});
 }
@@ -143,9 +157,7 @@ var bpfn = 'boilerplate.tpl';
 	 fs.readFile(e.dir + '/templates/fragments/headfrag.htm', function(err, d2) { // add header frag
 	 if (err) { d2 = ''; }
 
-		var i, s;
-		s = String(data).replace(/\{\{APP\}\}/g, e.appname)
-					.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
+		var i, s = replaceStaticApp(e, data);
 		i = s.indexOf('<meta');
 		s = s.substr(0,i) + String(d2) + s.substr(i);
 		e.templatipi[bpfn] = s;

@@ -10,6 +10,21 @@ function superify($ul, where) {
 	$ul.css('display', 'inline'); // for ie6 double indent bug
 	updateLinks($ul);
 
+/* jTNT */
+	$('li:has(ul)', $ul).each(function(){
+		var $a = $(this).find('a:first');
+		var oc = $._data($a[0], 'events').click[0];
+		$a.unbind('click', oc);
+		$a.click(function(e){
+			if ($(this).siblings('ul').hasClass('jTNTshowing')) {
+				oc.handler.call(this);
+			} else {
+				$(this).mouseover();
+			}
+			e.preventDefault();
+		});
+	});
+
 	var w = $ul.width();
 	if ($(where).width() > w) {
 		$(where).css('left','50%');
