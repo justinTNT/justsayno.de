@@ -209,7 +209,7 @@ function statdirlist(path, files, stats, cb) {
 		});
 	});
 
-	env.app.get("/vox_n_tax", requiresLogin, onlyAdmVox, function(req, res, next){
+	env.app.get("/vox_n_tax", requiresLogin, function(req, res, next){
 		Taxon.find({appname:env.targetapp})
 			.sort('vocab', 1).run(function(err, docs) {
 				if (err) throw err;
@@ -286,6 +286,13 @@ function statdirlist(path, files, stats, cb) {
 			}
 			req.params.theTable.find(o).limit(20).skip(req.params.skip).run(function(err, docs) {
 					if (err) throw err;
+				for (var i in docs) {
+					for (var key in docs[i]._doc) {
+						if (docs[i][key] && docs[i][key].getMinutes) {
+							docs[i][key].setMinutes(docs[i][key].getMinutes() - docs[i][key].getTimezoneOffset());
+						}
+					}
+				}
 					env.respond(req, res, null, null, docs);
 				});
 	});
