@@ -13,6 +13,25 @@ var edit_flags = [ {name:'default', title:'Text'}
 				];
 
 
+
+//
+// simple helper to get index of which listed record to edit 
+//
+function editIndex() {
+var eto_i = -1
+ , $allrs = $('div.admin_table_record')
+ , $eto = $('.edit_this_one')
+ ;
+	if ($eto.length)
+		for (i=0; i < $allrs.length; i++)
+			if ($eto[0] == $allrs[i]) {
+				eto_i = i;
+				break;
+			}
+	return eto_i;
+}
+
+
 function showSave() {
 	$('div#saveconfig').show();
 }
@@ -165,11 +184,22 @@ function findInstanceFieldHeight(field) {
  * draws the box with the list of labels
  */
 function drawFieldBox() {
-	$('div.instancelabels').remove();
 	var $fb = $('<div class="instancelabels"></div>');
 	var sorted = _.sortBy(admin_table_fields, function(f) { return f.editorder; });
+
+	// if editing users, don't show per-userpriv list for admin, or if there's only one option
+	var skipBools = false;
+	if (which_route == '/admin') {
+		var eto_i = editIndex();
+		if (eto_i >= 0) {
+		 skipBools = admin_table_records[eto_i]['name'] == 'admin'
+		 || _.select(sorted, function(f) { return f.listflags == 'Boolean'; }).length == 1;
+		}
+	}
+
+	$('div.instancelabels').remove();
 	_.each(sorted, function(field) {
-		if (field.edited && field.name != 'id' && field.name != '_id') {
+		if (field.edited && ! (skipBools && field.listflags == 'Boolean')) {
 			$fb.append($('<div class="instancelabelholder" id="instance_' + field.name + '"><div class="instancelabel">' + field.name + '</div></div>'));
 		}
 	});
@@ -321,7 +351,7 @@ var i, l=0;
 	if (files) l=files.length;
 	for (i=0; i<l; i++) {
 		$where.append($("<div class='file_list_file'> \
-					<div class='filelist_name'>" + files[i].filelist_name + "</div> \
+					<div class='filelist_name'>" + files[i].filelist_name.substr(0,44) + "</div> \
 					<div class='filelist_size'>" + files[i].filelist_size + "</div> \
 					<div class='filelist_date'>" + files[i].filelist_date.substr(0,files[i].filelist_date.indexOf('T')) + "</div> \
 					</div>"));
@@ -503,6 +533,8 @@ var i, s='', a=vocabularies[field.editflags];
 function createDifferentInput(field, cb) {
 	/* create input element */
 
+	if (typeof field.editflags == 'undefined') field.editflags = '';
+
 	switch (field.editflags) { // editflags selects different ways of displaying a string (configurable)
 
 		case 'richtext':
@@ -549,6 +581,23 @@ function createDifferentInput(field, cb) {
 
 }
 
+function makeEditResizable($where) {
+	$where.resizable({
+			handles:'e',
+			minWidth:124,
+			maxWidth:1234,
+			helper:'ghostedinput',
+			stop:function(e, ui) {
+				var $the_in = ui.element;
+				if ($the_in[0].tagName != 'INPUT' && $the_in[0].tagName != 'SELECT')
+					$the_in = $the_in.find('INPUT');
+				var id = $the_in.attr('id');
+				id =  id.substr(id.indexOf('_')+1);
+				$the_in.width(_.detect(admin_table_fields, function(f){ return f.name == id; }).editwidth = ui.helper.width());
+				showSave(); // we might want to save any re-arrangement of the fields
+			}
+		});
+}
 
 function addValueBox(field, $newin, $where, eto_i) {
 	$where.append($newin);
@@ -603,21 +652,7 @@ function addValueBox(field, $newin, $where, eto_i) {
 		/* maybe make it resizable */
 
 		if (field.editflags == 'default' || field.editflags == '') {
-			$where.resizable({
-					handles:'e',
-					minWidth:124,
-					maxWidth:1234,
-					helper:'ghostedinput',
-					stop:function(e, ui) {
-						var $the_in = ui.element;
-						if ($the_in[0].tagName != 'INPUT' && $the_in[0].tagName != 'SELECT')
-							$the_in = $the_in.find('INPUT');
-						var id = $the_in.attr('id');
-						id =  id.substr(id.indexOf('_')+1);
-						$the_in.width(_.detect(admin_table_fields, function(f){ return f.name == id; }).editwidth = ui.helper.width());
-						showSave(); // we might want to save any re-arrangement of the fields
-					}
-				});
+			makeEditResizable($where);
 		}
 
 		if (field.editflags == 'upload') { // admin can change upload path
@@ -705,20 +740,24 @@ function makeValueBox(field, $where, eto_i) {
 function drawValueBox() {
 var $vb = $('<div class="instanceinputs"></div>');
 var $eto = $('.edit_this_one');
-var eto_i = -1;
 
-	$allrs = $('div.admin_table_record');
-	if ($eto.length)
-		for (i=0; i < $allrs.length; i++)
-			if ($eto[0] == $allrs[i]) {
-				eto_i = i;
-				break;
-			}
+	eto_i = editIndex();
+
+	// if editing users, don't show per-userpriv list for admin, or if there's only one option
+	var skipBools = false;
+	if (which_route == '/admin') {
+		var eto_i = editIndex();
+		if (eto_i >= 0) {
+			 skipBools = admin_table_records[eto_i]['name'] == 'admin'
+			 || _.select(sorted, function(f) { return f.listflags == 'Boolean'; }).length == 1;
+		}
+	}
+
 	$('div.instanceinputs').remove();
 	$('div#detailtab').append($vb);
 	var sorted = _.sortBy(admin_table_fields, function(f) { return f.editorder; });
 	_.each(sorted, function(field) {
-		if (field.edited && field.name != 'id' && field.name != '_id') {
+		if (field.edited && ! (skipBools && field.listflags == 'Boolean')) {		//&& field.name != 'id' && field.name != '_id') {
 			var $commontainer = $('<div class="instanceinput" id="instin_' + field.name + '"></div>');
 			$vb.append($commontainer);
 			makeValueBox(field, $commontainer, eto_i);
@@ -743,10 +782,10 @@ var eto_i = -1;
 
 			switch (field.listflags) {
 				case 'Date':
-					newobj[fieldname] = new Date($(this).val().replace('-','/'));
+					newobj[fieldname] = new Date($(this).val().replace(/-/g,'/'));
 					break;
 				case 'Boolean':
-					newobj[fieldname] = $(this).attr('checked');
+					newobj[fieldname] = $(this).is(':checked');
 					break;
 				default:
 					newobj[fieldname] = $(this).val();
@@ -754,7 +793,9 @@ var eto_i = -1;
 			}
 			if (eto_i >= 0) {
 				admin_table_records[eto_i][fieldname] = newobj[fieldname];
-				$eto.find('div.record_field_'+fieldname).text($(this).val());
+				if (field.listflags == 'Boolean')
+					$eto.find('div.record_field_'+fieldname).html($(this).is(':checked')?'&#9746':'').css({textAlign:'center'});
+				else $eto.find('div.record_field_'+fieldname).text($(this).val());
 			}
 		});
 
@@ -927,10 +968,8 @@ field_id = field_id.substr(9);
 	$('div.context-field').hover(function(){ $(this).css('background-color', '#fff'); }
 			,function(){ $(this).css('background', 'transparent'); }
 	 ).click(function(){
-		var field, f_id, flag_name, i, $eto, eto_i;
+		var field, f_id, flag_name, i, eto_i;
 
-		$eto = $('.edit_this_one');
-		eto_i = -1;
 		f_id = $(this).attr('id');
 		i = f_id.indexOf('_context_');
 		flag_name = f_id.substr(i+9);
@@ -947,13 +986,7 @@ field_id = field_id.substr(9);
 			// after removing what's there, we might need to abstract out guts of drawvaluebox to get the field redrawn
 			// then might want to recalc the height of the corresponding label ...
 
-			$allrs = $('div.admin_table_record');
-			if ($eto.length)
-				for (i=0; i < $allrs.length; i++)
-					if ($eto[0] == $allrs[i]) {
-						eto_i = i;
-						break;
-					}
+			eto_i = editIndex();
 
 			$where = $('div#instin_' + field.name);
 			$where.empty();
@@ -963,7 +996,12 @@ field_id = field_id.substr(9);
 					idvals[field.editflags] = a;
 					makeValueBox(field, $where, eto_i);
 				});
-			} else makeValueBox(field, $where, eto_i);
+			} else {
+				makeValueBox(field, $where, eto_i);
+				if (field.editflags == 'default' || field.editflags == '') {
+					makeEditResizable($where);
+				}
+			}
 		}
 		return closeContextMenu();
 	});
@@ -1149,6 +1187,7 @@ function sortableNewField($f) {
 			admin_table_records.length = 0;
 			$('div.admin_table_records').html('');
 			getData();
+			return false;
 		});
 }
 
@@ -1162,9 +1201,13 @@ function drawNewColumn(field) {
 	for (i=0; i < $allrs.length; i++) {
 		$f = $('<div class="admin_table_record_field record_field_' + field.name + '"></div>');
 		$f.width(field.listwidth);
-		if (field.listflags == 'Date')
+		if (field.listflags == 'Date') {
 			$f.text(date2str(admin_table_records[i][field.name]));
-		else $f.html(admin_table_records[i][field.name]);
+		} else if (field.listflags == 'Boolean') {
+			$f.html(admin_table_records[i][field.name]?'&#9746':'').css({textAlign:'center'});
+		} else {
+			$f.html(admin_table_records[i][field.name]);
+		}
 		$($allrs[i]).append($f);
 	}
 }
@@ -1214,12 +1257,18 @@ var field;
 					}
 				} else {
 					list_content = admin_table_records[i][field.name];
-					if (list_content)
-						if (list_content.length > 69)
-							list_content = list_content.substr(0,69);
+					if (field.listflags != 'Boolean') { 
+						if (list_content)
+							if (list_content.length > 69)
+								list_content = list_content.substr(0,69);
+					}
 				}
 				$f = $('<div class="admin_table_record_field record_field_' + field.name + '"></div>');
-				$f.width(field.listwidth).text(list_content);
+
+				$f.width(field.listwidth);
+				if (field.listflags == 'Boolean') {
+					$f.html(list_content ? '&#9746' : '').css({textAlign:'center'});
+				} else $f.text(list_content);
 				$r.append($f);
 			}
 		});
@@ -1286,7 +1335,8 @@ function getData() {
 	$('.stayVisible').each(function(){	// there can be only one ...
 		var name = this.id.substr(this.id.indexOf('-')+1);
 		var order = this.id.substr(0, this.id.indexOf('-'));
-		route = route + '/' + name + '/' + order;
+		if (order == 'desc') name = '-' + name;
+		route = route + '/' + name;
 	});
 
 	$.ajax({
@@ -1326,6 +1376,16 @@ function addNewField(field) {
 			setupNewListField($f);
 		}
 		sortableNewField($f);
+
+		/* before anyone tries to sort, or load more, let's make sure this field is the last listed ... */
+		var newlist = [];
+		for (var i=0; i<admin_table_fields.length; i++) {
+			if (admin_table_fields[i] != field) {
+				newlist.push(admin_table_fields[i]);
+			}
+		}
+		newlist.push(field);
+		admin_table_fields = newlist;
 	}
 
 	return $f;
@@ -1376,6 +1436,9 @@ function callAfter(route, from) {
 				admin_table_names.push(t);
 			}
 		});
+		if (admin_table_names.length == 1) {				// if there's only one table, just go to it.
+			location.hash='/' + admin_table_names[0];
+		}
 
 	} else {
 
@@ -1401,6 +1464,15 @@ function callAfter(route, from) {
 			drawData(0);
 		} else {
 			admin_table_fields = from;
+			if (which_route == '/admin') {
+				if (adminflag || _.select(admin_table_fields, function(f) { return f.listflags == 'Boolean'; }).length == 1) {
+					_.each(admin_table_fields, function(field) {
+						if (field.listflags == 'Boolean') {
+							field.listed = false;
+						}
+					});
+				}
+			}
 			drawFields();
 			_.each(admin_table_fields, function(field) {
 				if (field.listflags == 'ObjectId' && field.editflags != '' && !idvals[field.editflags]) {
@@ -1441,8 +1513,8 @@ $('button#loginlogout').click(function() { logOut(); });
 /*
 ** mjor problm: this should not be hardcoded!
 */
-$.getScript('http://larak.in/ckeditor/ckeditor.js', function(d, s){
-	$.getScript('http://larak.in/ckeditor/adapters/jquery.js', function(data, status){
+$.getScript('http://' + justsayno.de.staticurl + '/ckeditor/ckeditor.js', function(d, s){
+	$.getScript('http://' + justsayno.de.staticurl + '/ckeditor/adapters/jquery.js', function(data, status){
 	});
 });
 

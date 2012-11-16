@@ -210,7 +210,10 @@ var hash=null; // boilerplate hash (filename)
 			$selected = data.find(next_template.selector);
 		if (! $selected.length)
             throw "bad selector " + next_template.selector;
-		$selected.each(function(){ $(this).html(envplates[next_template.filename]); });
+		$selected.each(function(){
+			this.innerHTML = envplates[next_template.filename];
+			//$(this).html(envplates[next_template.filename]);
+		});
 	} else {
 		return weldFunc(data, header_text);		// if there's no templates left, weld the data on
 	}

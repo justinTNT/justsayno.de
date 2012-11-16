@@ -1,13 +1,10 @@
-var	os = require('os')
- ,	express = require('express')
- ,	MongStore = require('connect-mongo')(express)
-;
+var	express = require('express');
 
 module.exports = function(e, admdb) {
 
 	var xprts = {};
 
-	var env = { app : express.createServer()
+	var env = { app : express()
 				,  dir : __dirname
 				,  appname : 'admin'
 				,  targetapp : e.appname

@@ -34,8 +34,10 @@ var just_fields = [];
 
 
 function eachTxlate(eachd, fields) {
-	var len=fields.length;
 	var next_obj={};
+	var len;
+	if (fields) len=fields.length;	// edge case
+
 	if (len) {
 			
 		for (var i=0; i<len; i++) {
@@ -47,7 +49,7 @@ function eachTxlate(eachd, fields) {
 			} else {
 				for (var key in next_field) {
 					var v = next_field[key];
-					if (_.isString(eachd))	// distinct queries just return strings
+					if (_.isString(eachd))	// distinct queries may just return strings
 						next_obj[v] = eachd;
 					else if (! _.isUndefined(eachd[key]))	// deref fieldname?
 						next_obj[v] = eachd[key];
@@ -82,14 +84,15 @@ function eachTxlate(eachd, fields) {
 function translateFields(d, fields) {
 var objs=[];
 
-	if (typeof d === 'undefined') {
+	if (!d) {
 		console.log('no documents to translate');
 	} else {
 		if (! d.length) d = [d];
 		d.forEach(function(eachd){
 			if (!fields) {
 				if (! _.isString(eachd)) {
-					fields = _.keys(eachd._doc);
+					if (eachd._doc) eachd = eachd._doc;
+					fields = _.keys(eachd);
 				}
 			}
 			var o = eachTxlate(eachd, fields);
@@ -100,6 +103,15 @@ var objs=[];
 	return objs;
 }
 
+
+function toStr(fields) {
+	return _.reduce(fields, function(m,v) {
+		if (m.length) m = m + ' ';
+		return m + v;
+	}, '');
+}
+
 exports.translateFields = translateFields;
 exports.findFields = findFields;
+exports.toStr = toStr;
 

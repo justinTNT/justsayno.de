@@ -8,8 +8,7 @@ module.exports = function(env) {
 
 	env.app.get('/menu/:menu_name', function(req,res) {
 		Menu.find({name:req.params.menu_name})
-			.sort('parent_item', 1)
-			.sort('order', 1)
+			.sort('-parent_item order')
 			.execFind( function(err, docs) {
 				if (err) {
 					console.log(err);
@@ -23,7 +22,7 @@ module.exports = function(env) {
 	});
 
 	env.app.get('/justsay/listallmenus', function(req,res) {
-		var which_fields = ['title', 'link'];
+		var which_fields = 'title link';
 		Menu.find({}, which_fields, function(err, docs) {
 				if (err) {
 					console.log(err);

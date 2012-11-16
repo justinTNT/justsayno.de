@@ -1,7 +1,7 @@
 
 function replaceAddComm($addtarget) {
 	var submitstr = 'add your comment ...';
-	$f = $("<form class='addcomment' action='" + $addtarget.attr('href') + "'><textarea name='comment' rows=9 cols=45>" + submitstr + "</textarea><input class='savecomment' type='submit' value='Save'/></form>");
+	var $f = $("<form class='addcomment' action='" + $addtarget.attr('href') + "'><textarea name='comment' rows=9 cols=45>" + submitstr + "</textarea><input class='savecomment' type='submit' value='Save'/></form>");
 	$addtarget.replaceWith($f);
 	$('body').animate({ scrollTop: $f.offset().top-53 });
 	$f.find('textarea').focus(function(){
@@ -11,7 +11,9 @@ function replaceAddComm($addtarget) {
 	});
 	$f.submit(function(){
 		var $c = $f.find('textarea');
-		runWithAuth(function(){
+		$c.blur();
+		runWithAuth(function(a){
+			if (a) {
 			$f.find('input').hide();
 			justsayAJAJ($f.attr('action'),
 				function(){
@@ -21,9 +23,10 @@ function replaceAddComm($addtarget) {
 				}, function(e) {
 					$f.find('input').show();
 				}, $c.serialize());
-			}, function(e) {
+			} else {
 				if (e) if (e.length) alert('authentication failed: ' + e);
-			});
+			}
+		});
 		return false;
 	});
 	return false;
@@ -106,6 +109,8 @@ var $cc;
 		$cc = $cc.parent().addClass('spch-bub-inside').html("<span class='point'></span><em></em>").find('em');
 		if (cnt == "0") {
 			$cc.text("Be the first to make a comment");
+		} else if (cnt == "") {
+			$('div.comments').remove();
 		} else {
 			$cc.text(cnt + " comments");
 		}

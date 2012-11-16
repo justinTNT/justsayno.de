@@ -43,7 +43,15 @@ function justsayAJAJ (route, succ, fail, data) {
 		success:function(ajaxdata, txtsts, jqXHR){
 			if (succ) {
 				if (ajaxdata == 'OK') succ();
-				else succ($.parseJSON(ajaxdata));
+				else {
+					var o;
+					try {
+						o = $.parseJSON(ajaxdata);
+					} catch(e) {
+						o = ajaxdata;
+					}
+					succ(o);
+				}
 			}
 		},
 		error:function(jqXHR, ststxt, err){
@@ -63,7 +71,7 @@ function justsayAJAJ (route, succ, fail, data) {
  * just get frament
  */
 function justGetFrag (fragname) {
-	return($(justsayskeleta[fragname]));
+	return($(justsayno.de.skeleta[fragname]));
 }
 
 
@@ -96,16 +104,17 @@ var almostReady, animReveal = null, updatePageWhenReady = null;
 
 			} else {							// template data comes in an object with objs, temps and dest
 
-				if (txdata && servercall.length)
+				if (txdata)//&& servercall.length) // in the browser, we shouldn't need to load boilerplate
 					$dest_cont = $(txdata.templates[0].selector).first();
-				else $dest_cont = $('div#boilerplate-container');
+				if (!$dest_cont || !$dest_cont.length)
+					$dest_cont = $('div#boilerplate-container');
 
 				if (animReveal)							 // ie.  we called first, and it did something
 					$temp_cont = $dest_cont.clone();	// load the new data into temp 'plates
 				else $temp_cont = $dest_cont;			// otherwise, weld the new data in place on the page
 
 				if (txdata) {
-					loadTemps(justsayskeleta, txdata.templates.slice(0), function(data) {
+					loadTemps(justsayno.de.skeleta, txdata.templates.slice(0), function(data) {
 						weldTemps(txdata.templates, txdata.objects, data, function(responsetxt) {
 							callAfter(servercall, $temp_cont);
 							if (animReveal) {

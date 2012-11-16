@@ -13,35 +13,51 @@ var Admins, AdminFields;
 
 
 /*
+ * used to build mongo URI from options
+ */
+function URIofDB(opts, name) {
+	var mcstr = 'mongodb://';
+	opts = opts || {};
+	if (opts.auth) {
+		mcstr += opts.auth.user+':'+opts.auth.pass+'@';
+	}
+	mcstr += opts.hostname || 'localhost';
+	if (opts.port) mcstr += ':'+opts.port;
+	mcstr += '/';
+	mcstr += name;
+	return mcstr;
+}
+
+
+
+/*
  * adds a field on this table for this app in the admin database,
  * (after making sure that it doesn't already exist!)
  * and sets default values for this field's admin configuration
  */
 function addAdField(app, tab, field, cnt, cb) {
 	AdminFields.find({appname:app, table:tab, name:field.name}, function(err, docs) {
-		var s_flag = true;
-		var thisfield = {};
 		if (err) {
-	console.log('error checking in on key ' + field.name + ' in ' + app + '\'s ' + tab + ' table.');
+ console.log('error checking in on key ' + field.name + ' in ' + app + '\'s ' + tab + ' table.');
 			throw err;
 		}
-		if (! docs.length) {
-			thisfield = new AdminFields();
+		if (docs.length) {
+			if (cb) cb();
+		} else {
+ console.log('info: adding new field: '  + field.name + ' in ' + app + '\'s ' + tab + ' table.');
+			var thisfield = new AdminFields();
 			thisfield.name = field.name;
 			thisfield.appname = app;
 			thisfield.table = tab;
-		} else {
-			s_flag = false;	// only add fields not in the db
-		}
-
-		if (s_flag) {
 			thisfield.listorder = thisfield.editorder = cnt;
 			if (field.name == 'id' || field.name == '_id' || field.name == 'modified_date' || field.name == 'created_date') {
 				thisfield.listed = false;
 				thisfield.edited = false;
-			} else if (! docs.length) {
-				thisfield.listed = true;
+			} else {
 				thisfield.edited = true;
+				if (tab == 'admin' && field.type == 'Boolean')
+					thisfield.listed = false;
+				else thisfield.listed = true;
 			}
 			thisfield.listflags = field.type;
 
@@ -51,14 +67,12 @@ function addAdField(app, tab, field, cnt, cb) {
 	console.log(err);
 					throw err;
 				}
-				cb();
+				if (cb) cb();
 			});
-		} else cb();
-
-		cnt++;
-
+		}
 	});
 }
+
 
 function addFields(app, tab, fields, cnt, cb) {
 	if (fields.length) {
@@ -91,32 +105,38 @@ var fields = []
 		fields.push({name:key, type:t});
 	}
 
-		/* now, hide fields which are in table but not schema */
-	AdminFields.find({appname:e.appname, table:filename}, function(err, docs) {
-		docs.forEach(function(eachd){
-			var key, save=true, ok=false;
-			for (key=0; key<fields.length; key++) {
-				if (fields[key].name == eachd.name) {
-					ok=true;
-					break;
-				}
-			}
-			if (!ok) {
-				eachd.listed = eachd.edited = false;
-			} else if (key<fields.length && fields[key].type != 'String') {
-				eachd.listflags = fields[key].type;
-			} else save=false;
-			if (save) {
-				eachd.save(function(err){
-					if (err) {
-	console.log('ERROR adding ' + fields[key].name + ' in ' + tab + ' for ' + e.appname);
-	console.log(err);
-						throw err;
+	/* now, hide fields which are in table but not schema */
+	/* if the scheme is changed during dev, the best thing to do is just tidy up the old fields from the table */
+	/* note exception: table name booleans (user based table access) in the admin table */
+	if (filename != 'admin') {
+		AdminFields.find({appname:e.appname, table:filename}, function(err, docs) {
+			if (!err) {
+				docs.forEach(function(eachd){
+					var key, save=true, ok=false;
+					for (key in fields) {
+						if (fields[key].name == eachd.name) {
+							ok=true;
+							break;
+						}
+					}
+					if (!ok) {
+						eachd.listed = eachd.edited = false;
+					} else if (key < fields.length && fields[key].type != 'String') {
+						eachd.listflags = fields[key].type;
+					} else save=false;
+					if (save) {
+						eachd.save(function(err){
+							if (err) {
+			console.log('ERROR adding ' + fields[key].name + ' in ' + tab + ' for ' + e.appname);
+			console.log(err);
+								throw err;
+							}
+						});
 					}
 				});
 			}
 		});
-	});
+	}
 
 	addFields(e.appname, filename, fields.slice(0), 0, cb);
 }
@@ -240,7 +260,10 @@ function ensureAdminAccess(e, cb) {
 function ensureAdFieldCfg(e, appdir, commondir, fcb) {
 	var i, dn = appdir + '/schema';
 	touch_dir ( dn
-				, function(fn, ocb){ load_schema(e, dn, fn, ocb); }
+				, function(fn, ocb){
+					load_schema(e, dn, fn, ocb);
+					addAdField(e.appname, 'admin', {name:fn.substr(0,fn.indexOf('.')), type:'Boolean'}, 99);
+				}
 				, function(){
 					if (appdir != commondir) {
 						var a = require(appdir + '/' + e.appname + '_app.js');
@@ -261,17 +284,22 @@ function runThruPlugs(plugin_list, e, cdir, fcb) {
 	} else if (fcb) fcb();
 }
 
-function configureDBschema(e, admdb, cb) {
+function configureDBschema(admdb, e, cb) {
 	var appdir = __dirname + '/../apps/' + e.appname
+	, admindir = __dirname + '/admin/schema'
 	, commondir = __dirname + '/../common';
 
 	Admins = admdb.model('justsayAdmins');
 	AdminFields = admdb.model('justsayAdminFields');
 
-	ensureAdminAccess(e, function() {
-		ensureAdFieldCfg(e, appdir, commondir, cb);
+	load_schema(e, admindir, 'admin.js', function(){
+		ensureAdminAccess(e, function() {
+			ensureAdFieldCfg(e, appdir, commondir, cb);
+		});
 	});
 }
 
 exports.configureDBschema = configureDBschema;
+exports.URIofDB = URIofDB;
+
 

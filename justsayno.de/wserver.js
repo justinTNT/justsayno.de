@@ -4,6 +4,7 @@ var net = require('net');
 var http = require('http');
 var express = require('express');
 var mongoose = require('mongoose');
+var mongoStore = require('connect-mongo')(express);
 
 var temptools = require('./temptools');
 var schemetools = require('./schemetools');
@@ -14,32 +15,35 @@ var proxies = {};
 
 /*
  * configureAppEnv - setup some basic app functionality,
- * ---------------
- * configure templates; setup serving of browser files (scripts, css, favicon)
- * and ensuring that ajax pages get a basic skeleton.
  */
 function configureAppEnv(e) {
 
+	var clandestine = e.clandestine + '_' + os.hostname() + '_' + e.appname;
+	if (e.targetapp) clandestine = clandestine + '_' + e.targetapp;
+
 	temptools.configureTemplates(e);
 
-	e.app.configure(function(){						// and this serves up some browser scripts, css, etc
-		e.app.use(express.staticCache());
-		e.app.use('/browser/', express.static(e.dir + '/browser/'));
-		e.app.use(express.bodyParser());
-		e.app.use(express.cookieParser());
-		var clandestine = os.hostname() + '_' + e.appname;
-		if (e.targetapp) clandestine = clandestine + '_' + e.targetapp;
-		e.app.use(express.session({secret:clandestine}));
-	});
+	e.app.use(express.staticCache());
+	e.app.use(express.bodyParser());
+	e.app.use(express.cookieParser(clandestine));
 
-    e.app.get("/" + e.appname + ".css", function(req, res){
-		res.contentType('text/css');
-    	res.send(e.cssstring);
-	});
-    e.app.get("/" + e.appname + ".js", function(req, res){
-		res.contentType('text/javascript');
-    	res.send(e.scriptplatestring);
-	});
+/*
+	if (e.targetapp) e.app.use(express.cookieSession({
+								key:e.appname + '-admin.sid'
+								, secret: clandestine
+								}));
+	else e.app.use(express.session({
+								key:e.appname + '.sid'
+								, store: new mongoStore({db:'sessions', clear_interval:3600})
+								}));
+*/ 
+	e.app.use(express.cookieSession({
+								key: e.appname + (e.targetapp ? '-admin.sid' : '.sid')
+								}));
+
+	e.app.use('/browser/', express.static(e.dir + '/browser/'));
+
+	e.app.use(express.logger({immediate:true, format: '[:date] ' + e.appname + ' :remote-addr ":method :url" :status ":referrer"'}));
 
 	e['hook'] = [];
 
@@ -47,16 +51,61 @@ function configureAppEnv(e) {
 }
 
 
+
+
+function setupFavico(ea, done) {
+	var d = __dirname+'/../apps/' + ea.env.appname + '/browser/favicon.ico';
+	fs.stat(d, function(err, stat) {
+		if (err) ea.app.use(express.favicon());
+		else ea.app.use(express.favicon(d));
+		done(ea);
+	});
+}
+
+
 /*
- * this makes sure that ajax pages serve up the skeleton	
+** configure templates; setup serving of browser files (scripts, css, favicon)
+** and ensuring that ajax pages get a basic skeleton.
+** ---------------
+** it's important to know where all the routing is,
+** cos the first attempt to add a route cements the middleware priority
+** much easier if it's all in one spot, so:
+*/
+function setupRoutes(ea) {
+
+	setupFavico(ea, function(a) { // don't do anything until we've hijacked the favico
+
+/*
+ * first, these serve up the compiled js and css
+ */
+		a.app.get("/" + a.env.appname + ".css", function(req, res){
+			res.contentType('text/css');
+			res.send(a.env.cssstring);
+		});
+		a.app.get("/" + a.env.appname + ".js", function(req, res){
+			res.contentType('text/javascript');
+			res.send(a.env.scriptplatestring);
+		});
+
+		// then comes routing for any plugins,
+		for (var i in a.env.plugins) {
+			a.env.hook[a.env.plugins[i]] =  // some common modules return a hook, or array of hooks 
+				require('../common/' + a.env.plugins[i] + '/' + a.env.plugins[i] + '.js')(a.env);  // common routing (server script)
+		}
+
+		a.setRoutes();		// now we add all the app-specific routes
+
+/*
+ * and finally, this makes sure that ajax pages serve up the skeleton	
  * in the case of where there is nothing else to server at the route
  * i.e. it's all built on the client by a script
  */
-function setAppEnvRoot(a, e){
-	a.get(/\/$/, function(req, res){
-		e.respond(req, res, e.basetemps);
+		a.app.get(/\/$/, function(req, res){
+			a.env.respond(req, res, a.env.basetemps);
+		});
 	});
 }
+
 
 
 /*
@@ -71,55 +120,45 @@ function setAppEnvRoot(a, e){
  *  passon : an object containing properties that should be passed on to each app env
  */
 function setupServer(port, applist, ip, passon) {
-var webserver_app = express.createServer();
+var webserverserver, webserver_app = express();
 var eachapp, e;
-var admdb = mongoose.createConnection('mongodb://localhost/justsayadmin');
+var admdb = mongoose.createConnection(schemetools.URIofDB(passon.mongopts, 'justsayadmin'));
 var dbs = [admdb];
 
 	for (var l=applist.length-1; l>=0; l--) {
 		var n = applist[l].appname;
+		if (! _.isArray(applist[l].dname))
+			applist[l].dname = [applist[l].dname];
+	
 		eachapp = require('../apps/' + n + '/' + n + '_app.js');
 		e=eachapp.env;
 
 		if (e) { // not static ...
 			e.appname = n;
-			e.url = applist[l].dname;
-			eachapp.app = configureAppEnv(e);
-			schemetools.configureDBschema(e, admdb);
-
-			var this_admin = require('./admin/admin')(e, admdb);
-			var this_aapp = configureAppEnv(this_admin.env);
-			this_admin.setRoutes();
-			setAppEnvRoot(this_aapp, this_admin.env);
-			this_aapp.use(express.favicon());
-			webserver_app.use(express.vhost("admin." + applist[l].dname, this_aapp));
-			e.db = mongoose.createConnection('mongodb://localhost/' + n);
-            dbs.push(e.db);
-			for (var i in e.plugins) {
-				e.hook[e.plugins[i]] =  // some common modules return a hook, or array of hooks 
-					require('../common/' + e.plugins[i] + '/' + e.plugins[i] + '.js')(e);  // common routing (server script)
-			}
-
-			eachapp.setRoutes();
-			setAppEnvRoot(eachapp.app, e);
-
-			var d = __dirname+'/../apps/' + n;
-			eachapp.app.use(express.static(d));
-			fs.stat(d, function(err, stat) {
-				if (err) eachapp.app.use(express.favicon());
-				else eachapp.app.use(express.favicon(d));
-			});
+			e.url = applist[l].dname[0];
 
 			for (var key in passon) {
 				if (! e[key]) {
 					e[key] = passon[key];
 				}
 			}
+			eachapp.app = configureAppEnv(e);
+			setupRoutes(eachapp);
+
+			var this_admin = require('./admin/admin')(e, admdb);
+			this_admin.app = configureAppEnv(this_admin.env);
+			setupRoutes(this_admin);
+			webserver_app.use(express.vhost("admin." + e.url, this_admin.app));
+
+			schemetools.configureDBschema(admdb, e);
+			e.db = mongoose.createConnection(schemetools.URIofDB(e.mongopts, n));
+            dbs.push(e.db);
 		}
 
-		applist[l].app = eachapp.app;
-		webserver_app.use(express.vhost(applist[l].dname, applist[l].app));
-		webserver_app.use(express.vhost("www." + applist[l].dname, applist[l].app));
+		for (i in applist[l].dname) {
+			webserver_app.use(express.vhost(applist[l].dname[i], eachapp.app));
+			webserver_app.use(express.vhost("www." + applist[l].dname[i], eachapp.app));
+		}
   	}
 
   webserver_app.use(express.logger());
@@ -190,24 +229,33 @@ console.log('also seen: ' + JSON.stringify(req.headers));
 	});
 
 	console.log('listen to ' + (ip?ip:'localhost') + ' on ' + port);
-	webserver_app.listen(port, ip);
-	webserver_app.on('listening', function(){
+	webserverserver = webserver_app.listen(port, ip);
+	webserverserver.on('listening', function(){
 		console.log('stepping down to noder');
 		process.setuid('noder');
 	});
     
     process.on("SIGINT", function(){
-        console.log('closing server ...');
-        webserver_app.close();
+        console.log('closing webservers ...');
+
         if (proxy_server) {
             proxy_server.close();
+			proxy_server = null;
         }
+
         for (var i=0; i<dbs.length; i++) {
             dbs[i].close();
         }
+
+		if (webserverserver) {
+			webserverserver.close();
+			webserverserver = null;
+		}
+
+		console.log(' ... webservers closed.');
     });
     
-    webserver_app.on('close', function() {
+    webserverserver.on('close', function() {
         console.log('webserver closing')
     });
     proxy_server.on('close', function() {

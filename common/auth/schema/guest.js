@@ -3,13 +3,11 @@ var Schema = mongoose.Schema;
 
 var GuestSchema = new Schema({
   handle : String
+  , pass : String
+  , email : String
   , created_date	: Date
   , expireOnNoVerify	: Date
-  , name : String
-  , pass : String
-  , link : String
-  , email : String
-  , avatar : String
+  , verified : Boolean
 });
 mongoose.model('Guest', GuestSchema);
 

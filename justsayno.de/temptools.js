@@ -2,6 +2,8 @@ var fs = require('fs');
 var justsay = require('./justsay');
 var dirt = require('./dirtools');
 
+var ugly = require("uglify-js");
+
 
 /*
  * for a list of files already derived from the named directory, iterate through the list
@@ -97,9 +99,15 @@ var libd = __dirname+'/browserlibs';
 									function(fn, str){
 										e.scriptplatestring += str;
 									}, function(){
-				e.scriptplatestring += "var justsayskeleta = JSON.parse(\'" + txt + "\');\n\n";
+				e.scriptplatestring += "var justsayno = { de: {staticurl:\'" + e.staticurl + "\',\n skeleta : JSON.parse(\'" + txt + "\')}\n};\n";
 				genericDynamicLoadAppFiles(e, "js", "scriptplatestring",
 					function(){
+						if (process.env.NODE_ENV) {
+							var ast = ugly.parser.parse(e.scriptplatestring); // parse code and get the initial AST
+							ast = ugly.uglify.ast_mangle(ast); // get a new AST with mangled names
+							ast = ugly.uglify.ast_squeeze(ast); // get an AST with compression optimizations
+							e.scriptplatestring = ugly.uglify.gen_code(ast); // compressed code here
+						}
 						e.cssstring = "";
 						genericDynamicLoadAppFiles(e, "css", "cssstring", cb);
 					});

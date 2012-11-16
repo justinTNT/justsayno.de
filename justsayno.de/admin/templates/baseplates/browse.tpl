@@ -27,13 +27,14 @@
 
 
   <!-- Javascript at the bottom for fast page loading -->
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="{{STATIC}}/jquery/jquery.min.js"><\/script>')</script>
+
   <!-- --> 
-  <!-- scripts concatenated and minified in two streams : stuff I wrote and libs.
-		in development, include script.js separately from plugins.js (built from libs, swxmod and schema)
-		in production, just include the final compiled version : compiled.js
-	-->
-  <script src="/browser/plugins.js"></script>
   <script src="/browser/browse.js"></script>
+  
   
 </body>
 </html>

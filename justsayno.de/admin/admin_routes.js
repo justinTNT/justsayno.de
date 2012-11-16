@@ -7,7 +7,6 @@ var	mongoose = require('mongoose')
  ,	_ = require('underscore')
  ,	fs = require('fs')
  ,	sys = require('util')
- ,	formidable = require('formidable')
 ;
 
 module.exports = function(env, appenv, admdb){
@@ -97,8 +96,6 @@ function statdirlist(path, files, stats, cb) {
 }
 
 
-	var appdb = mongoose.createConnection('mongodb://localhost/' + env.targetapp);
-
 	/*
 	 * this route middleware makes sure the admin functionality on the admin table is only available to the admin user
 	 * NOTE it also works out which schema we're working on
@@ -122,7 +119,7 @@ function statdirlist(path, files, stats, cb) {
 					} catch(err) {;}
 				}
 			}
-			req.params.theTable = appdb.model(sch.name);
+			req.params.theTable = env.targetenv.db.model(sch.name);
 			next();
 		}
 	}
@@ -167,13 +164,21 @@ function statdirlist(path, files, stats, cb) {
 	env.app.get("/list", requiresLogin, function(req, res, next){
 		Fields.distinct('table', {appname:env.targetapp}, function(err, docs) {
 			if (err) throw err;
-			if (req.session.user.login == 'admin')
-				docs.push({table:'admin'});
+			if (req.session.user.login != 'admin') {     // if not super admin, ...
+				for (var j=0; j<docs.length; j++) {
+					
+					if (docs[j] == 'admin') {	// ... don't include admin table, ...
+						delete(docs[j]);
+					} else if (!req.session.user[docs[j]]) { // ... filter by per user privs, ...
+						delete(docs[j]);
+					} 
+				}
+			}
+
 			var tmpobj = {};
 			tmpobj['table'] = 'table.href';
 			var which_fields = ['table', tmpobj];
-			var all_objs = {tabitem: ft.translateFields(docs, which_fields)};
-
+			var all_objs = {tabitem: ft.translateFields(_.compact(docs), which_fields)};
 
 			var temps = [ {selector:'#maintab', filename:'listall.htm'}
 						, {selector:'#theschemes', filename:'eachtab.htm'}
@@ -211,7 +216,7 @@ function statdirlist(path, files, stats, cb) {
 
 	env.app.get("/vox_n_tax", requiresLogin, function(req, res, next){
 		Taxon.find({appname:env.targetapp})
-			.sort('vocab', 1).run(function(err, docs) {
+			.sort('vocab').exec(function(err, docs) {
 				if (err) throw err;
 				var which_fields = ['vocab', 'taxon'];
 				var snd_obj = {}, all_objs = ft.translateFields(docs, which_fields);
@@ -284,7 +289,7 @@ function statdirlist(path, files, stats, cb) {
 			if (req.params.table == 'admin') {
 				o = { appname: env.targetapp }
 			}
-			req.params.theTable.find(o).limit(20).skip(req.params.skip).run(function(err, docs) {
+			req.params.theTable.find(o).limit(20).skip(req.params.skip).exec(function(err, docs) {
 					if (err) throw err;
 				for (var i in docs) {
 					for (var key in docs[i]._doc) {
@@ -297,10 +302,10 @@ function statdirlist(path, files, stats, cb) {
 				});
 	});
 
-	env.app.get("/:table/list/:skip/:field/:order", requiresLogin, onlyAdminCanAdminAdmin, function(req, res, next){
+	env.app.get("/:table/list/:skip/:field", requiresLogin, onlyAdminCanAdminAdmin, function(req, res, next){
 			req.params.theTable.find({}).limit(20).skip(req.params.skip)
-				.sort(req.params.field, req.params.order == 'asc' ? 1 : -1)
-				.run(function(err, docs) {
+				.sort(req.params.field)
+				.exec(function(err, docs) {
 					if (err) throw err;
 					env.respond(req, res, null, null, docs);
 				});
@@ -308,7 +313,7 @@ function statdirlist(path, files, stats, cb) {
 
 	env.app.post("/add_to/:table", requiresLogin, onlyAdminCanAdminAdmin, function(req, res, next){
 		Fields.find({ appname : env.targetapp, table : req.params.table})
-			.run(function(err, docs) {
+			.exec(function(err, docs) {
 				if (err) throw err;
 
 				var o = JSON.parse(req.body.obj);
@@ -332,7 +337,7 @@ function statdirlist(path, files, stats, cb) {
 
 	env.app.post("/update/:table", requiresLogin, onlyAdminCanAdminAdmin, function(req, res, next){
 		Fields.find({ appname : env.targetapp, table : req.params.table})
-			.run(function(err, docs) {
+			.exec(function(err, docs) {
 				if (err) throw err;
 				var o = JSON.parse(req.body.obj);
 				for (var key in docs) {
@@ -384,7 +389,7 @@ function statdirlist(path, files, stats, cb) {
 	env.app.post('/refresh', requiresLogin, function(req,res) {
 		if (req.session.user.login == 'admin') {
 			temptools.configureTemplates(env.targetenv, function(){
-				schemetools.configureDBschema(env.targetenv, admdb, function(){
+				schemetools.configureDBschema(admdb, env.targetenv, function(){
 					res.send('OK');	
 				});
 			});
@@ -416,8 +421,9 @@ function statdirlist(path, files, stats, cb) {
 	});
 
 	env.app.post('/session/end', function(req,res) {
-		req.session.destroy(function() {});
-		res.clearCookie('user');
+		if (req.session && req.session.destroy) {
+			req.session.destroy(function() {});
+		} else req.session=null;
 		res.redirect('/sessions/new');
 	});
 
@@ -451,10 +457,10 @@ function statdirlist(path, files, stats, cb) {
 
 	env.app.get("/keys/:table", onlyAdminCanAdminAdmin, function(req, res, next){
 		Fields.findOne({ appname : env.targetapp, table : req.params.table, listed : true })
-			.sort('listorder', 1).run(function(err, doc) {
+			.sort('listorder').exec(function(err, doc) {
 				if (err) throw err;
-				req.params.theTable.find({}, [doc.name])
-					.run(function(err, docs) {
+				req.params.theTable.find({}, doc.name)
+					.exec(function(err, docs) {
 						if (err) throw err;
 						var idkeys = [];
 						_.each(docs, function(d) { idkeys.push({name:d[doc.name], id:d._id}); });
@@ -474,15 +480,11 @@ function statdirlist(path, files, stats, cb) {
 	 * - no requireslogin, cos we might get hitup for favicon etc 
 	 */
 	env.app.get("/:table", function(req, res, next){
-		var app;
 		if (req.params.table.indexOf('.') > 0)
 			next(); // not really a table name, prolly favicon.ico ...
 		else {
-			if (req.session.user.login == 'admin' && req.params.table == 'admin')
-				app = 'admin';
-			else app = env.targetapp;
-			Fields.find({ appname : app, table : req.params.table})
-				.sort('listorder', 1).run(function(err, docs) {
+			Fields.find({ appname : env.targetapp, table : req.params.table})
+				.sort('listorder').exec(function(err, docs) {
 					if (err) throw err;
 					_.each(docs, function(d) { delete d.appname; delete d.table; });
 					env.respond(req, res, null, null, docs);

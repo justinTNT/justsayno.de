@@ -33,7 +33,7 @@ module.exports = function(env){
 			var smtpTransport = mailer.createTransport("SMTP", _.clone(env.mailopts));
 
 			smtpTransport.sendMail( {
-					from: 'Comments <website@' + env.url + '>'
+					from: 'website@' + env.url
 					, to:env.adminemail
 					, subject:'new comment on ' + env.appname
 					, html: "<p>New comment from: " + o.name + "<br>" + o.comment + "<br> at " + o.subject + "</p>"
@@ -52,7 +52,7 @@ module.exports = function(env){
 	env.app.get('/:subject/comments', function(req, res){
 
 		var which_fields = ['subject', 'name', 'comment', 'link', '_id', 'parent'];
-		Comment.find({subject:req.params.subject}, which_fields, function(err, docs) {
+		Comment.find({subject:req.params.subject}, ft.toStr(which_fields), function(err, docs) {
 			var o = null;
 			if (docs.length) {
 				o = ft.translateFields(docs, which_fields);
