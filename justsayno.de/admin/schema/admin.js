@@ -8,7 +8,7 @@ var justsayadminSchema = new Schema({
   , login	: String			// login name
   , passwd	: String			// password - TODO : hash
   , appname	: String			// appname, or blank for all ...
-});
+}, {strict:false});
 mongoose.model('justsayAdmins', justsayadminSchema);
 
 var justsayadfieldSchema = new Schema({

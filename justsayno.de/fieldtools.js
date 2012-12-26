@@ -106,8 +106,16 @@ var objs=[];
 
 function toStr(fields) {
 	return _.reduce(fields, function(m,v) {
-		if (m.length) m = m + ' ';
-		return m + v;
+		if (_.isObject(v)) {
+			for (key in v) {
+				if (m.length) m += ' ';
+				m += key;
+			}
+		} else {
+			if (m.length) m += ' ';
+			m += v;
+		}
+		return m;
 	}, '');
 }
 

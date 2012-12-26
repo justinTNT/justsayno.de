@@ -256,42 +256,48 @@ function drawFieldBox() {
 				ui.helper.animate({ borderColor: "#EEE8D5" }, 'fast').css({backgroundColor:'#FDF6E3', zIndex:'123'});
 			},
 			stop:function(e,ui) {
-				var newlist = [];
-				var h = 0;
-				var doneflag = false, changedflag = true;
-				var idstr = $(e.target).parent().find('.button-close').attr('id').substr(6);
+				var $et = $(e.target);
+				var idstr = $et.attr('id').substr(9);
 				var movedf = _.detect(sorted, function(f){ return f.name == idstr; });
 
+				var h = 0;
+				var newlist = [];
+				var doneflag = false, changedflag = true;
 				for (i=0; i<sorted.length; i++) {
-					if (ui.position.top <= $(e.target).position().top) {
-						if (!doneflag && ui.position.top <= h) {
-							newlist.push(movedf);
-							doneflag = true;
-							if (sorted[i] == movedf)
-								changedflag = false;
+					if (sorted[i].edited) {
+						if (ui.position.top <= $et.position().top) {
+							if (!doneflag && ui.position.top <= h) {
+								newlist.push(movedf);
+								doneflag = true;
+								if (sorted[i] == movedf)
+									changedflag = false;
+							}
+							if (sorted[i] != movedf) {
+								newlist.push(sorted[i]);
+								if (!doneflag)
+									h += findInstanceFieldHeight(sorted[i]);
+							}
+						} else {
+							if (sorted[i] != movedf) {
+								newlist.push(sorted[i]);
+								if (!doneflag)
+									h += findInstanceFieldHeight(sorted[i]);
+							}
+							if (!doneflag && ui.position.top <= h) {
+								doneflag = true;
+								if (sorted[i] == movedf)
+									changedflag = false;
+								newlist.push(movedf);
+							}
 						}
-						if (sorted[i] != movedf) {
-							newlist.push(sorted[i]);
-						}
-						h += findInstanceFieldHeight(sorted[i]);
-					} else {
-						if (sorted[i] != movedf) {
-							newlist.push(sorted[i]);
-						}
-						h += findInstanceFieldHeight(sorted[i]);
-						if (!doneflag && ui.position.top <= h) {
-							newlist.push(movedf);
-							doneflag = true;
-							if (sorted[i] == movedf)
-								changedflag = false;
-						}
-					}
+					} else newlist.push(sorted[i]);
 				}
 				if (!doneflag)
 					newlist.push(movedf);
 				for (i=0; i<newlist.length; i++) {
 					_.detect(admin_table_fields, function(f){ return f.name == newlist[i].name; }).editorder = i;
 				}
+				sorted = newlist;
 				if (changedflag) {
 					drawInstancePage();
 				} else $('.ui-draggable-dragging').remove();
@@ -581,6 +587,10 @@ function createDifferentInput(field, cb) {
 
 }
 
+
+/*
+ * resize the field input on an instance edit page
+ */
 function makeEditResizable($where) {
 	$where.resizable({
 			handles:'e',
@@ -593,7 +603,7 @@ function makeEditResizable($where) {
 					$the_in = $the_in.find('INPUT');
 				var id = $the_in.attr('id');
 				id =  id.substr(id.indexOf('_')+1);
-				$the_in.width(_.detect(admin_table_fields, function(f){ return f.name == id; }).editwidth = ui.helper.width());
+				$the_in.width(_.detect(admin_table_fields, function(f){ return f.name == id; }).editwidth = ui.element.width());
 				showSave(); // we might want to save any re-arrangement of the fields
 			}
 		});
@@ -740,13 +750,12 @@ function makeValueBox(field, $where, eto_i) {
 function drawValueBox() {
 var $vb = $('<div class="instanceinputs"></div>');
 var $eto = $('.edit_this_one');
-
-	eto_i = editIndex();
+var eto_i = editIndex();
 
 	// if editing users, don't show per-userpriv list for admin, or if there's only one option
 	var skipBools = false;
 	if (which_route == '/admin') {
-		var eto_i = editIndex();
+		eto_i = editIndex();
 		if (eto_i >= 0) {
 			 skipBools = admin_table_records[eto_i]['name'] == 'admin'
 			 || _.select(sorted, function(f) { return f.listflags == 'Boolean'; }).length == 1;
@@ -1092,13 +1101,15 @@ function makeFieldResizable($f) {
 		maxWidth:444,
 		alsoResize:'.record_' + $f.attr('id'),
 		start:function(e,ui) {
-			$(e.target).css('top', $(e.target).position().top);
-			$(e.target).css('left', $(e.target).position().left);
+			ui.element.css({position:''});
 			$('.button-close').stop().animate({opacity:'0'}, 123);
+		},
+		resize:function(e,ui) {
+			ui.element.css({left:'0px'});
 		},
 		stop:function(e, ui) {
 			_.detect(admin_table_fields, function(f){ return f.name == ui.element.attr('id').substr(6); }).listwidth = ui.element.width();
-			ui.element.css({left:'',top:''}) // reset these styles, cos they mess with dragging ...
+			ui.element.css({position:'', left:'', top:''}) // reset these styles, cos they mess with dragging ...
 						.find('.ui-resizable-handle').css({left:'', right:'0px'});
 			showSave();
 		}
@@ -1113,32 +1124,38 @@ function makeFieldResizable($f) {
 		},
 		stop:function(e,ui) {
 			var newlist = [];
-			var w = 0;
-			var doneflag = false, changedflag = true;
-			var idstr = $(e.target).find('.button-close').attr('id').substr(6);
+			var $et = $(e.target);
+			$et.css({position:''});
+			var idstr = $et.find('.button-close').attr('id').substr(6);
 			var movedf = _.detect(admin_table_fields, function(f){ return f.name == idstr; });
-			for (i=0; i<admin_table_fields.length; i++) {
-				if (ui.position.left <= $(e.target).position().left) {
-					if (!doneflag && ui.position.left <= w) {
-						newlist.push(movedf);
-						doneflag = true;
-						if (admin_table_fields[i] == movedf)
-							changedflag = false;
-					}
-					if (admin_table_fields[i] != movedf) {
-						newlist.push(admin_table_fields[i]);
-					}
-					w += admin_table_fields[i].listwidth;
-				} else {
-					if (admin_table_fields[i] != movedf) {
-						newlist.push(admin_table_fields[i]);
-					}
-					w += admin_table_fields[i].listwidth;
-					if (!doneflag && ui.position.left <= w) {
-						newlist.push(movedf);
-						doneflag = true;
-						if (admin_table_fields[i] == movedf)
-							changedflag = false;
+
+			var w = $('div.admin_table_fields').offset().left, doneflag = false, changedflag = true;
+			for (var i=0; i<admin_table_fields.length; i++) {
+				if (admin_table_fields[i].listed) {
+					if (ui.position.left <= $et.position().left) {
+						if (!doneflag && ui.position.left <= w) {
+							newlist.push(movedf);
+							w += movedf.listwidth;
+							doneflag = true;
+							if (admin_table_fields[i] == movedf)
+								changedflag = false;
+						}
+						if (admin_table_fields[i] != movedf) {
+							newlist.push(admin_table_fields[i]);
+							w += admin_table_fields[i].listwidth;
+						}
+					} else {
+						if (admin_table_fields[i] != movedf) {
+							newlist.push(admin_table_fields[i]);
+							w += admin_table_fields[i].listwidth;
+						}
+						if (!doneflag && ui.position.left <= w + movedf.listwidth) {
+							newlist.push(movedf);
+							w += movedf.listwidth;
+							doneflag = true;
+							if (admin_table_fields[i] == movedf)
+								changedflag = false;
+						}
 					}
 				}
 			}

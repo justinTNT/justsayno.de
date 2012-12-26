@@ -24,6 +24,18 @@ var jsdom = require('jsdom')
 function setItem($i, str) {
     $i.html(str);
 
+	// working with ckEditor, this is a common error:
+	// <p><p></p></p> is invalid, and strict tools like jsdom will choke.
+	// other tools will let it thru, possibly bypassing styling
+	// Since this is such a common error, let's head it off ...
+	if ($i.prop('tagName') == 'P') {
+		if (str.toLowerCase().indexOf('<p>') >= 0) {
+			var $tmp = $(str);
+			if ($tmp.prop('tagName') == 'P')
+				$i.html($tmp.html());
+		}
+	}
+
     if ($.browser.mozilla) {
         var tmp = $i.html();
         if (tmp.substr(0, 9) == '<a xmlns=') {
@@ -223,6 +235,40 @@ var hash=null; // boilerplate hash (filename)
 
 
 
+function addFBmetaItem($m, selector) {
+	var s = "";
+
+	$m.each(function(){
+		var $s = $(this);
+		if ($s.hasClass(selector)) {
+			s = $s.attr('src');
+			if (!s || !s.length)
+				s = $s.text();
+			if (s.length) {
+				s = "<meta property='og:" + selector + "' content='" + s + "'/>\n"; 
+			}
+		}
+	});
+
+	return s;
+}
+
+function addFBmeta(head, resp) {
+	var newh = head;
+	var $m = $("<html>" + resp + "</html>").find('.fbmeta');
+	if ($m.length) {
+		var i = head.indexOf('<meta');
+	console.log(i)
+		newh = head.substr(0, i)
+			+ addFBmetaItem($m, 'title') + addFBmetaItem($m, 'image') + addFBmetaItem($m, 'description')
+			+ head.substr(i);
+	console.log(newh);
+	}
+	return newh;
+}
+
+
+
 /*
  * build response from templates and objects
  * =========================================
@@ -255,10 +301,12 @@ var o;
 			if (typeof objs == 'string') { // a few admin / debug pages may be built as strings
 				response.send('<html><body>' + objs + '</body></html>');
 			} else {
+				if (!base_tpls) base_tpls = [];
 				loadTemps(envplates, base_tpls.slice(0), function(data, headtext) {
 						if (!tpls) tpls = [];
 						loadTemps(envplates, tpls.slice(0), function(data) {
 							weldTemps(tpls.slice(0), objs, data, function(responsetxt) {
+								headtext = addFBmeta(headtext, responsetxt);
 								response.send(headtext + responsetxt);
 							});
 						}, data);
