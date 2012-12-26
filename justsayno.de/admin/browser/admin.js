@@ -832,20 +832,25 @@ var eto_i = editIndex();
 }
 
 function fadeInListPage() {
-	$('div#maintab').addClass('current').stop().animate({ opacity: 'show' }, 666, function() {
+	$('div#maintab').addClass('current').stop().css({display:'block', opacity:'0.1'}).animate({ opacity: '1.0' }, 666, function() {
+		$(this).css('opacity', '1.0');
 		showPlusButt();
 	});
 }
 
 function fadeOutListPage() {
-	$('div#maintab').removeClass('current').stop().animate({opacity:'hide'}, 666, function() {
-		$(this).css('opacity','1');
+	$('div#maintab').removeClass('current').stop().animate({opacity:'0.1'}, 666, function() {
+		$(this).css('opacity', '0');
+		$(this).css('display', 'none');
 	});
 }
 
-function scrollDownInstancePage() {
-	$('div#detailtab').removeClass('current').stop().animate({ top: '1234px'}, 666, function() {
-		$(this).css('display','none').html('');
+function scrollDownInstancePage(cb) {
+var h = $(window).height()+23;
+	$('div#detailtab').removeClass('current').stop()
+	.animate({ top: h+'px' },
+		{ duration: 666, complete: function() { $(this).css('display','none').html(''); }
+		, step: function(now, fx) { if (h) if (now > h/4) { h=0; cb(); } }
 	});
 }
 
@@ -872,8 +877,7 @@ var i, cki;
 function hideInstancePage() {
 	if ($('div#detailtab').css('display') != 'none') {
 		scrollUpWindow();
-		scrollDownInstancePage();
-		fadeInListPage();
+		scrollDownInstancePage(fadeInListPage);
 	}
 	destroyRichEditors();
 }
@@ -1454,6 +1458,7 @@ function callAfter(route, from) {
 			}
 		});
 		if (admin_table_names.length == 1) {				// if there's only one table, just go to it.
+			hideInstancePage();
 			location.hash='/' + admin_table_names[0];
 		}
 

@@ -70,6 +70,11 @@ div.admin_table_field {
 	font-size:150%;
 	padding-top:0.4em;
 	overflow:hidden;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
 div.already_edited {
