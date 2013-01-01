@@ -33,41 +33,43 @@ var just_fields = [];
 }
 
 
+// jTNT abstracted out this common component
+
+function objTxlate(eachd, next_field) {
+	var next_obj={};
+	for (var key in next_field) {
+		var v = next_field[key];
+		if (_.isString(eachd))	// distinct queries may just return strings
+			next_obj[v] = eachd;
+		else if (! _.isUndefined(eachd[key]))	// deref fieldname?
+			next_obj[v] = eachd[key];
+		else {
+			try {
+				next_obj[v] = eachd.get(key);
+			} catch(e) {
+				console.log('error getting ' + key);
+			}
+		} 			// maybe it's virtual ...
+	}
+	return next_obj;
+}
+
 function eachTxlate(eachd, fields) {
 	var next_obj={};
 	var len;
 	if (fields) len=fields.length;	// edge case
-
-	if (len) {
+	if (!len)
+		return objTxlate(eachd, fields); // simple case of just an object in fields
 			
-		for (var i=0; i<len; i++) {
-			next_field = fields[i];
-			if (_.isString(next_field)) {
-				if (_.isString(eachd))
-					next_obj[next_field] = eachd;
-				else next_obj[next_field] = eachd[next_field];
-			} else {
-				for (var key in next_field) {
-					var v = next_field[key];
-					if (_.isString(eachd))	// distinct queries may just return strings
-						next_obj[v] = eachd;
-					else if (! _.isUndefined(eachd[key]))	// deref fieldname?
-						next_obj[v] = eachd[key];
-					else {
-						try {
-							next_obj[v] = eachd.get(key);
-						} catch(e) {
-							console.log('error getting ' + key);
-						}
-					} 			// maybe it's virtual ...
-				}
-			}
+	for (var i=0; i<len; i++) {
+		next_field = fields[i];
+		if (_.isString(next_field)) {
+			if (_.isString(eachd))
+				next_obj[next_field] = eachd;
+			else next_obj[next_field] = eachd[next_field];
+		} else {
+			_.extend(next_obj, objTxlate(eachd, next_field));
 		}
-	} else {
-		for (var key in fields)
-			if (! _.isUndefined(eachd[key])) {
-				next_obj[key] = eachd[key];
-			}
 	}
 
 	return next_obj;

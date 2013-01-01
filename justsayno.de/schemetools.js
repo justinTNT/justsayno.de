@@ -6,6 +6,7 @@ var	mongoose = require('mongoose');
 
 var	fs = require('fs');
 var util=require('util');
+
 var dirt = require('./dirtools');
 
 var	adminschema = require('./admin/schema/admin');
@@ -142,82 +143,6 @@ var fields = []
 }
 
 
-/*
- * reads contents of named file from specified directory,
- * and returns the contents (as a string) to the callback
- */
-function read_file(dname, fname, cback) {
-	fs.readFile(dname + '/' + fname, function (err, data) {	// read in the file contents
-		if (err) {
-	console.log(err);	// debug
-	console.log(dname + '/' + fname);	// debug
-			throw err;
-		} else cback(fname, String(data));
-	});
-}
-
-/*
- * for a list of files already derived from the named directory,
- * iterate through the list, calling cb with the contents of each file,
- * then calling fcb once they're all processed
- */
-function eachfile(dirname, files, cb, fcb) {
-	fn = files.shift();
-	if (fn) {
-		read_file(dirname, fn, function(cbfname, text) {
-			cb(cbfname, text);
-			eachfile(dirname, files, cb, fcb);
-		});
-	} else if (fcb) fcb();
-}
-
-/*
- * similar : for a list of files already derived from the named directory,
- * iterate through the list, calling cb with the name of each file,
- * then calling fcb once they're all processed
- */
-function touch_file(dirname, files, op, fcb) {
-	fn = files.shift();
-	if (fn) {
-		op(fn, function() {
-			touch_file(dirname, files, op, fcb);
-		});
-	} else if (fcb) fcb();
-}
-
-/*
- * get the list of files found in the named directory,
- * and pass on for processing.
- * cb is passed the contents of each file,
- * fcb is called when we're all done
- */
-function read_dir (dirname, cb, fcb) {
-	fs.readdir(dirname, function(err, files){
-		if (err) {
-	console.log('failed to read : ' + dirname);
-			throw err;
-		}
-		eachfile(dirname, files, cb, fcb);
-	});
-}
-
-/*
- * similar : get the list of files found in the named directory,
- * and pass on for processing.
- * op is passed the name of each file, and a continuation callback
- * fcb is called when we're all done
- */
-function touch_dir (dirname, op, fcb) {
-	fs.readdir(dirname, function(err, files){
-		if (err) {
-	console.log('failed to touch : ' + dirname);
-			throw err;
-		}
-		touch_file(dirname, files, op, fcb);
-	});
-}
-
-
 
 
 /*
@@ -259,14 +184,14 @@ function ensureAdminAccess(e, cb) {
  */
 function ensureAdFieldCfg(e, appdir, commondir, fcb) {
 	var i, dn = appdir + '/schema';
-	touch_dir ( dn
+	dirt.touch_dir ( dn
 				, function(fn, ocb){
 					load_schema(e, dn, fn, ocb);
 					addAdField(e.appname, 'admin', {name:fn.substr(0,fn.indexOf('.')), type:'Boolean'}, 99);
 				}
 				, function(){
 					if (appdir != commondir) {
-						var a = require(appdir + '/' + e.appname + '_app.js');
+						var a = require(appdir + '/' + e.appname + '_app');
 						runThruPlugs(a.env.plugins.slice(0), e, commondir, fcb);
 					} else {
 						if (fcb) fcb();

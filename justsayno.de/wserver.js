@@ -38,7 +38,7 @@ function configureAppEnv(e) {
 								}));
 */ 
 	e.app.use(express.cookieSession({
-								key: e.appname + (e.targetapp ? '-admin.sid' : '.sid')
+								key: e.targetapp ? e.targetapp + '-admin.sid' : e.appname + '.sid'
 								}));
 
 	e.app.use('/browser/', express.static(e.dir + '/browser/'));
@@ -130,7 +130,7 @@ var dbs = [admdb];
 		if (! _.isArray(applist[l].dname))
 			applist[l].dname = [applist[l].dname];
 	
-		eachapp = require('../apps/' + n + '/' + n + '_app.js');
+		eachapp = require('../apps/' + n + '/' + n + '_app');
 		e=eachapp.env;
 
 		if (e) { // not static ...
@@ -232,7 +232,7 @@ console.log('also seen: ' + JSON.stringify(req.headers));
 	webserverserver = webserver_app.listen(port, ip);
 	webserverserver.on('listening', function(){
 		console.log('stepping down to noder');
-		process.setuid('noder');
+		process.setuid('ec2-user');
 	});
     
     process.on("SIGINT", function(){

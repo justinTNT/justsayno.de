@@ -111,11 +111,11 @@ function statdirlist(path, files, stats, cb) {
 		} else {
 			var sch = null;
 			try {
-				sch = require('../../apps/' + env.targetapp + '/schema/' + req.params.table + '.js');
+				sch = require('../../apps/' + env.targetapp + '/schema/' + req.params.table);
 			} catch(err) {
 				for (var i in appenv.plugins) {
 					if (!sch) try {
-						sch = require('../../common/' + appenv.plugins[i] + '/schema/' + req.params.table + '.js');
+						sch = require('../../common/' + appenv.plugins[i] + '/schema/' + req.params.table);
 					} catch(err) {;}
 				}
 			}

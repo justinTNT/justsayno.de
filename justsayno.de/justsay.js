@@ -291,6 +291,8 @@ function addFBmeta(head, resp) {
 function justsayRespond(envplates, request, response, base_tpls, tpls, objs, alt_bp) {
 var o;
 
+	if (tpls && ! _.isArray(tpls)) tpls = [tpls];
+
 	if (request.xhr) {
 		if (tpls) {
 			o = {objects:objs, templates:tpls};
@@ -302,6 +304,7 @@ var o;
 				response.send('<html><body>' + objs + '</body></html>');
 			} else {
 				if (!base_tpls) base_tpls = [];
+				if (! _.isArray(base_tpls)) base_tpls = [base_tpls];
 				loadTemps(envplates, base_tpls.slice(0), function(data, headtext) {
 						if (!tpls) tpls = [];
 						loadTemps(envplates, tpls.slice(0), function(data) {
