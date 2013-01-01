@@ -38,7 +38,7 @@ function read_file(dname, fname, cback) {
  * then calling fcb once they're all processed
  */
 function eachfile(dirname, files, cb, fcb) {
-	fn = files.shift();
+	var fn = files.shift();
 	if (fn) {
 		read_file(dirname, fn, function(cbfname, text) {
 			cb(cbfname, text);
@@ -54,7 +54,7 @@ function eachfile(dirname, files, cb, fcb) {
  * then calling fcb once they're all processed
  */
 function touch_file(files, op, fcb) {
-	fn = files.shift();
+	var fn = files.shift();
 	if (fn) {
 		op(fn, function() {
 			touch_file(files, op, fcb);
@@ -82,3 +82,4 @@ function touch_dir (dirname, op, fcb) {
 
 exports.eachfile = eachfile;
 exports.read_dir = read_dir;
+exports.touch_dir = touch_dir;
