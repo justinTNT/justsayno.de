@@ -30,15 +30,15 @@ module.exports = function(env){
 				throw err;
 			}
 
-			var smtpTransport = mailer.createTransport("SMTP", _.clone(env.mailopts));
+			var smTransport = mailer.createTransport("Sendmail");
 
-			smtpTransport.sendMail( {
+			smTransport.sendMail( {
 					from: 'website@' + env.url
 					, to:env.adminemail
 					, subject:'new comment on ' + env.appname
 					, html: "<p>New comment from: " + o.name + "<br>" + o.comment + "<br> at " + o.subject + "</p>"
 				}, function(err, resp) {
-					smtpTransport.close(); // shut down the connection pool, no more messages
+					smTransport.close(); // shut down the connection pool, no more messages
 						if (err) {
 							console.log('alerting new comment => mail fail: ' + err);
 						}

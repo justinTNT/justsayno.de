@@ -91,7 +91,7 @@ var Guest = env.db.model(guest);
 		var encoded = encrypter.encrypt(g.pass);
 		var confirmlink = env.url + "/confirm/" + h + "/" + encoded;
 
-		var smtpTransport = mailer.createTransport("SMTP", _.clone(env.mailopts));
+		var smTransport = mailer.createTransport("Sendmail");
 		var msg = {
 				from: 'website@' + env.url
 				, to: g.handle + ' <' + g.email + '>'
@@ -100,9 +100,9 @@ var Guest = env.db.model(guest);
 					+ "<a href='" + confirmlink + "'>" + confirmlink + "</a></p>"
 					+ "<p>This link will expire in two days</p>"
 			};
-		smtpTransport.sendMail(msg,
+		smTransport.sendMail(msg,
 			function(error, resp){
-				smtpTransport.close(); // shut down the connection pool, no more messages
+				smTransport.close(); // shut down the connection pool, no more messages
 				if (!error) {
 				} else {
 					console.log('error sending confirmation for ' + h + ' to ' + g.email)

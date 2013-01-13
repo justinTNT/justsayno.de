@@ -9,7 +9,7 @@ module.exports = function(e, admdb) {
 				,  appname : 'admin'
 				,  targetapp : e.appname
 				,  targetenv : e
-				,  staticurl : e.staticurl
+				,  staticurl : 'saymay.be'
 		};
 
 
