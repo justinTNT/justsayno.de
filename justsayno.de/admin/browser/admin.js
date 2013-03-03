@@ -12,7 +12,18 @@ var edit_flags = [ {name:'default', title:'Text'}
 					, {name:'upload', title:'File Upload'}
 				];
 
+function abbreviateName(name) {
+	var p = name.indexOf('.');
+	if (p >= 0)
+		return abbreviateName(name.substr(p+1));
+	return name;
+}
 
+function displayName(field) {
+	if (field.displayname)
+		return field.displayname;
+	return abbreviateName(field.name);
+}
 
 //
 // simple helper to get index of which listed record to edit 
@@ -200,7 +211,7 @@ function drawFieldBox() {
 	$('div.instancelabels').remove();
 	_.each(sorted, function(field) {
 		if (field.edited && ! (skipBools && field.listflags == 'Boolean')) {
-			$fb.append($('<div class="instancelabelholder" id="instance_' + field.name + '"><div class="instancelabel">' + field.name + '</div></div>'));
+			$fb.append($('<div class="instancelabelholder" id="instance_' + field.name + '"><div class="instancelabel">' + displayName(field) + '</div></div>'));
 		}
 	});
 
@@ -303,8 +314,17 @@ function drawFieldBox() {
 				} else $('.ui-draggable-dragging').remove();
 			}
 		}).dblclick(function(){																// relabel on double-click
-/*
- */
+			var $that = $(this);
+			$(this).find('.instancelabel').each(function(){
+				$(this).replaceWith('<input class="minoredit" value="' + $(this).html() + '" />');
+				$that.find('input').change(function(){
+					var id = $that.attr('id');
+					id = id.substr(id.indexOf('_')+1);
+					_.detect(admin_table_fields, function(f){ return f.name == id; }).displayname = $(this).val();                               
+					showSave();
+					$(this).replaceWith("<div class='instancelabel'>" + $(this).val() + "</div>");
+				});
+			});
 		});
 
 	}
@@ -1384,7 +1404,7 @@ function getData() {
 
 function addNewField(field) {
 	$f = $('<div id="field_' + field.name + '" class="admin_table_field"></div>');
-	$f.width(field.listwidth).html(field.name);
+	$f.width(field.listwidth).html(displayName(field));
 	if (($p = $('div.current div.plusbutt')).length)
 		$p.before($f);
 	else $('div.admin_table_fields').append($f);

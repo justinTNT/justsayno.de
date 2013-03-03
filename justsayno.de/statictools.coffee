@@ -5,19 +5,6 @@ path = require "path"
 headers = { 'x-amz-acl': 'public-read' }
 
 
-# rename uploaded file
-# from: file to move
-# to: approximate name of new file
-# cb: callback (err, count)
-# count: if we need to append a count to the file, start counting
-renameLocal = (from, to, cb, count) ->
-	count = count or 0
-	fs.stat to, (err, stats) ->
-		unless err
-			count++
-			renameLocal from, to, cb, count
-		else
-
 # ensures dir exists before running f
 runInDir = (dir, f) ->
 	fs.mkdir dir, 0o755, (err) ->
@@ -26,13 +13,6 @@ runInDir = (dir, f) ->
 		runInDir parent, (err) ->
 			if err then return f(err)
 			runInDir dir, f
-
-# move fromname to pathname/toname
-# callback with (err, count) where _count is (potential) new suffix.
-moveLocal = (fromname, toname, cb) ->
-	runInDir toname, (err)->
-		if not err
-			renameLocal fromname, toname, cb
 
 
 module.exports = (env) ->
