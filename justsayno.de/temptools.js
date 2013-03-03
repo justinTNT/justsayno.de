@@ -78,43 +78,46 @@ function genericDynamicLoadAppFiles(e, suffix, appendattr, fcb) {
 	});
 }
 
-function buildScripts(e, txt, cb)
-{
-var libd = __dirname+'/browserlibs';
 
-		fs.readdir(libd, function(err, files) {
-			if (err) {
-				throw err;
-			}
-			e.scriptplatestring='';
-			dirt.eachfile(libd, files
-					, function(fn, str){ e.scriptplatestring += str; }
-					, function(){
-						dirt.read_dir(e.dir + '/browser/libs',
-							function(fn, str){
-								e.scriptplatestring += str;
-							},
-							function(){
-								dirt.eachfile(__dirname, ["justsay.js", "browserbootstrap.js" ],
-									function(fn, str){
-										e.scriptplatestring += str;
-									}, function(){
-				e.scriptplatestring += "var justsayno = { de: {staticurl:\'" + e.staticurl + "\',\n skeleta : JSON.parse(\'" + txt + "\')}\n};\n";
-				genericDynamicLoadAppFiles(e, "js", "scriptplatestring",
-					function(){
-						if (process.env.NODE_ENV) {
-							var ast = ugly.parser.parse(e.scriptplatestring); // parse code and get the initial AST
-							ast = ugly.uglify.ast_mangle(ast); // get a new AST with mangled names
-							ast = ugly.uglify.ast_squeeze(ast); // get an AST with compression optimizations
-							e.scriptplatestring = ugly.uglify.gen_code(ast); // compressed code here
-						}
-						e.cssstring = "";
-						genericDynamicLoadAppFiles(e, "css", "cssstring", cb);
+// initialise e[str] with files in dir
+function loadDefaults(e, str, dir, cb) {
+	fs.readdir(dir, function(err, files) {
+		if (err) { throw err; }
+		e[str]='';
+		dirt.eachfile(dir, files, function(fn, txt){ e[str] += txt; }, cb);
+	});
+}
+
+// build css and js for app
+function buildScripts(e, txt, cb) {
+var libdir = __dirname+'/browserlibs';
+var libstr = 'scriptplatestring';
+var cssdir = __dirname+'/browserstyles';
+var cssstr = 'cssstring';
+
+	loadDefaults(e, libstr, libdir, function(){
+		dirt.read_dir(e.dir + '/browser/libs',
+			function(fn, str){ e[libstr] += str; },
+			function(){
+				dirt.eachfile(__dirname, ["justsay.js", "browserbootstrap.js" ],
+					function(fn, str){
+						e[libstr] += str;
+					}, function(){
+
+						e[libstr] += "var justsayno = { de: {staticurl:\'" + e.staticurl + "\',\n skeleta : JSON.parse(\'" + txt + "\')}\n};\n";
+						genericDynamicLoadAppFiles(e, "js", libstr, function(){
+							if (process.env.NODE_ENV) {
+								var ast = ugly.parser.parse(e[libstr]); // parse code and get the initial AST
+								ast = ugly.uglify.ast_mangle(ast); // get a new AST with mangled names
+								ast = ugly.uglify.ast_squeeze(ast); // get an AST with compression optimizations
+								e[libstr] = ugly.uglify.gen_code(ast); // compressed code here
+							}
+							loadDefaults(e, cssstr, cssdir, function(){ genericDynamicLoadAppFiles(e, "css", cssstr, cb); });
+						});
+
 					});
-									});
-							});
 			});
-		});
+	});
 }
 
 

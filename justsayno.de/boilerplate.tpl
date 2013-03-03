@@ -21,17 +21,13 @@
 
 
   <!-- Place favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
-  <link rel="shortcut icon" href="http://saymay.be/{{APP}}/favicon.ico">
-  <link rel="apple-touch-icon" href="http://saymay.be/{{APP}}/apple-touch-icon.png">
+  <link rel="shortcut icon" href="{{LOCAL}}{{APP}}/favicon.ico">
+  <link rel="apple-touch-icon" href="{{LOCAL}}{{APP}}/apple-touch-icon.png">
 
-
-  <!-- CSS : implied media="all" -->
-  <link rel="stylesheet" href="http://saymay.be/css/basestyle.css?v=2">
-
-  <!-- Uncomment if you are specifically targeting less enabled mobile browsers
-  <link rel="stylesheet" media="handheld" href="css/handheld.css?v=2">  -->
- 
   <link rel="stylesheet" href="/{{APP}}.css">
+<!--[if IE 7]>
+  <link rel="stylesheet" href="{{LOCAL}}css/font-awesome-ie7.min.css">
+<![endif]-->
 
 </head>
 
@@ -62,15 +58,15 @@
   <!-- Javascript at the bottom for fast page loading -->
 
   <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"></script>
-  <script>window.jQuery || document.write('<script src="http://saymay.be//jquery/jquery.js"><\/script>')</script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="{{LOCAL}}jquery/jquery.min.js"><\/script>')</script>
 
   <!-- all else, concatenated (libs first) (and uglified in production) --> 
   <script src="/{{APP}}.js"></script>
   
 
   <!--[if lt IE 7 ]>
-    <script src="http://saymay.be/js/dd_belatedpng.js"></script>
+    <script src="{{LOCAL}}js/dd_belatedpng.js"></script>
   <!--
     <script type="text/javascript" language="javascript"> DD_belatedPNG.fix('img, .png_bg'); //fix any <img> or .png_bg background-images </script>
 	-->
