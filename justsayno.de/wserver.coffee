@@ -62,13 +62,13 @@ setupRoutes = (ea) ->
 
 		# then comes routing for any plugins
 		if a.env.plugins
-			for plugin in a.env.plugins  # some common modules return a hook, or array of hooks 
+			for plugin in a.env.plugins  # some common modules return a hook, or array of hooks
 				a.env.hook[plugin] = require("../common/#{plugin}/#{plugin}.js") a.env  # common routing (server script)
 
 		a.setRoutes()		# now we add all the app-specific routes
 
 		###
-		* and finally, this makes sure that ajax pages serve up the skeleton	
+		* and finally, this makes sure that ajax pages serve up the skeleton
 		* in the case of where there is nothing else to server at the route
 		* i.e. it's all built on the client by a script
 		###
@@ -89,9 +89,9 @@ setupRoutes = (ea) ->
 ###
 webserver_app = null
 setupServer = (port, applist, ip, setuid, passon) ->
-	webserver_app = express();
-	admdb = mongoose.createConnection(schemetools.URIofDB(passon.mongopts, 'justsayadmin'));
-	dbs = [admdb];
+	webserver_app = express()
+	admdb = mongoose.createConnection schemetools.URIofDB passon.mongopts, 'justsayadmin'
+	dbs = [admdb]
 
 	for l in [applist.length-1...0]
 		n = applist[l].appname

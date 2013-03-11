@@ -1,4 +1,3 @@
-require 'coffee-script'
 require 'longjohn'
 
 wserver = require './justsayno.de/wserver'
@@ -13,8 +12,8 @@ sharedConfig =
 	adminemail: wscfg.adminemail
 
 for i in wscfg.apps
-	if wscfg.apps[i].appname is 'static'
-		sharedConfig.localurl = wscfg.apps[i].dname
+	if i.appname is 'static'
+		sharedConfig.localurl = i.dname
 
 wserver.setupServer wscfg.server_port, wscfg.apps, wscfg.ip, wscfg.setuid, sharedConfig
 

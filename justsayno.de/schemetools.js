@@ -186,8 +186,11 @@ function ensureAdFieldCfg(e, appdir, commondir, fcb) {
 	var i, dn = appdir + '/schema';
 	dirt.touch_dir ( dn
 				, function(fn, ocb){
-					load_schema(e, dn, fn, ocb);
-					addAdField(e.appname, 'admin', {name:fn.substr(0,fn.indexOf('.')), type:'Boolean'}, 99);
+					fn_a = fn.split('.');
+					if (fn_a.length == 2 && fn_a[1] == 'js') {		// only eachschemafile.js
+						load_schema(e, dn, fn, ocb);
+						addAdField(e.appname, 'admin', {name:fn.substr(0, fn_a[0]), type:'Boolean'}, 99);
+					} else ocb();
 				}
 				, function(){
 					if (appdir != commondir) {
