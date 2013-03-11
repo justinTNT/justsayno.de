@@ -5,9 +5,7 @@
  */
 
 if (typeof $ == 'undefined') {
-var jsdom = require('jsdom')
-  , myWindow = jsdom.jsdom().createWindow()
-  $ = require('jquery').create(myWindow);
+var $ = require('jquery').create();
   _ = require('underscore');
 }
 

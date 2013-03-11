@@ -128,7 +128,8 @@ var cssstr = 'cssstring';
 function replaceStaticApp(e, txt) {
 	return String(txt)			// and keep em in the templatipi store
 		.replace(/\{\{APP\}\}/g, e.appname)
-		.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/");
+		.replace(/\{\{STATIC\}\}/g, "http://" + e.staticurl + "/")
+		.replace(/\{\{LOCAL\}\}/g, "http://" + e.localurl + "/");
 }
 
 
@@ -164,31 +165,31 @@ var bpfn = 'boilerplate.tpl';
     e.skeletipi = {};
 
 	fs.readFile(__dirname + '/' + bpfn, function (err, data) {	//read in the file contents
-	if (err) { throw err; }
-	 fs.readFile(e.dir + '/templates/fragments/headfrag.htm', function(err, d2) { // add header frag
-	 if (err) { d2 = ''; }
+		if (err) { throw err; }
+		fs.readFile(e.dir + '/templates/fragments/headfrag.htm', function(err, d2) { // add header frag
+			if (err) { d2 = ''; }
 
-		var i, s = replaceStaticApp(e, data);
-		i = s.indexOf('<meta');
-		s = s.substr(0,i) + String(d2) + s.substr(i);
-		e.templatipi[bpfn] = s;
+			var i, s = replaceStaticApp(e, data);
+			i = s.indexOf('<meta');
+			s = s.substr(0,i) + String(d2) + s.substr(i);
+			e.templatipi[bpfn] = s;
 
-        populatipi(e, e.dir + '/templates/baseplates', 'templatipi',    // load all base- templates into memory
-			function(){ populatipi(e, e.dir + '/templates/skeleta', 'skeletipi',		// load all skeleta into memory
-				function(){
-				var txt;
-					for (var i in e.skeletipi) {
-						txt = (e.templatipi[i] = e.skeletipi[i]);
-						txt = txt.replace(/[\t\n\r]/g, ' ');
-						e.skeletipi[i] = txt.replace(/'/g, "\\'");
-					}
-					txt = JSON.stringify(e.skeletipi);
-					txt = txt.replace(/\\\\\'/g, "\\'");
-					buildScripts(e, txt, cb);
+			populatipi(e, e.dir + '/templates/baseplates', 'templatipi',    // load all base- templates into memory
+				function(){ populatipi(e, e.dir + '/templates/skeleta', 'skeletipi',		// load all skeleta into memory
+					function(){
+					var txt;
+						for (var i in e.skeletipi) {
+							txt = (e.templatipi[i] = e.skeletipi[i]);
+							txt = txt.replace(/[\t\n\r]/g, ' ');
+							e.skeletipi[i] = txt.replace(/'/g, "\\'");
+						}
+						txt = JSON.stringify(e.skeletipi);
+						txt = txt.replace(/\\\\\'/g, "\\'");
+						buildScripts(e, txt, cb);
 
+					});
 				});
-			});
-	 });
+		});
 	});
 
 

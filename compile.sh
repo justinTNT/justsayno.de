@@ -1,2 +1,16 @@
-find . -not -wholename ./node_modules\* -name \*coffee -printf "-j -i %h/%f -o %h/%f.js\n" | sed s/.coffee.js/.js/ | xargs -t -l1 CSR
-find . -not -wholename ./node_modules\* -name \*coffee -printf "--source-map -i %h/%f -o %h/%f.js.map\n" | sed s/.coffee.js/.js/ | xargs -t -l1 CSR
+#!/bin/bash
+function exitonfail {
+    "$@"
+    status=$?
+    if [ $status -ne 0 ]; then
+        exit $status
+	fi
+	return $status
+}
+
+outpath=$1
+infile=$2
+outfile=$(echo $infile | sed -e "s/coffee/js/g")
+filename=$(basename "$outfile")
+coffeelint -f ~/cslint.cfg $infile
+exitonfail coffee -cm -o $outpath $infile
