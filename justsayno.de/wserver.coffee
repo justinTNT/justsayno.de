@@ -93,17 +93,17 @@ setupServer = (port, applist, ip, setuid, passon) ->
 	admdb = mongoose.createConnection schemetools.URIofDB passon.mongopts, 'justsayadmin'
 	dbs = [admdb]
 
-	for l in [applist.length-1...0]
-		n = applist[l].appname
-		if not _.isArray applist[l].dname
-			applist[l].dname = [applist[l].dname]
+	for app in applist
+		n = app.appname
+		if not _.isArray app.dname
+			app.dname = [app.dname]
 	
 		eachapp = require('../apps/' + n + '/' + n + '_app')
 		e=eachapp.env
 
 		if (e)							# not static ...
 			e.appname = n
-			e.url = applist[l].dname[0]
+			e.url = app.dname[0]
 
 			for key of passon
 				if not e[key]
@@ -121,7 +121,7 @@ setupServer = (port, applist, ip, setuid, passon) ->
 			e.db = mongoose.createConnection schemetools.URIofDB(e.mongopts, n)
 			dbs.push e.db
 
-		for dname in applist[l].dname
+		for dname in app.dname
 			webserver_app.use express.vhost(dname, eachapp.app)
 			webserver_app.use express.vhost("www." + dname, eachapp.app)
 

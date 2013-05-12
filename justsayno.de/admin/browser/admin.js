@@ -7,11 +7,6 @@ var vocabularies;
 var which_route = ''; // keeps track of which schema in which app we're werking on : leading slash
 var adminflag = false; // do we think we're superadmin?
 
-var edit_flags = [ {name:'default', title:'Text'}
-					, {name:'richtext', title:'Rich Text Editor'}
-					, {name:'upload', title:'File Upload'}
-				];
-
 function abbreviateName(name) {
 	var p = name.indexOf('.');
 	if (p >= 0)
@@ -175,7 +170,18 @@ function setupNewInstanceField($f, context_flag) {
 		$('input#input_' + field.name).parent().remove();	
 	});
 	$f.find(':first').bind('contextmenu', function(){
-		showContextMenu($(this).parent().attr('id'), context_flag == 'String' ? edit_flags : null);
+		var edit_flags = [];
+		if (context_flag.match(/String/))							// valid for String and [String]
+			edit_flags = edit_flags.concat([
+							   {name:'default', title:'Text'}
+						]);
+		if (context_flag == 'String')							// valid only for String, not [String]
+			edit_flags = edit_flags.concat([
+							{name:'richtext', title:'Rich Text Editor'}
+							, {name:'upload', title:'File Upload'}
+						]);
+
+		showContextMenu($(this).parent().attr('id'), edit_flags)
 		return false;
 	});
 }
@@ -586,6 +592,12 @@ function createDifferentInput(field, cb) {
 					cb($( '<input type="text" name="' + field.name + '" id="input_' + field.name + '"></input>' ));
 					break;
 
+				case '[String]':
+					cb($( '<div class="multi ' +field.name+ '">'
+						 + '<input type="text" name="' + field.name + '" id="input_' + field.name + '"></input>'
+						 + "</div>" ));
+					break;
+
 				default:
 					cb ($( '<input type="text" name="' + field.name + '" id="input_' + field.name + '"></input>' ));
 					break;
@@ -596,6 +608,10 @@ function createDifferentInput(field, cb) {
 			switch (field.listflags) {
 				case 'ObjectId':
 					cb($( makeIDselect(field) ));
+					break;
+
+				case '[String]':
+					cb($( '<div class="multi ' +field.name+ '">' + makeVoxSelect(field) + "</div>" ));
 					break;
 
 				default:
@@ -623,6 +639,8 @@ function makeEditResizable($where) {
 					$the_in = $the_in.find('INPUT');
 				var id = $the_in.attr('id');
 				id =  id.substr(id.indexOf('_')+1);
+				if ($the_in.parent().hasClass('multi'))
+					id =  id.substr(0,id.indexOf('_'));
 				$the_in.width(_.detect(admin_table_fields, function(f){ return f.name == id; }).editwidth = ui.element.width());
 				showSave(); // we might want to save any re-arrangement of the fields
 			}
@@ -644,20 +662,57 @@ function addValueBox(field, $newin, $where, eto_i) {
 		else $setthisone = $newin;
 		valtoset = admin_table_records[eto_i][field.name];
 
-		if (field.listflags == 'Date')
-			valtoset = date2str(valtoset);
-
-		if (field.listflags == 'Boolean') {
-			$setthisone.attr('checked', valtoset);
-		} else $setthisone.val(valtoset);
+		switch (field.listflags) {
+			case 'Date':
+				$setthisone.val(date2str(valtoset));
+				break;
+			case 'Boolean':
+				$setthisone.attr('checked', valtoset);
+				break;
+			case '[String]':
+				var i=0;
+				$setthisone = $newin.find('input,select');
+				if (valtoset && valtoset.length)
+					for (i=0; i<valtoset.length; i++) {
+						var $nxton = $setthisone.clone();
+						$nxton.attr('id', $setthisone.attr('id')+'_'+i);
+						$nxton.val(valtoset[i]);
+						$nxton.insertBefore($setthisone);
+						$nxton.width(field.edithwidth);
+						$nxton.height($newin.height());
+					}
+				$setthisone.width(field.edithwidth);
+				$setthisone.height($newin.height());
+				break;
+			default:
+				$setthisone.val(valtoset);
+		}
 	} else $newin.val('');
 
-	$newin.width(field.editwidth);
+	if ($newin.hasClass('multi'))
+		$newin.add($newin.parent()).removeAttr('width').css('width', 'auto');
+	else
+		$newin.width(field.editwidth);
 	if (field.editflags != 'upload')
-		$newin.find('input').width(field.editwidth);
+		$newin.find('input,select').width(field.editwidth);
 
 	$newin.change(function(){
 			$(this).addClass('altered');
+			if ($(this).hasClass('multi')) {
+				$lastone = $(this).find('select:last, input:last');
+				kids = $(this).children()
+				if ($lastone.val().length) {
+					$newon = $lastone.clone();
+					$newon.val('');
+					$lastone.attr('id', $lastone.attr('id')+'_'+(kids.length-1));
+					$newon.insertAfter($lastone);
+				} else {
+					if (kids.length)
+						for (i=0; i<kids.length-1; i++)
+							if (!$(kids[i]).val().length)
+								$(kids[i]).remove();
+				}
+			}
 			if (validateField($(this), eto_i)) {
 				if (validateForm(eto_i)) {
 					$('button#save').show();
@@ -708,7 +763,7 @@ function addValueBox(field, $newin, $where, eto_i) {
 		}
 	}
 
-	/* add widgets to elements */
+	/* add ckeditor widgets to elements that need enriching */
 
 	if ($newin.hasClass('enrichme')) {
 		var cki = CKEDITOR.instances['input_' + field.name];
@@ -786,11 +841,15 @@ var eto_i = editIndex();
 	$('div#detailtab').append($vb);
 	var sorted = _.sortBy(admin_table_fields, function(f) { return f.editorder; });
 	_.each(sorted, function(field) {
-		if (field.edited && ! (skipBools && field.listflags == 'Boolean')) {		//&& field.name != 'id' && field.name != '_id') {
-			var $commontainer = $('<div class="instanceinput" id="instin_' + field.name + '"></div>');
-			$vb.append($commontainer);
-			makeValueBox(field, $commontainer, eto_i);
-		}
+		if (field.edited)
+			if (! (skipBools && field.listflags == 'Boolean')) {
+				var $commontainer = $('<div class="instanceinput" id="instin_' + field.name + '"></div>');
+				$vb.append($commontainer);
+				makeValueBox(field, $commontainer, eto_i);
+			} else if (field.listflags == '[String]') {
+				console.log(" I think i need to do something here ...");
+			}
+
 	});
 	$vb.append('<button id="save">Save</button><button id="cancel">Cancel</button>"');
 
@@ -805,11 +864,24 @@ var eto_i = editIndex();
 		}
 
 		$('.instanceinput .altered').each(function(){
-			var fieldname = $(this).attr('id');
+			var fieldname;
+			if ($(this).hasClass('multi')) {
+				var kids = $(this).children()
+				if (kids.length)
+					fieldname = $(kids[kids.length-1]).attr('id');
+			} else fieldname = $(this).attr('id');
 			fieldname = fieldname.substr(fieldname.indexOf('_')+1);
 			var field = _.detect(admin_table_fields, function(f) { return f.name == fieldname; });
 
 			switch (field.listflags) {
+				case '[String]':
+					newobj[fieldname] = []
+					kids = $(this).children()
+					if (kids.length)
+						for (var i=0; i<kids.length-1; i++)
+							if ($(kids[i]).val().length)
+								newobj[fieldname].push($(kids[i]).val());
+					break;
 				case 'Date':
 					newobj[fieldname] = new Date($(this).val().replace(/-/g,'/'));
 					break;
@@ -822,9 +894,17 @@ var eto_i = editIndex();
 			}
 			if (eto_i >= 0) {
 				admin_table_records[eto_i][fieldname] = newobj[fieldname];
+				$f = $eto.find('div.record_field_'+fieldname);
 				if (field.listflags == 'Boolean')
-					$eto.find('div.record_field_'+fieldname).html($(this).is(':checked')?'&#9746':'').css({textAlign:'center'});
-				else $eto.find('div.record_field_'+fieldname).text($(this).val());
+					$f.html($(this).is(':checked')?'&#9746':'').css({textAlign:'center'});
+				else if (field.listflags == '[String]') {
+					$f.html('');
+					if (newobj[field.name])
+						if (newobj[field.name].length == 1)
+							$f.html(newobj[field.name][0])
+						else if (newobj[field.name].length)
+							$f.html(newobj[field.name][0] + '...')
+				} else $f.text($(this).val());
 			}
 		});
 
@@ -966,7 +1046,7 @@ field_id = field_id.substr(9);
 		.css({left:23+$loc.offset().left, top:$loc.offset().top})
 		.after('<div id="modalmask"></div>');
 
-	if (whichtags) {
+	if (whichtags.length) {
 
 		_.each(whichtags, function(tag) { addContextField(field_id, tag.name, tag.title); });
 
@@ -1246,6 +1326,12 @@ function drawNewColumn(field) {
 			$f.text(date2str(admin_table_records[i][field.name]));
 		} else if (field.listflags == 'Boolean') {
 			$f.html(admin_table_records[i][field.name]?'&#9746':'').css({textAlign:'center'});
+		} else if (field.listflags == '[String]') {
+			if (admin_table_records[i][field.name])
+				if (admin_table_records[i][field.name].length == 1)
+					$f.html(admin_table_records[i][field.name][0])
+				else
+					$f.html(admin_table_records[i][field.name][0] + '...')
 		} else {
 			$f.html(admin_table_records[i][field.name]);
 		}
@@ -1298,7 +1384,13 @@ var field;
 					}
 				} else {
 					list_content = admin_table_records[i][field.name];
-					if (field.listflags != 'Boolean') { 
+					if (field.listflags == '[String]') {
+						if (!list_content || !list_content.length)
+							list_content = ''
+						else if (list_content.length == 1)
+							list_content = list_content[0];
+						else list_content = list_content[0] + '...';
+					} else if (field.listflags != 'Boolean') { 
 						if (list_content)
 							if (list_content.length > 69)
 								list_content = list_content.substr(0,69);
@@ -1555,9 +1647,9 @@ $('button#loginlogout').click(function() { logOut(); });
 /*
 ** mjor problm: this should not be hardcoded!
 */
-$.getScript('http://' + justsayno.de.staticurl + '/ckeditor/ckeditor.js', function(d, s){
-	$.getScript('http://' + justsayno.de.staticurl + '/ckeditor/adapters/jquery.js', function(data, status){
+$.getScript('http://' + justsayno.de.localurl + '/ckeditor/ckeditor.js', function(d, s){
+	$.getScript('http://' + justsayno.de.localurl + '/ckeditor/adapters/jquery.js', function(data, status){
 	});
 });
 
-		$('input#login').focus();
+$('input#login').focus();

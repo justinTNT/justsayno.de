@@ -445,3 +445,7 @@ div#file_list_close {
 	margin-top:3px;
 }
 
+div.multi input,select {
+	margin-right: 0.5em;
+}
+

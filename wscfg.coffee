@@ -15,7 +15,8 @@ options =
 	# map domain names to app names.
 
 	apps: [	{ dname:'static.loc', appname: 'static' }
-	{ dname:'ipan.loc', appname:'ipan' }
+	#{ dname:'ipan.loc', appname:'ipan' }
+	{ dname:'nonukes.loc', appname:'nonukes' }
 	]
 
 
@@ -24,7 +25,7 @@ options =
 	# start webserver, then start proxy (one of server/ client)
 
 	server_port: 80	# default http : could choose something bigger for dev
-	proxy_port: 8780 
+	proxy_port: 8780
 	proxy_name: ''
 	proxies: []
 
