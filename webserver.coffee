@@ -1,4 +1,4 @@
-require 'longjohn'
+require('source-map-support').install()
 
 wserver = require './justsayno.de/wserver'
 wscfg = require('./wscfg').options
