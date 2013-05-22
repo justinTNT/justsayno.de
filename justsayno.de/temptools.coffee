@@ -160,5 +160,5 @@ configureTemplates = (e, cb) ->
 			args.push arguments[i++]
 		justsay.respond.apply this, args
 
-exports.configureTemplates = configureTemplates
+module.exports = configureTemplates:configureTemplates
 

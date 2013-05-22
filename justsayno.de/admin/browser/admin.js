@@ -547,7 +547,7 @@ return '<select id="input_' + field.name + '">'
 function makeIDselect(field) {
 var i, s='', a=idvals[field.editflags];
 	for (i in a) {
-		s += '<option value="' + a[i].id + '">' + a[i].name + '</option>';
+		s += '<option value="' + a[i].id + '">' + a[i].name.replace(/_/g,' ') + '</option>';
 	}
 	return wrapSelect(field, s);
 }
@@ -556,7 +556,7 @@ var i, s='', a=idvals[field.editflags];
 function makeVoxSelect(field) {
 var i, s='', a=vocabularies[field.editflags];
 	for (i in a) {
-		s += '<option value="' + a[i] + '">' + a[i] + '</option>';
+		s += '<option value="' + a[i] + '">' + a[i].replace(/_/g,' ') + '</option>';
 	}
 	return wrapSelect(field, s);
 }
@@ -608,6 +608,10 @@ function createDifferentInput(field, cb) {
 			switch (field.listflags) {
 				case 'ObjectId':
 					cb($( makeIDselect(field) ));
+					break;
+
+				case '[ObjectId]':
+					cb($( '<div class="multi ' +field.name+ '">' + makeIDselect(field) + "</div>" ));
 					break;
 
 				case '[String]':
@@ -670,6 +674,7 @@ function addValueBox(field, $newin, $where, eto_i) {
 				$setthisone.attr('checked', valtoset);
 				break;
 			case '[String]':
+			case '[ObjectId]':
 				var i=0;
 				$setthisone = $newin.find('input,select');
 				if (valtoset && valtoset.length)
@@ -689,9 +694,10 @@ function addValueBox(field, $newin, $where, eto_i) {
 		}
 	} else $newin.val('');
 
-	if ($newin.hasClass('multi'))
+	if ($newin.hasClass('multi')) {
 		$newin.add($newin.parent()).removeAttr('width').css('width', 'auto');
-	else
+		$newin.find('select').height($newin.height());
+	} else
 		$newin.width(field.editwidth);
 	if (field.editflags != 'upload')
 		$newin.find('input,select').width(field.editwidth);
@@ -875,6 +881,7 @@ var eto_i = editIndex();
 
 			switch (field.listflags) {
 				case '[String]':
+				case '[ObjectId]':
 					newobj[fieldname] = []
 					kids = $(this).children()
 					if (kids.length)
@@ -897,7 +904,7 @@ var eto_i = editIndex();
 				$f = $eto.find('div.record_field_'+fieldname);
 				if (field.listflags == 'Boolean')
 					$f.html($(this).is(':checked')?'&#9746':'').css({textAlign:'center'});
-				else if (field.listflags == '[String]') {
+				else if (field.listflags == '[String]' || field.listflags == '[ObjectId]') {
 					$f.html('');
 					if (newobj[field.name])
 						if (newobj[field.name].length == 1)
@@ -1104,17 +1111,19 @@ field_id = field_id.substr(9);
 			$where = $('div#instin_' + field.name);
 			$where.empty();
 
+			/*
 			if (field.listflags == 'ObjectId' && field.editflags != '' && !idvals[field.editflags]) {
 				justsayAJAJ('/keys/' + field.editflags, function(a){
 					idvals[field.editflags] = a;
 					makeValueBox(field, $where, eto_i);
 				});
 			} else {
+		   */
 				makeValueBox(field, $where, eto_i);
 				if (field.editflags == 'default' || field.editflags == '') {
 					makeEditResizable($where);
 				}
-			}
+			//}
 		}
 		return closeContextMenu();
 	});
@@ -1326,7 +1335,7 @@ function drawNewColumn(field) {
 			$f.text(date2str(admin_table_records[i][field.name]));
 		} else if (field.listflags == 'Boolean') {
 			$f.html(admin_table_records[i][field.name]?'&#9746':'').css({textAlign:'center'});
-		} else if (field.listflags == '[String]') {
+		} else if (field.listflags == '[String]' || field.listflags == '[ObjectId]') {
 			if (admin_table_records[i][field.name])
 				if (admin_table_records[i][field.name].length == 1)
 					$f.html(admin_table_records[i][field.name][0])
@@ -1390,6 +1399,20 @@ var field;
 						else if (list_content.length == 1)
 							list_content = list_content[0];
 						else list_content = list_content[0] + '...';
+					} else if (field.listflags == '[ObjectId]') {
+						if (!list_content || !list_content.length)
+							list_content = ''
+						else {
+							if (a=idvals[field.editflags])
+								for (var j=0; j<a.length; j++) {
+									if (a[j].id == list_content[0]) {
+										if (list_content.length == 1)
+											list_content = a[j].name;
+										else list_content = a[j].name + '...';
+										break;
+									}
+								}
+						}
 					} else if (field.listflags != 'Boolean') { 
 						if (list_content)
 							if (list_content.length > 69)
@@ -1608,14 +1631,21 @@ function callAfter(route, from) {
 				}
 			}
 			drawFields();
+			callcount = 1;
 			_.each(admin_table_fields, function(field) {
-				if (field.listflags == 'ObjectId' && field.editflags != '' && !idvals[field.editflags]) {
+				if (field.listflags.match(/ObjectId/) && field.editflags != '' && !idvals[field.editflags])
+					callcount++;
+			});
+			getDataAfter = _.after(callcount, getData);
+			_.each(admin_table_fields, function(field) {
+				if (field.listflags.match(/ObjectId/) && field.editflags != '' && !idvals[field.editflags]) {
 					justsayAJAJ('/keys/' + field.editflags, function(a){
 						idvals[field.editflags] = a;
+						getDataAfter();
 					});
 				}
 			});
-			getData();
+			getDataAfter();
 		}
 		$('a#table-name').html(route);
 		$('button#loginlogout').html('Logout').show();

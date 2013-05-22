@@ -241,9 +241,9 @@ setProxy = (port, ip, clandestine) ->
 	).listen(port, ip)
 
 
-exports.setupServer = setupServer
-exports.setProxy = setProxy
-exports.getProxy = getProxy
-
-exports.server = webserver_app
+module.exports =
+	setupServer:setupServer
+	setProxy:setProxy
+	getProxy:getProxy
+	server:webserver_app
 
