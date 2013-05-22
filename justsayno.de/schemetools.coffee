@@ -35,7 +35,7 @@ addAdField = (app, tab, field, cnt, cb) ->
 		if err
 			console.log "error checking in on key " + field.name + " in " + app + "'s " + tab + " table."
 			throw err
-		if docs.length then return cb()
+		if docs.length then return cb?()
 		console.log "info: adding new field: #{field.name} in #{app}'s #{tab} table."
 		thisfield = new AdminFields()
 		thisfield.name = field.name
@@ -60,7 +60,7 @@ addAdField = (app, tab, field, cnt, cb) ->
 
 
 addFields = (app, tab, fields, cnt, cb) ->
-	if not fields.length then return cb()
+	if not fields.length then return cb?()
 	cnt++
 	nf = fields.shift()
 	addAdField app, tab, nf, cnt, ->
@@ -108,7 +108,8 @@ load_schema = (e, dirname, filename, cb) ->
 				else
 					if key < fields.length and fields[key].type isnt "String"
 						if eachd.listflags is "[#{fields[key].type}]" then fields[key].type = eachd.listflags
-						else
+						else if eachd.listflags isnt fields[key].type
+							# TODO itd be great to deal with this correctly, but I get confused by square brackets
 							console.log "Fields cfg table error (#{fields[key].name}): #{eachd.listflags} != #{fields[key].type}"
 					save = false
 				if save
@@ -127,7 +128,7 @@ load_schema = (e, dirname, filename, cb) ->
 ensureAdminAccess = (e, cb) ->
 	Admins.find {appname: e.appname}, (err, docs) ->
 		throw err	if err
-		if not docs.length then return cb()
+		if not docs.length then return cb?()
 		thisadm = new Admins()
 		thisadm.login = thisadm.passwd = thisadm.name = "admin"
 		thisadm.appname = e.appname
@@ -157,15 +158,15 @@ ensureAdFieldCfg = (e, appdir, commondir, fcb) ->
 		else
 			ocb()
 	), ->
-		if appdir is commondir then return fcb()
+		if appdir is commondir or commondir is null then return fcb?()
 		a = require "#{appdir}/#{e.appname}_app"
 		runThruPlugs a.env.plugins.slice(0), e, commondir, fcb
 
 
 runThruPlugs = (plugin_list, e, cdir, fcb) ->
-	if not plugin_list or not plugin_list.length then return fcb()
+	if not plugin_list or not plugin_list.length then return fcb?()
 	plug = plugin_list.shift()
-	ensureAdFieldCfg e, "#{cdir}/#{plug}", this_cd, ->
+	ensureAdFieldCfg e, "#{cdir}/#{plug}", null, ->
 		runThruPlugs plugin_list, e, cdir, fcb
 
 
@@ -180,7 +181,7 @@ configureDBschema = (admdb, e, cb) ->
 			ensureAdFieldCfg e, appdir, commondir, cb
 
 
-exports =
+module.exports =
 	configureDBschema:configureDBschema
 	URIofDB:URIofDB
 

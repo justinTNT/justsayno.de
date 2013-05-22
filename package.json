@@ -25,7 +25,7 @@
     "express": ">=3.1.0",
     "mongoose": ">=3.5.5",
     "connect-mongo": ">=0.3.2",
-    "jsdom": "0.3.4",
+    "jsdom": "0.6.3",
     "jquery": "1.8.3",
     "underscore": "1.4.4",
     "nodemailer": "0.3.41",

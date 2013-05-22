@@ -98,7 +98,7 @@ module.exports = (env, appenv, admdb) ->
 					unless sch
 						try
 							sch = require "../../common/#{appenv.plugins[i]}/schema/#{req.params.table}"
-			req.params.theTable = env.targetenv.db.model(sch.name)
+			if sch then req.params.theTable = env.targetenv.db.model(sch.name)
 			next()
 	
 

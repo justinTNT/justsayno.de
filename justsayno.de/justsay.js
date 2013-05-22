@@ -4,11 +4,12 @@
  * this is the code which is loaded both in the client and the server in order to weld data to templates
  */
 
-if (typeof $ == 'undefined') {
-var $ = require('jquery').create();
+if (typeof $ == 'undefined') {					// no jquery? server side
+var jsdom = require('jsdom');
+  window = jsdom.jsdom().createWindow();		// global window object: we should really move to cheerio
+  $ = require('jquery').create(window);
   _ = require('underscore');
 }
-
 
 
 
