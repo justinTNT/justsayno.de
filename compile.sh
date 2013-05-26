@@ -11,6 +11,16 @@ function exitonfail {
 outpath=$1
 infile=$2
 outfile=$(echo $infile | sed -e "s/coffee/js/g")
+
+if test $outfile -nt $infile; then
+	exit 0
+fi
+
 filename=$(basename "$outfile")
+if [ $(echo $outfile | grep browser | wc -l) -ne 0 ]; then
+	flags="-c"
+else
+	flags="-cm"
+fi
 coffeelint -f ~/cslint.cfg $infile
-exitonfail coffee -cm -o $outpath $infile
+exitonfail coffee $flags -o $outpath $infile

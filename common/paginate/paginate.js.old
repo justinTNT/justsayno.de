@@ -12,7 +12,6 @@ function showPaginatedList(env, req, res, next, model, query, fields, sort, limi
 
 	model.find(newq, fields).sort(sort).limit(limit).skip(skip)
 			.execFind( function(err, docs) {
-
 				if (err) console.log('DEBUG : PAGINATE ERROR : ' + err);
 
 				if (err || !docs || !docs.length) {

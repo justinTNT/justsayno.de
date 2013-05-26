@@ -159,13 +159,10 @@ div.contextmenubreak {
 	background-color:#bbb;
 }
 
-div#refreshbutt {
-    background-image:url('/browser/images/refreshbutt.gif');
+i#refreshbutt {
     position:absolute;
     left:50%;
     top:5px;
-    height:23px;
-    width:23px;
     display:none;
 }
 
@@ -185,47 +182,38 @@ div.plus-field {
 	margin-top: 2px;
 }
 
-div.plusbutt {
-	background-image: url('/browser/images/add-icon.png');
-	background-repeat: no-repeat;
+i.icon-plus-sign{
 	float: left;
-	height: 16px;
-	width: 16px;
 	margin: 10px;
 	display:none;
+	font-size:14px;
 }
 
-.button-close {
-	background-image: url('/browser/images/close-icon.png');
+i.icon-remove-sign {
 	top: 0;
 	right: 3px;
-	height: 10px;
-	width: 10px;
-	background-repeat: no-repeat;
+	font-size:14px;
 	position: absolute;
+	color:red;
 	opacity:0;
 }
 
-.button-desc {
-	background-image: url('/browser/images/desc-icon.png');
+i.icon-caret-down {
+	color:brown;
 	top: 1px;
 	right: 17px;
-	height: 10px;
-	width: 10px;
-	background-repeat: no-repeat;
 	position: absolute;
 	visibility:hidden;
+	font-size:14px;
 }
 
-.button-asc {
-	background-image: url('/browser/images/asc-icon.png');
+i.icon-caret-up {
+	color:brown;
 	top: 1px;
 	right: 17px;
-	height: 10px;
-	width: 10px;
-	background-repeat: no-repeat;
 	position: absolute;
 	visibility:hidden;
+	font-size:14px;
 }
 
 div#maintab {
@@ -267,12 +255,9 @@ div#mainmenu {
 
 }
 
-div#saveconfig {
-	width:32px;
-	height:32px;
+i#saveconfig {
 	display:none;
 	float:right;
-	background-image:url('/browser/images/save-icon.png');
 }
 
 

@@ -7,6 +7,7 @@
 if (typeof $ == 'undefined') {					// no jquery? server side
 var jsdom = require('jsdom');
   window = jsdom.jsdom().createWindow();		// global window object: we should really move to cheerio
+  document = window.document;
   $ = require('jquery').create(window);
   _ = require('underscore');
 }
@@ -35,6 +36,7 @@ function setItem($i, str) {
 		}
 	}
 
+	// this bug is awesome!
     if ($.browser.mozilla) {
         var tmp = $i.html();
         if (tmp.substr(0, 9) == '<a xmlns=') {
@@ -53,17 +55,15 @@ function setItem($i, str) {
  * $s : the item
  */
 function weldItem (dat, $s) {
-	if (typeof dat == 'string' || typeof dat == 'number') {
-		setItem($s,dat);
-	} else {
+	if (typeof dat == 'string' || typeof dat == 'number') setItem($s,dat);
+	else {
 		for (keyatt in dat) {
 		var tmpa = keyatt.split('.')
 		 ,  key = tmpa[0]
 		 ,  attrib = tmpa[1]		// recognises key.attribute
 		 ,  $item;
 
-			if ($s.hasClass(key) || $s.attr('id') == key)
-				$item = $s;
+			if ($s.hasClass(key) || $s.attr('id') == key) $item = $s;
 			else {
 				$item = $s.find("#" + key);
 				if (! $item.length) $item = $s.find("." + key);
@@ -111,8 +111,17 @@ function weldItem (dat, $s) {
 					}
 
 					if (str) {
-						if (attrib) $item.attr(attrib, str);
-						else setItem($item,str);
+						if (attrib) {
+							if (attrib == 'text') {
+								$tmp = $item.children().clone()
+								$item.html(str);
+								$item.append($tmp);
+							} else if (attrib == 'textpre') {
+								$tmp = $item.children().clone()
+								$item.html(str);
+								$item.prepend($tmp);
+							} else $item.attr(attrib, str);
+						} else setItem($item,str);
 					}
 				}
 			}
@@ -143,7 +152,6 @@ function weldTemps(templates, objects, data, sendEmOff) {
 
 		for (var sel in objects) {
 			var dat, l, $s;
-
 			$s = data.find("#"+sel);
 			if (! $s.length) $s = data.find("."+sel);
 //			if (! $s.length) throw "bad selector " + sel + " in template " + select;
@@ -257,11 +265,9 @@ function addFBmeta(head, resp) {
 	var $m = $("<html>" + resp + "</html>").find('.fbmeta');
 	if ($m.length) {
 		var i = head.indexOf('<meta');
-	console.log(i)
 		newh = head.substr(0, i)
 			+ addFBmetaItem($m, 'title') + addFBmetaItem($m, 'image') + addFBmetaItem($m, 'description')
 			+ head.substr(i);
-	console.log(newh);
 	}
 	return newh;
 }

@@ -39,7 +39,7 @@ var eto_i = -1
 
 
 function showSave() {
-	$('div#saveconfig').show();
+	$('i#saveconfig').show();
 }
 
 function saveCfg() {
@@ -48,7 +48,7 @@ var i;
 		admin_table_fields[i].listorder = i;
 
 	$.post('/update_config' + which_route, {list:JSON.stringify(admin_table_fields)}, function(){
-		$('div#saveconfig').hide();
+		$('i#saveconfig').hide();
 	});
 }
 
@@ -118,11 +118,11 @@ function setupNewField($f, wtf) {
 
 	$f.hover(function(){
 				if ($('div.ui-resizable-resizing').length + $('div.ui-draggable-dragging').length == 0)
-					$(this).find('.button-close').stop().animate({opacity:'1'}, 1234);
+					$(this).find('i.icon-remove-sign').stop().animate({opacity:'1'}, 1234);
 			}	// close button on hover
-			,function(){ $(this).find('.button-close').stop().animate({opacity:'0'}, 123); });
+			,function(){ $(this).find('i.icon-remove-sign').stop().animate({opacity:'0'}, 123); });
 
-	$f.find('.button-close').click(function(){											// remove column on close button
+	$f.find('i.icon-remove-sign').click(function(){											// remove column on close button
 				var id = this.id.substr(6);
 				var field = _.detect(admin_table_fields, function(f) { return f.name == id; });
 				$(this).parent().remove();
@@ -234,13 +234,13 @@ function drawFieldBox() {
 			fieldname = fieldname.substr(fieldname.indexOf('_')+1);
 			if (fieldname != 'id' && fieldname != '_id') {
 				var f = _.detect(admin_table_fields, function(field) { return field.name == fieldname; } );
-				$(this).append('<div id="close-' + fieldname + '" class="button-close"></div>');
+				$(this).append('<i id="close-' + fieldname + '" class="icon-remove-sign"></i>');
 				setupNewInstanceField($(this), f.listflags);
 			}
 		});
 
 
-		setupPlusButt( $('div.instancelabels').append('<div class="plusbutt"></div>') ,showAllInstanceFields );
+		setupPlusButt( $('div.instancelabels').append('<i class="icon-plus-sign"></i>') ,showAllInstanceFields );
 
 /*
  * the whole field box (the entire list of labels, not each label) is resizable
@@ -269,7 +269,7 @@ function drawFieldBox() {
 			helper:'clone',
 			stack:'.instancelabelholder',
 			start:function(e,ui) {
-				$('.button-close').stop().animate({opacity:'0'}, 123);
+				$('i.icon-remove-sign').stop().animate({opacity:'0'}, 123);
 				ui.helper.animate({ borderColor: "#EEE8D5" }, 'fast').css({backgroundColor:'#FDF6E3', zIndex:'123'});
 			},
 			stop:function(e,ui) {
@@ -424,7 +424,7 @@ function makeUploadValueBox($newin, field)
  + " your own.</p>");
 					$t.append("<div><div class='filelist_name'>Name</div> <div class='filelist_size'>Size</div> <div class='filelist_date'>Date</div></div>");
 					$m.append($t);
-					$m.append('<div id="file_list_close" class="button-close"></div>');
+					$m.append('<i id="file_list_close" class="icon-remove-sign"></i>');
 					$b = $("<div class='file_list_list'>");
 					$m.append($b);
 					$('body').append($m);
@@ -1140,7 +1140,7 @@ function closePlusMenu() {
 
 function showPlusMenu() {
 	$('div#plus-menu').html('<div id="plus-menu-fields"></div>')
-						.css({left:$('div.current div.plusbutt').offset().left, top:$('div.current div.plusbutt').offset().top}).after('<div id="modalmask"></div>');
+						.css({left:$('div.current i.icon-plus-sign').offset().left, top:$('div.current i.icon-plus-sign').offset().top}).after('<div id="modalmask"></div>');
 	$('div#modalmask').click(function(){
 		return closePlusMenu();
 	});
@@ -1174,32 +1174,32 @@ function showPlusMenu() {
 function showPlusButt() {
 	if ($('div#maintab').hasClass('current')) {
 		if (_.all(admin_table_fields, function(f){ return f.listed || f.name == '_id' || f.name == 'id' })) {
-			$('div.current div.plusbutt').fadeOut();
-		} else $('div.current div.plusbutt').fadeIn(666, function(){ $('div.current div.plusbutt').animate({opacity:'0.5'}, 1234); });
+			$('div.current i.icon-plus-sign').fadeOut();
+		} else $('div.current i.icon-plus-sign').fadeIn(666, function(){ $('div.current i.icon-plus-sign').animate({opacity:'0.5'}, 1234); });
 	} else {
 		if (_.all(admin_table_fields, function(f){ return f.edited || f.name == '_id' || f.name == 'id' })) {
-			$('div.current div.plusbutt').fadeOut();
-		} else $('div.current div.plusbutt').fadeIn(666, function(){ $('div.current div.plusbutt').animate({opacity:'0.5'}, 1234); });
+			$('div.current i.icon-plus-sign').fadeOut();
+		} else $('div.current i.icon-plus-sign').fadeIn(666, function(){ $('div.current i.icon-plus-sign').animate({opacity:'0.5'}, 1234); });
 	}
 }
 
 function blurFresh() {
-    $('div#refreshbutt').css('backgroundPosition', '0px 0px');
+    $('i#refreshbutt').css('color', '#bbb');
 }
 function showRefreshButt() {
-    $('div#refreshbutt').show().click(function(){
+    $('i#refreshbutt').show().click(function(){
 		var tmp = $(this).click(false);
         justsayAJAJ('/refresh', function(){
 									$(this).click(tmp);
 									blurFresh();
 								}, blurFresh, {});
-    }).hover(function(){$(this).css('backgroundPosition','0px 23px');}, blurFresh);
+    }).hover(function(){$(this).css('color','#fff');}, blurFresh);
 }
 
 function setupPlusButt($plusbutt, wtf) {
-	$plusbutt.find('div.plusbutt').css({opacity:'0.5'})
-		.hover(function(){ $('div.current div.plusbutt').stop().animate({opacity:'1'}, 123); }
-			  ,function(){ $('div.current div.plusbutt').stop().animate({opacity:'0.5'}, 1234); })
+	$plusbutt.find('i.icon-plus-sign').css({opacity:'0.5'})
+		.hover(function(){ $('div.current i.icon-plus-sign').stop().animate({opacity:'1'}, 123); }
+			  ,function(){ $('div.current i.icon-plus-sign').stop().animate({opacity:'0.5'}, 1234); })
 		.click(function(){ wtf(); return false; });
 }
 
@@ -1215,7 +1215,7 @@ function makeFieldResizable($f) {
 		alsoResize:'.record_' + $f.attr('id'),
 		start:function(e,ui) {
 			ui.element.css({position:''});
-			$('.button-close').stop().animate({opacity:'0'}, 123);
+			$('i.icon-remove-sign').stop().animate({opacity:'0'}, 123);
 		},
 		resize:function(e,ui) {
 			ui.element.css({left:'0px'});
@@ -1232,14 +1232,14 @@ function makeFieldResizable($f) {
 		helper:'clone',
 		stack:'.admin_table_field',
 		start:function(e,ui) {
-			$('.button-close').stop().animate({opacity:'0'}, 123);
+			$('i.icon-remove-sign').stop().animate({opacity:'0'}, 123);
 			ui.helper.animate({ borderColor: "#EEE8D5" }, 'fast').css({backgroundColor:'#FDF6E3', zIndex:'123'});
 		},
 		stop:function(e,ui) {
 			var newlist = [];
 			var $et = $(e.target);
 			$et.css({position:''});
-			var idstr = $et.find('.button-close').attr('id').substr(6);
+			var idstr = $et.find('i.icon-remove-sign').attr('id').substr(6);
 			var movedf = _.detect(admin_table_fields, function(f){ return f.name == idstr; });
 
 			var w = $('div.admin_table_fields').offset().left, doneflag = false, changedflag = true;
@@ -1306,10 +1306,10 @@ function setupNewListField($f) {
 function sortableNewField($f) {
 
 	$f.dblclick(function(){																// sort on double-click
-			$b = $(this).find('.button-asc');
+			$b = $(this).find('i.icon-caret-up');
 			if ($b.hasClass('stayVisible'))
-				$b = $(this).find('.button-desc');
-			else if ($(this).find('.button-desc').hasClass('stayVisible')) {
+				$b = $(this).find('i.icon-caret-down');
+			else if ($(this).find('i.icon-caret-down').hasClass('stayVisible')) {
 				$b = null;
 			}
 			$('.stayVisible').removeClass('stayVisible').css('visibility', 'hidden');
@@ -1520,15 +1520,15 @@ function getData() {
 function addNewField(field) {
 	$f = $('<div id="field_' + field.name + '" class="admin_table_field"></div>');
 	$f.width(field.listwidth).html(displayName(field));
-	if (($p = $('div.current div.plusbutt')).length)
+	if (($p = $('div.current i.icon-plus-sign')).length)
 		$p.before($f);
 	else $('div.admin_table_fields').append($f);
 
 	if (which_route != '/vocabs' && which_route.substr(0,7) != '/vocab/') {
-		$f.append('<div id="desc-' + field.name + '" class="button-desc"></div>'
-			 +'<div id="asc-' + field.name + '" class="button-asc"></div>');
+		$f.append('<i id="desc-' + field.name + '" class="icon-caret-down"></div>'
+			 +'<i id="asc-' + field.name + '" class="icon-caret-up"></div>');
 		if (adminflag) {
-			$f.append('<div id="close-' + field.name + '" class="button-close"></div>');
+			$f.append('<i id="close-' + field.name + '" class="icon-remove-sign"></i>');
 			setupNewListField($f);
 		}
 		sortableNewField($f);
@@ -1560,7 +1560,7 @@ var field;
 	});
 
 	if (adminflag) {
-		setupPlusButt( $('div.admin_table_fields').append('<div class="plusbutt"></div>'), showPlusMenu );
+		setupPlusButt( $('div.admin_table_fields').append('<i class="icon-plus-sign"></i>'), showPlusMenu );
 		showPlusButt();
 	}
 }
@@ -1665,7 +1665,7 @@ var $b = $('button#loginlogout');
 	$b.click(function() { logOut(); });
 
 	/* other header links ... */
-	$('div#saveconfig').click(function() { saveCfg(); });
+	$('i#saveconfig').click(function() { saveCfg(); });
 
 	hideInstancePage();
 }
