@@ -389,7 +389,7 @@ module.exports = (env, appenv, admdb) ->
 			table: req.params.table
 			listed: true
 		).sort("listorder").exec (err, doc) ->
-			throw err	if err
+			if not doc?.name then return env.respond req, res, null, null, null
 			req.params.theTable.find({}, doc.name).exec (err, docs) ->
 				throw err	if err
 				idkeys = []

@@ -65,7 +65,7 @@ setupRoutes = (ea) ->
 			for plugin in a.env.plugins  # some common modules return a hook, or array of hooks
 				a.env.hook[plugin] = require("../common/#{plugin}/#{plugin}.js") a.env  # common routing (server script)
 
-		a.setRoutes()		# now we add all the app-specific routes
+		a.setRoutes?()		# now we add all the app-specific routes
 
 		###
 		* and finally, this makes sure that ajax pages serve up the skeleton

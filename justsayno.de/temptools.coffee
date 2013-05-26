@@ -10,26 +10,25 @@ jade = require("jade")
 # * then calling fcb once they're all processed
 #
 eachMatchedFile = (dirname, files, match, cb, fcb) ->
-	fn = files.shift()
-	if fn
-		if match(fn) # if its .htm or .html or .tpl ... or .jade!
-			fs.readFile "#{dirname}/#{fn}", (err, data) -> #read in the file contents
-				throw err	if err
-				cb String(data), fn
-				eachMatchedFile dirname, files, match, cb, fcb
-		else
+	if not files or not files.length then return fcb?()
+	if (fn = files.shift()) and match(fn) # if its .htm or .html or .tpl ... or .jade!
+		return fs.readFile "#{dirname}/#{fn}", (err, data) -> #read in the file contents
+			throw err	if err
+			cb String(data), fn
 			eachMatchedFile dirname, files, match, cb, fcb
-	else fcb()	if fcb
+	eachMatchedFile dirname, files, match, cb, fcb		# continue on error / mismatch
 
 eachPlugDir = (plugins, match, op, fcb) ->
-	plugin = plugins.shift()
-	unless typeof plugin is "undefined"
+	if not plugins or not plugins.length then return fcb?()
+	if (plugin = plugins.shift())
 		dirname = __dirname + "/../common/#{plugin}/browser"
-		fs.readdir dirname, (err, files) -> # get list of files in templates dir
-			throw err	if err
+		return fs.readdir dirname, (err, files) -> # get list of files in templates dir
+			if err
+				if err.code is 'ENOENT' then files=null		#gotta fall thru for plugins
+				else throw err
 			eachMatchedFile dirname, files, match, op, ->
 				eachPlugDir plugins, match, op, fcb
-	else fcb()	if fcb
+	eachPlugDir plugins, match, op, fcb		# continue on error
 
 #
 # * for any suffix (css, js) this will :
@@ -38,13 +37,17 @@ eachPlugDir = (plugins, match, op, fcb) ->
 # * 3. read any files from the browser directories of the app's plugins that match suffix
 #
 genericDynamicLoadAppFiles = (e, suffix, appendattr, fcb) ->
-	re = new RegExp(".*\\." + suffix + "$")
+	re = new RegExp(".*\\.#{suffix}$")
 	fs.readFile "#{e.dir}/browser/#{e.appname}.#{suffix}", (err, data)->
-		throw err	if err
+		if err
+			console.dir err
+			throw err
 		data = replaceStaticApp(e, data)	if suffix is "css"
 		e[appendattr] += String(data)
 		fs.readdir "#{e.dir}/browser/#{suffix}/", (err, files) -> # get list of files in templates dir
-			throw err	if err
+			if err
+				if err.code is 'ENOENT' then files=null		#gotta fall thru for plugins
+				else throw err
 			eachMatchedFile "#{e.dir}/browser/#{suffix}/", files, (fn)->
 				re.test fn
 			, (txt)->
@@ -56,7 +59,7 @@ genericDynamicLoadAppFiles = (e, suffix, appendattr, fcb) ->
 					), ((txt) ->
 						e[appendattr] = txt + e[appendattr]
 					), fcb
-				else fcb()	if fcb
+				else fcb?()
 
 
 # initialise e[str] with files in dir
@@ -93,23 +96,19 @@ buildScripts = (e, txt, cb) ->
 						genericDynamicLoadAppFiles e, "css", cssstr, cb
 
 
-
-
-
-
 #
-# * reusable snippet to fill in templatable variables in fragments, css
+# reusable snippet to fill in templatable variables in fragments, css
 #
 replaceStaticApp = (e, txt) ->
 	# and keep em in the templatipi store
 	String(txt).replace(/\{\{APP\}\}/g, e.appname).replace(/\{\{STATIC\}\}/g, "http://#{e.staticurl}/").replace /\{\{LOCAL\}\}/g, "http://#{e.localurl}/"
 
 #
-# * populatipi - populate the app env's templatipi template array
-# * 		from the contents of all /.*\.html?/ files in the specified directory
-# * ----------
-# *	e: the environment object for the app we're currently populating
-# *	dirname : the directory to load all templates from
+# populatipi -	populate the app env's templatipi template array
+#				from the contents of all /.*\.html?/ files in the specified directory
+# ----------
+# e: the environment object for the app we're currently populating
+# dirname : the directory to load all templates from
 #
 populatipi = (e, dirname, whichplate, done) ->
 	fs.readdir dirname, (err, files) -> # get list of files in templates dir
@@ -145,8 +144,8 @@ configureTemplates = (e, cb) ->
 			s = s.substr(0, i) + String(d2) + s.substr(i)
 			e.templatipi[bpfn] = s
 			# load all base- templates into memory
-			populatipi e, e.dir + "/templates/baseplates", "templatipi", -> # load all skeleta into memory
-				populatipi e, e.dir + "/templates/skeleta", "skeletipi", ->
+			populatipi e, "#{e.dir}/templates/baseplates", "templatipi", -> # load all skeleta into memory
+				populatipi e, "#{e.dir}/templates/skeleta", "skeletipi", ->
 					for i of e.skeletipi
 						txt = (e.templatipi[i] = e.skeletipi[i])
 						txt = txt.replace(/[\t\n\r]/g, " ")
