@@ -157,6 +157,11 @@ configureTemplates = (e, cb) ->
 		i = 0
 		while i < arguments.length
 			args.push arguments[i++]
+		if e.customplate
+			if i is 3
+				args.push null
+				args.push null
+			args.push e.customplate
 		justsay.respond.apply this, args
 
 module.exports = configureTemplates:configureTemplates

@@ -126,9 +126,9 @@ load_schema = (e, dirname, filename, cb) ->
 # * we want to be sure there's an admin user setup for this app.
 #
 ensureAdminAccess = (e, cb) ->
-	Admins.find {appname: e.appname}, (err, docs) ->
+	Admins.find {appname: e.appname, login:'admin'}, (err, docs) ->
 		throw err	if err
-		if not docs.length then return cb?()
+		if docs?.length then return cb?()
 		thisadm = new Admins()
 		thisadm.login = thisadm.passwd = thisadm.name = "admin"
 		thisadm.appname = e.appname
@@ -141,9 +141,9 @@ ensureAdminAccess = (e, cb) ->
 
 
 #
-# * make sure we have default field entries in the database for each schema in this app.
-# * while testing, default behaviour is to clear all entries and rebuild.
-# * TTD: we might want to take command line parameters to specify to only add fields for those schema not already there
+# make sure we have default field entries in the database for each schema in this app.
+# while testing, default behaviour is to clear all entries and rebuild.
+# TODO: we might want to take command line parameters to specify to only add fields for those schema not already there
 #
 ensureAdFieldCfg = (e, appdir, commondir, fcb) ->
 	dn = "#{appdir}/schema"
