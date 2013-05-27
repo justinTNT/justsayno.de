@@ -86,8 +86,15 @@ module.exports = (env) ->
 	tag = require("./schema/tag").name
 	Tag = env.db.model(tag)
 
+	urlpre = urlpost = "/"
+	if env.urlprefix
+		urlpre = "/#{env.urlprefix}"
+		urlpost = "/#{env.urlprefix}/"
+		env.app.get "#{urlpost}", (req, res, next) ->
+			res.redirect urlpre
+
 	taginConfig =
-		nakedRoute: "/tag/:tag"			# route for first and subsequent page
+		nakedRoute: "#{urlpost}tag/:tag"			# route for first and subsequent page
 		model: Story					# the model we're paginating data from
 		query:tags: "req.params.tag"	# select parameters
 		fields: "name title teaser comment image created_date" # fields to extract
@@ -97,8 +104,8 @@ module.exports = (env) ->
 	paginate.setupPagLst env, taginConfig, doStories
 
 	paginConfig =
-		nakedRoute: "/" # special clean route for first page
-		skipRoute: "/roll/" # route for subsequent pages: /list/:skip
+		nakedRoute: "#{urlpre}" # special clean route for first page
+		skipRoute: "#{urlpost}/roll/" # route for subsequent pages: /roll/:skip
 		model: Story # the model we're paginating data from
 		query: {} # select parameters
 		fields: "name title teaser comment image created_date" # fields to extract
@@ -111,12 +118,13 @@ module.exports = (env) ->
 	tagsFromText = (textTags, cb, ids)->
 		if not textTags or not textTags.length then return cb ids
 		tag = textTags.shift()
-		Tag.find {name:tag}, (err, t)->
+		o = name:tag
+		Tag.find o, (err, t)->
 			if not err and t and t.name is tag and t._id
 				if not ids then ids=[]
 				ids.push t._id
 				return tagsFromText textTags, cb, ids
-			Tag.save {name:tag}, (err, t)->
+			new Tag(o).save (err, t)->
 				if not err and t and t.name is tag and t._id
 					if not ids then ids=[]
 					ids.push t._id
@@ -221,7 +229,7 @@ module.exports = (env) ->
 				res.send "Bad Fetch", 404
 
 
-	env.app.get "/:date/:month/:year/:name", (req, res, next) ->
+	showArt = (req, res, next) ->
 		search_date = new Date(req.params.year, req.params.month - 1, req.params.date)
 		next_date = new Date(search_date)
 		next_date.setDate(search_date.getDate()+1)
@@ -252,3 +260,6 @@ module.exports = (env) ->
 							all_objs.story.tags = ft.translateFields tags, {name:'tags', link:'tags.href'}
 							env.respond req, res, env.basetemps, temps, all_objs
 
+	if env.urlprefix
+		env.app.get "#{urlpre}/:date/:month/:year/:name", showArt
+	env.app.get "/:date/:month/:year/:name", showArt

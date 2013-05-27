@@ -48,7 +48,7 @@
   };
 
   module.exports = function(env) {
-    var Story, Tag, doStories, paginConfig, storeImage, story, tag, taginConfig, tagsFromText;
+    var Story, Tag, doStories, paginConfig, showArt, storeImage, story, tag, taginConfig, tagsFromText, urlpost, urlpre;
 
     storeImage = function(image, cb) {
       var img_name, img_url, r, statictools, tmp_path, ws;
@@ -109,8 +109,16 @@
     Story = env.db.model(story);
     tag = require("./schema/tag").name;
     Tag = env.db.model(tag);
+    urlpre = urlpost = "/";
+    if (env.urlprefix) {
+      urlpre = "/" + env.urlprefix;
+      urlpost = "/" + env.urlprefix + "/";
+      env.app.get("" + urlpost, function(req, res, next) {
+        return res.redirect(urlpre);
+      });
+    }
     taginConfig = {
-      nakedRoute: "/tag/:tag",
+      nakedRoute: "" + urlpost + "tag/:tag",
       model: Story,
       query: {
         tags: "req.params.tag"
@@ -121,8 +129,8 @@
     };
     paginate.setupPagLst(env, taginConfig, doStories);
     paginConfig = {
-      nakedRoute: "/",
-      skipRoute: "/roll/",
+      nakedRoute: "" + urlpre,
+      skipRoute: "" + urlpost + "/roll/",
       model: Story,
       query: {},
       fields: "name title teaser comment image created_date",
@@ -131,13 +139,16 @@
     };
     paginate.setupPagLst(env, paginConfig, doStories);
     tagsFromText = function(textTags, cb, ids) {
+      var o;
+
       if (!textTags || !textTags.length) {
         return cb(ids);
       }
       tag = textTags.shift();
-      return Tag.find({
+      o = {
         name: tag
-      }, function(err, t) {
+      };
+      return Tag.find(o, function(err, t) {
         if (!err && t && t.name === tag && t._id) {
           if (!ids) {
             ids = [];
@@ -145,9 +156,7 @@
           ids.push(t._id);
           return tagsFromText(textTags, cb, ids);
         }
-        return Tag.save({
-          name: tag
-        }, function(err, t) {
+        return new Tag(o).save(function(err, t) {
           if (!err && t && t.name === tag && t._id) {
             if (!ids) {
               ids = [];
@@ -302,7 +311,7 @@
         }
       });
     });
-    return env.app.get("/:date/:month/:year/:name", function(req, res, next) {
+    showArt = function(req, res, next) {
       var next_date, search_date, which_fields;
 
       search_date = new Date(req.params.year, req.params.month - 1, req.params.date);
@@ -367,7 +376,11 @@
           });
         }
       });
-    });
+    };
+    if (env.urlprefix) {
+      env.app.get("" + urlpre + "/:date/:month/:year/:name", showArt);
+    }
+    return env.app.get("/:date/:month/:year/:name", showArt);
   };
 
 }).call(this);

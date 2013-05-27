@@ -72,8 +72,16 @@ setupRoutes = (ea) ->
 		* in the case of where there is nothing else to server at the route
 		* i.e. it's all built on the client by a script
 		###
-		a.app.get /\/$/, (req, res) ->
-			a.env.respond req, res, a.env.basetemps
+		if a.env.urlprefix
+			matchx = new RegExp "^\/#{a.env.urlprefix}\/"
+			a.app.get matchx, (req, res) ->
+				a.env.respond req, res, a.env.basetemps
+			matchx = new RegExp "^\/#{a.env.urlprefix}$"
+			a.app.get matchx, (req, res) ->
+				a.env.respond req, res, a.env.basetemps
+		else a.app.get /\/$/, (req, res) ->
+			if a.env.urlprefix then res.redirect "\/#{a.env.urlprefix}"
+			else a.env.respond req, res, a.env.basetemps
 
 
 ###
