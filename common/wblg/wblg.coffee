@@ -39,6 +39,11 @@ module.exports = (env) ->
 			end: false
 
 	doStories = (req, res, docs, objs) ->
+		temps = [
+			selector: "#maintab"
+			filename: "showall.jade"
+		]
+		if not docs then return env.respond req, res, env.basetemps, temps, null
 		_.each docs, (o) ->
 			o.link = "/#{o.created_date.getDate()}/#{o.created_date.getMonth()+1}/#{o.created_date.getFullYear()}/#{encodeURIComponent(o.name)}"
 			o.month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][o.created_date.getMonth()]
@@ -50,10 +55,6 @@ module.exports = (env) ->
 			teaser: "teaser.textpre"
 		}]
 		objs.eachstory = ft.translateFields(docs, which_fields)
-		temps = [
-			selector: "#maintab"
-			filename: "showall.jade"
-		]
 		env.respond req, res, env.basetemps, temps, objs
 
 	story = require("./schema/story").name
@@ -80,7 +81,7 @@ module.exports = (env) ->
 
 	paginConfig =
 		nakedRoute: "#{urlpre}" # special clean route for first page
-		skipRoute: "#{urlpost}/roll/" # route for subsequent pages: /roll/:skip
+		skipRoute: "#{urlpost}roll/" # route for subsequent pages: /roll/:skip
 		model: Story # the model we're paginating data from
 		query: {} # select parameters
 		fields: "name title teaser comment image created_date" # fields to extract
@@ -128,6 +129,7 @@ module.exports = (env) ->
 			s.image = req.body.image
 			s.teaser = req.body.description
 		s.name = decodeURIComponent(req.body.url)
+		if (s.name[s.length-1] == '/') s.name = s.name.subtr(0, s.length-1)
 		s.name = s.name.substr(i + 1)	while (i = s.name.indexOf("/")) >= 0
 		s.name = s.name.substr(0, i)	while (i = s.name.indexOf(".")) >= 0
 
@@ -229,7 +231,7 @@ module.exports = (env) ->
 					all_objs.commentcnt = c
 					if not all_objs.story.tags or not all_objs.story.tags.length
 						env.respond req, res, env.basetemps, temps, all_objs
-					else Tag.find {id: $in: all_objs.story.tags}, (err, tags)->
+					else Tag.find {_id: $in: all_objs.story.tags}, (err, tags)->
 						unless err or not tags
 							_.each tags, (t) -> t.link = '/tag/' + t._id
 							all_objs.story.tags = ft.translateFields tags, {name:'tags', link:'tags.href'}

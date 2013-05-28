@@ -12,7 +12,7 @@ showPaginatedList = (env, req, res, next, cfg, skip, cb, skipRoute) ->
 			newq[i] = cfg.query[i]
 	cfg.model.find(newq, cfg.fields).sort(cfg.sort).limit(cfg.limit).skip(skip).execFind (err, docs)->
 		if err then console.log "DEBUG : PAGINATE ERROR : " + err
-		if err or not docs or not docs.length then return env.respond req, res, null, null, null
+		if err or not docs or not docs.length then return cb req, res
 		objs = {}
 		href = skipRoute + (cfg.limit + skip)
 		for p of req.params
@@ -20,7 +20,7 @@ showPaginatedList = (env, req, res, next, cfg, skip, cb, skipRoute) ->
 				href = "#{href.substring(0, i)}/#{req.params[p]}/#{href.substring(i+3+p.length)}"
 		if docs.length is cfg.limit
 			objs["paginationlink"] = {"nextlink.href": href}
-		cb req, res, docs, objs, skip
+		cb req, res, docs, objs
 
 
 #
