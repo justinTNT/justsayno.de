@@ -79,9 +79,10 @@ setupRoutes = (ea) ->
 			matchx = new RegExp "^\/#{a.env.urlprefix}$"
 			a.app.get matchx, (req, res) ->
 				a.env.respond req, res, a.env.basetemps
+			a.app.get /\/$/, (req, res) ->
+				res.redirect "\/#{a.env.urlprefix}"
 		else a.app.get /\/$/, (req, res) ->
-			if a.env.urlprefix then res.redirect "\/#{a.env.urlprefix}"
-			else a.env.respond req, res, a.env.basetemps
+			a.env.respond req, res, a.env.basetemps
 
 
 ###
