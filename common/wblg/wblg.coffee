@@ -129,9 +129,9 @@ module.exports = (env) ->
 			s.image = req.body.image
 			s.teaser = req.body.description
 		s.name = decodeURIComponent(req.body.url)
-		if (s.name[s.length-1] == '/') s.name = s.name.subtr(0, s.length-1)
-		s.name = s.name.substr(i + 1)	while (i = s.name.indexOf("/")) >= 0
-		s.name = s.name.substr(0, i)	while (i = s.name.indexOf(".")) >= 0
+		if s.name[s.length-1] is '/' then s.name = s.name.subtr(0, s.length-1)
+		s.name = s.name.substr(i + 1) while (i = s.name.indexOf("/")) >= 0
+		s.name = s.name.substr(0, i) while (i = s.name.indexOf(".")) >= 0
 
 		# copy image locally ...
 		storeImage s.image, (err, newimage) ->
