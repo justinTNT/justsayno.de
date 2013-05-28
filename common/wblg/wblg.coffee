@@ -1,47 +1,22 @@
 ft = require "../../justsayno.de/fieldtools"
 paginate = require "../paginate/paginate"
+
 cheerio = require "cheerio"
 request = require "request"
 fs = require "fs"
 path = require "path"
-
 mongoose = require "mongoose"
-Schema = mongoose.Schema
-ObjectId = Schema.ObjectId
-
 _ = require 'underscore'
 
-# this convoluted conclusion to the very simple file load
-# is cos we might want to rename it if it already exists ...
-###
-moveImage = (from, to, count) ->
-	fs.stat to, (err, stats) ->
-		unless err
-			if count
-				to = to.substr(0, to.length - 1)	until to.charAt(to.length - 1) is "_"
-				to = to.substr(0, to.length - 1)
-			else
-				count = 1
-			to = to + "_" + count.toString()
-			count++
-			moveImage from, to, count
-		else
-			fs.rename from, to
-###
-
-# sniff at the file extension
-
-looksLikeImage = (u) ->
-	lastfour = u.substr(u.length - 4).toLowerCase()
-	lastfive = u.substr(u.length - 5).toLowerCase()
-	lastfour is ".jpg" or lastfour is ".gif" or lastfour is ".png" or lastfive is "jpeg"
-
-
-
-
-# and here's what's exposed:
 
 module.exports = (env) ->
+
+	# sniff at the file extension
+	looksLikeImage = (u) ->
+		lastfour = u.substr(u.length - 4).toLowerCase()
+		lastfive = u.substr(u.length - 5).toLowerCase()
+		lastfour is ".jpg" or lastfour is ".gif" or lastfour is ".png" or lastfive is "jpeg"
+
 
 	storeImage = (image, cb) ->
 		statictools = require("../../justsayno.de/statictools") env
@@ -254,7 +229,7 @@ module.exports = (env) ->
 					all_objs.commentcnt = c
 					if not all_objs.story.tags or not all_objs.story.tags.length
 						env.respond req, res, env.basetemps, temps, all_objs
-					else Tag.find {id: $in: _.map(all_objs.story.tags, (t)-> ObjectId(t))}, (err, tags)->
+					else Tag.find {id: $in: all_objs.story.tags}, (err, tags)->
 						unless err or not tags
 							_.each tags, (t) -> t.link = '/tag/' + t._id
 							all_objs.story.tags = ft.translateFields tags, {name:'tags', link:'tags.href'}
