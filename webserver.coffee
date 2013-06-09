@@ -9,7 +9,8 @@ else wserver.setProxy(wscfg.proxy_port, wscfg.ip, wscfg.clandestine)
 
 sharedConfig =
 	mailopts: wscfg.mailopts
-	adminemail: wscfg.adminemail
+	adminfromemail: wscfg.adminfromemail
+	admintoemail: wscfg.admintoemail
 
 for i in wscfg.apps
 	if i.appname is 'static'

@@ -95,7 +95,7 @@ module.exports = (env) ->
 		if not textTags or not textTags.length then return cb ids
 		tag = textTags.shift()
 		o = name:tag
-		Tag.find o, (err, t)->
+		Tag.findOne o, (err, t)->
 			if not err and t and t.name is tag and t._id
 				if not ids then ids=[]
 				ids.push t._id
@@ -109,7 +109,7 @@ module.exports = (env) ->
 
 	env.app.get "/tags", (req, res, next) ->
 		Tag.find {}, (err, tags) ->
-			env.respond req, res, null, null, _.pluck tags, 'name'
+			env.respond req, res, null, null, _.uniq _.pluck tags, 'name'
 
 	env.app.post "/blog", (req, res, next) ->
 		protocol = "http://"
