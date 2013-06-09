@@ -684,10 +684,8 @@ function addValueBox(field, $newin, $where, eto_i) {
 						$nxton.val(valtoset[i]);
 						$nxton.insertBefore($setthisone);
 						$nxton.width(field.edithwidth);
-						$nxton.height($newin.height());
 					}
 				$setthisone.width(field.edithwidth);
-				$setthisone.height($newin.height());
 				break;
 			default:
 				$setthisone.val(valtoset);
@@ -696,7 +694,7 @@ function addValueBox(field, $newin, $where, eto_i) {
 
 	if ($newin.hasClass('multi')) {
 		$newin.add($newin.parent()).removeAttr('width').css('width', 'auto');
-		$newin.find('select').height($newin.height());
+		$newin.find('select').height(h);
 	} else
 		$newin.width(field.editwidth);
 	if (field.editflags != 'upload')
