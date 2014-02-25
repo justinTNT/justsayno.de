@@ -22,5 +22,5 @@ if [ $(echo $outfile | grep browser | wc -l) -ne 0 ]; then
 else
 	flags="-cm"
 fi
-coffeelint -f ~/cslint.cfg $infile
+coffeelint -f ~/coffeelint.json $infile
 exitonfail coffee $flags -o $outpath $infile

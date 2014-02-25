@@ -88,7 +88,8 @@ module.exports = (env, appenv, admdb) ->
 	onlyAdminCanAdminAdmin = (req, res, next) ->
 		if req.params.table is "admin"
 			req.params.theTable = admins
-			next new Error("Unauthorised access of admin tables")	unless req.session.user.login is "admin"
+			if req.session.user.login is "admin" then next()
+			else next new Error "Unauthorised access of admin tables"
 		else
 			sch = null
 			try

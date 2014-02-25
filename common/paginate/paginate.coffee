@@ -10,7 +10,7 @@ showPaginatedList = (env, req, res, next, cfg, skip, cb, skipRoute) ->
 			newq[i] = req.params[cfg.query[i].substr(11)]
 		else
 			newq[i] = cfg.query[i]
-	cfg.model.find(newq, cfg.fields).sort(cfg.sort).limit(cfg.limit).skip(skip).execFind (err, docs)->
+	cfg.model.find(newq, cfg.fields).sort(cfg.sort).limit(cfg.limit).skip(skip).exec (err, docs)->
 		if err then console.log "DEBUG : PAGINATE ERROR : " + err
 		if err or not docs or not docs.length then return cb req, res
 		objs = {}
