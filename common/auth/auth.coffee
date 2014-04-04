@@ -1,4 +1,4 @@
-crypto = require("crypto")
+crypto = require "../../justsayno.de/crypto"
 guest = require("./schema/guest").name
 module.exports = (env) ->
 	

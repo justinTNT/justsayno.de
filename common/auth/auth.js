@@ -2,7 +2,7 @@
 (function() {
   var crypto, guest;
 
-  crypto = require("crypto");
+  crypto = require("../../justsayno.de/crypto");
 
   guest = require("./schema/guest").name;
 
@@ -49,10 +49,13 @@
         if (!doc) {
           return cb(name);
         }
-        if (doc.pass !== pass) {
+        if (!doc.salt && pass !== doc.pass) {
+          return cb("");
+        } else if (crypto.hashPassword(pass, doc.salt) !== doc.pass) {
           return cb("");
         }
         delete doc.pass;
+        delete doc.salt;
         return cb(doc._doc);
       });
     };
@@ -220,14 +223,17 @@
     });
     env.app.post("/register", function(req, res) {
       return validateNewRego(req.body.login, req.body.email, function(u) {
-        var g;
+        var g, password_salt;
         if (u) {
           return res.send(u, 404);
         }
+        password_salt = crypto.generateSalt();
         g = new Guest({
           handle: req.body.login,
           email: req.body.email,
-          pass: req.body.password,
+          salt: password_salt,
+          algo: crypto.hashAlgorithm,
+          pass: crypto.hashPassword(req.body.password, password_salt),
           verified: false
         });
         return g.save(function(err) {

@@ -2,14 +2,13 @@
 callFirst = -> true		# all good
 
 
-approximateEmailRegExp = new RegExp 'mymail@domain.com','i'
 validateRegoForm = ($f)->
 	$field = $f.find("input[type='password']")
 	pass = $field.val()
 	if pass?.length < 8 then return $field
 	$field = $f.find("input.email")
 	mail = $field.val()
-	unless mail.match approximateEmailRegExp then return $field
+	unless mail.match /^[a-zA-Z0-9_\-\.]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+$/ then return $field
 	return null
 
 setupRegoForm = ($f)->
@@ -35,6 +34,8 @@ setupRegoForm = ($f)->
 		if $error = validateRegoForm($f)
 			$error.addClass 'error'
 		else justsayAJAJ $f.attr("action"), (o)->	# success!
+			console.log 'received:' #jTNTremove
+			console.dir o
 			location.hash = "/reqcode/#{o.code}"	# display page with instructions to send code
 		, ->		# error ...
 			$f.find("input[type='password']").addClass 'error'		# probably password?

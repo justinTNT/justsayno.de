@@ -3,7 +3,9 @@ Schema = mongoose.Schema
 
 MailuserSchema = new Schema
 	handle : String
-	verifiedEmail : String
+	email : String
+	code : String
+	newemail : String
 	haspage : Boolean
 	disabled : Boolean
 	complete : Boolean
