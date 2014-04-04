@@ -1,0 +1,144 @@
+#main {
+  font-size: 200%;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  BACKGROUND-COLOR: #bbb;
+}
+#main .backdiv {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.2;
+  overflow: hidden;
+}
+#main .backdiv img {
+  width: 100%;
+}
+#main div.rego {
+  margin: 2em;
+  margin-top: -4em;
+  height: 3em;
+}
+#main div.registration {
+  margin: 2em;
+  margin-top: -7em;
+  height: 9em;
+}
+#main div.registration .buttons {
+  width: 50%;
+  margin-left: 25%;
+}
+#main div.registration .buttons input {
+  border-radius: 0.5em;
+}
+#main div.registration .buttons input.save {
+  float: left;
+  color: #00008b;
+}
+#main div.registration .buttons input.cancel {
+  float: right;
+  color: #8b0000;
+}
+#main div.registration div.regoitem {
+  height: 4em;
+}
+#main div.registration div.regoitem span.label {
+  display: inline-block;
+  width: 9em;
+  text-align: right;
+}
+#main div.registration div.regoitem input {
+  border-radius: 0.5em;
+  padding-left: 0.5em;
+  margin-left: 0.5em;
+}
+#main div.registration div.regoitem i.icon-info-sign {
+  display: none;
+  color: #00f;
+  margin-left: 0.4em;
+}
+#main div.registration div.regoitem .desc {
+  display: none;
+  margin-right: 5em;
+  font-style: italic;
+  margin-top: 10px;
+}
+#main div.registration div.regoitem div.desc {
+  font-size: 75%;
+  margin-left: 6em;
+  color: #808080;
+}
+#main div.registration div.regoitem p.desc {
+  font-size: 50%;
+  margin-left: 9em;
+  color: #000;
+}
+#main div.rego,
+#main div.registration {
+  width: 80%;
+  background-color: #dfd;
+  border-radius: 15px;
+  padding: 2em;
+  top: 50%;
+  position: relative;
+  -webkit-box-shadow: 0 0 2em #efe;
+  -moz-box-shadow: 0 0 3em #efe;
+  box-shadow: 0 0 2em #efe;
+}
+#main div.rego span.rego,
+#main div.registration span.rego {
+  position: absolute;
+  top: -1em;
+  left: 2em;
+  font-weight: bold;
+  color: #808080;
+}
+#main div.rego .bigrego,
+#main div.registration .bigrego {
+  font-size: 200%;
+  text-align: center;
+}
+#main div.rego .bigrego input.handle,
+#main div.registration .bigrego input.handle {
+  border-radius: 1em;
+  font-size: 1em;
+  width: 8em;
+  padding-right: 0.5em;
+  text-align: right;
+  width: 6em;
+}
+#main div.rego .bigrego span.domain,
+#main div.registration .bigrego span.domain {
+  color: #000;
+}
+#main div.rego span.login,
+#main div.registration span.login {
+  position: absolute;
+  right: 2em;
+  bottom: -1em;
+}
+#main div.rego .errmsg,
+#main div.registration .errmsg {
+  color: #f00;
+  margin-top: 0.5em;
+  font-style: italic;
+  text-align: center;
+}
+#main div.rego input.error,
+#main div.registration input.error {
+  background-color: #fed;
+}
+#main div.rego input.error,
+#main div.registration input.error {
+  background-color: #fed;
+}
+#loginpage #loginbox .buttons,
+#loginpage form .buttons {
+  width: 70%;
+  margin-left: 15%;
+}

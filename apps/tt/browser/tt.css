@@ -1,0 +1,364 @@
+@font-face {
+  font-family: 'League';
+  src: url("{{LOCAL}}fonts/LeagueGothic.eot");
+  src: local('League'), url("{{LOCAL}}fonts/LeagueGothic.otf") format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Kabel';
+  src: url("{{LOCAL}}fonts/ITCKabelStd-Book.eot");
+  src: local('jtntKabel'), url("{{LOCAL}}fonts/ITCKabelStd-Book.otf") format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  font-family: 'Kabel';
+  margin: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
+  background-color: #eed;
+  line-height: 160%;
+  font-size: 16pt;
+}
+div#toplogo {
+  top: 0;
+  right: 0;
+  z-index: 5;
+  position: absolute;
+  width: 20%;
+}
+div#toplogo img {
+  width: 100%;
+}
+div#menu-base {
+  font-size: 80%;
+  margin-top: 2.5em;
+  height: 3.5em;
+  left: 0px;
+  width: 100%;
+  z-index: 6;
+  position: relative;
+}
+div#innermaintabbox {
+  z-index: 5;
+  -webkit-border-radius: 1em;
+  -moz-border-radius: 1em;
+  border-radius: 1em;
+}
+div#maintabbox {
+  padding: 0.1em 1em;
+  margin-left: -1em;
+  left: 5%;
+  width: 90%;
+  z-index: 4;
+  position: relative;
+}
+div#maintab {
+  padding: 2em;
+  margin: 1em;
+  z-index: 2;
+  position: relative;
+}
+h3,
+h2,
+h1 {
+  font-size: 200%;
+}
+.story a {
+  text-decoration: none;
+}
+.story a .titles {
+  font-family: 'League';
+  padding-left: 10%;
+  width: 80%;
+  perspective: 444;
+  -webkit-perspective: 444;
+}
+.story a .titles .title {
+  transform: rotate3d(1, 1, 0, 13deg);
+  -webkit-transform: rotate3d(1, 1, 0, 13deg);
+  margin-bottom: 0.4em;
+  text-align: center;
+  line-height: 0.8em;
+}
+#maintab > .story a .titles {
+  width: 70%;
+  padding-left: 0;
+}
+a.comments {
+  margin-left: 9em;
+}
+div#maintab>div.comment_reply {
+  margin: 4em;
+  height: 8em;
+}
+div.comment_reply {
+  clear: both;
+}
+div.eachcomment {
+  margin-left: 10%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  clear: both;
+}
+div.comment_name {
+  font-size: 150%;
+  line-height: 150%;
+  font-weight: bold;
+}
+div.comment_reply a {
+  color: #607890;
+  font-weight: normal;
+  text-decoration: none;
+}
+div.comment_reply a:hover {
+  color: #000;
+}
+form.addcomment textarea {
+  float: left;
+  margin: 1em;
+  margin-left: 0px;
+}
+form.addcomment input.savecomment {
+  float: left;
+  margin: 2em;
+}
+div.mycomment {
+  margin: 2em;
+  color: #bf2;
+}
+p {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+a.spch-bub-inside,
+a.spch-bub-outside {
+  color: #555;
+}
+.spch-bub-inside em {
+  background: #555;
+  color: #fff;
+}
+.spch-bub-inside .point,
+.spch-bub-outside .point {
+  border-right-color: #555;
+}
+.spch-bub-outside .bubble {
+  background: #555;
+}
+a.spch-bub-inside:hover,
+a.spch-bub-outside:hover {
+  color: #999;
+}
+a.spch-bub-inside:hover em,
+a.spch-bub-outside:hover .bubble {
+  background: #999;
+  color: #201;
+}
+a.spch-bub-inside:hover .point,
+a.spch-bub-outside:hover .point {
+  border-right-color: #999;
+}
+div.speachpoint {
+  border-left-color: #999;
+  border-bottom-color: #999;
+/* IE fix */
+  border-bottom-color: rgba(0,0,0,0);
+}
+div.border-point {
+  border-left-color: #777;
+  border-bottom-color: #777;
+/* IE fix */
+  border-bottom-color: rgba(0,0,0,0);
+}
+div.border-bubble {
+  border-color: #777;
+  border-bottom-color: #555;
+}
+div.comment {
+  background: #999;
+}
+div.paginationlink {
+  clear: both;
+}
+div.addnewcomment {
+  clear: both;
+  margin: 1em;
+}
+div.eachstory {
+  padding: 1em;
+  margin-bottom: 2em;
+  background-color: #ffe;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.27), 0 0 40px rgba(0,0,0,0.06) inset;
+  -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.27), 0 0 60px rgba(0,0,0,0.1) inset;
+  -moz-box-shadow: 0 1px 4px rgba(0,0,0,0.27), 0 0 40px rgba(0,0,0,0.06) inset;
+  border-radius: 0 120px 120px/0 0 6px 6px;
+}
+div.story p.comment {
+  clear: both;
+}
+div.story div.imgwrapper {
+  width: 33%;
+  float: left;
+  margin-right: 1em;
+}
+div.story div.imgwrapper img.image {
+  width: 100%;
+}
+#boilerplate-container i.maybe-edit {
+  float: left;
+  font-size: 32px;
+  cursor: hand;
+  cursor: pointer;
+}
+#boilerplate-container i.maybe-login {
+  float: right;
+  font-size: 32px;
+  cursor: hand;
+  cursor: pointer;
+}
+#boilerplate-container i.icon-signin {
+  color: #8c6;
+}
+#boilerplate-container i.icon-signout {
+  color: #c86;
+}
+#boilerplate-container i.icon-signin.hoverbutt {
+  color: #8f6;
+}
+#boilerplate-container i.icon-signout.hoverbutt {
+  color: #f86;
+}
+i.icon-edit {
+  color: #68a;
+}
+i.icon-edit.hoverbutt {
+  color: #68f;
+}
+div#modalbg {
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: #abc;
+  opacity: 0.6;
+  z-index: 22;
+}
+div#modal {
+  top: 20%;
+  left: 7%;
+  width: 80%;
+  height: auto;
+  position: absolute;
+  background-color: #ddf;
+  z-index: 23;
+  padding: 1em;
+  border: 1px solid #bad;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 13px 5px #468;
+  -moz-box-shadow: 1px 1px 13px 5px #468;
+  -webkit-box-shadow: 1px 1px 13px 5px #468;
+}
+div#modal i.icon-remove-sign {
+  position: absolute;
+  right: 0px;
+  top: -0.2em;
+  color: #f00;
+  cursor: hand;
+  cursor: pointer;
+}
+.hide4now {
+  display: none;
+}
+i.icon-ok {
+  color: #0f0;
+}
+.taglist {
+  height: 2em;
+  margin-top: -1em;
+}
+.taglist a.tags {
+  background-color: #def;
+  padding: 7px;
+  padding-bottom: 0;
+  float: right;
+  box-shadow: 1px 2px 3px 4px;
+  -moz-box-shadow: 1px 2px 3px 4px;
+  -webkit-box-shadow: 1px 2px 3px 4px;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  border-radius: 11px;
+  margin-right: 1em;
+}
+.taglist a.tags:hover {
+  background-color: #abc;
+}
+#inform .intaglist {
+  float: left;
+}
+#inform .intaglist span.tags {
+  background-color: #eec;
+  margin: 1em;
+  padding: 0.5em;
+  padding-bottom: 0;
+  font-size: 150%;
+  border: 1px solid #642;
+  position: relative;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+  box-shadow: 1px 1px 2px 3px #554;
+  -moz-box-shadow: 1px 1px 2px 3px #554;
+  -webkit-box-shadow: 1px 1px 2px 3px #554;
+}
+#inform .intaglist span.tags i.icon-remove-sign {
+  position: absolute;
+  top: 0;
+  color: #f52;
+  font-size: 66%;
+}
+#inform .intaglist span.tags i.icon-remove-sign:hover {
+  color: #fa5;
+}
+#inform .intags {
+  float: right;
+}
+#inform .intags input {
+  width: 9em;
+}
+#inform .intags select {
+  margin-left: 1em;
+}
+#inform input#url {
+  font-size: 250%;
+}
+#inform input#title {
+  font-size: 250%;
+  width: 90%;
+}
+#inform input#image {
+  font-size: 250%;
+  width: 90%;
+}
+#inform input.error {
+  background-color: #fcc;
+}
+#inform textarea#description {
+  font-size: 250%;
+  width: 90%;
+  height: 4em;
+}
+#inform textarea#comment {
+  margin: 1em;
+  font-size: 250%;
+}
+#inform p.center {
+  text-align: center;
+  margin-top: -2em;
+  padding-bottom: 1em;
+}

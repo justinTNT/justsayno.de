@@ -3,8 +3,9 @@ os = require 'os'
 net = require 'net'
 http = require 'http'
 express = require 'express'
+helmet = require 'helmet'
+MongoStore = require('connect-mongo')(express)
 mongoose = require 'mongoose'
-mongoStore = require('connect-mongo')(express)
 
 temptools = require './temptools'
 schemetools = require './schemetools'
@@ -14,14 +15,32 @@ proxies = {}
 
 # configureAppEnv - setup some basic app functionality,
 
-configureAppEnv = (e) ->
+configureAppEnv = (e, dbname) ->
 	clandestine = "#{e.clandestine}_" + os.hostname() + "_#{e.appname}"
 	if e.targetapp then clandestine = "#{clandestine}_#{e.targetapp}"
 	temptools.configureTemplates e
 	e.app.use express.staticCache()
+
+	# session support in expressjs, using a Mongo backend
+	# access session variables via req.session.varname
+	e.app.use express.cookieParser()
+	e.app.use express.session({ secret: 'keybored cat', store: new MongoStore(url: dbname) })
+
+	# don't broadcasting webserver info to potential attackers
+	e.app.disable 'x-powered-by'
+
 	e.app.use express.bodyParser()
-	e.app.use express.cookieParser(clandestine)
-	e.app.use express.cookieSession key: if e.targetapp then "#{e.targetapp}-admin.sid" else "#{e.appname}.sid"
+	e.app.use helmet.xframe()
+	e.app.use helmet.iexss()
+	e.app.use helmet.contentTypeOptions()
+	e.app.use helmet.cacheControl()
+	e.app.use express.methodOverride()
+
+	###
+	# e.app.use express.cookieParser(clandestine)
+	# e.app.use express.cookieSession key: if e.targetapp then "#{e.targetapp}-admin.sid" else "#{e.appname}.sid"
+	###
+
 	e.app.use '/browser/', express.static "#{e.dir}/browser/"
 	e.app.use express.logger {immediate:true, format: '[:date] ' + e.appname + ' :remote-addr ":method :url" :status ":referrer"'}
 	e['hook'] = []
@@ -99,7 +118,8 @@ setupRoutes = (ea) ->
 webserver_app = null
 setupServer = (port, applist, ip, setuid, passon) ->
 	webserver_app = express()
-	admdb = mongoose.createConnection schemetools.URIofDB passon.mongopts, 'justsayadmin'
+	dbname = schemetools.URIofDB passon.mongopts, 'justsayadmin'
+	admdb = mongoose.createConnection dbname
 	dbs = [admdb]
 
 	for app in applist
@@ -118,11 +138,11 @@ setupServer = (port, applist, ip, setuid, passon) ->
 				if not e[key]
 					e[key] = passon[key]
 
-			eachapp.app = configureAppEnv e
+			eachapp.app = configureAppEnv e, dbname
 			setupRoutes eachapp
 
 			this_admin = require('./admin/admin') e, admdb
-			this_admin.app = configureAppEnv this_admin.env
+			this_admin.app = configureAppEnv this_admin.env, dbname
 			setupRoutes this_admin
 			webserver_app.use express.vhost("admin." + e.url, this_admin.app)
 

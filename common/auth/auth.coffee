@@ -8,15 +8,18 @@ module.exports = (env) ->
 
 	class EmailVerification
 		constructor: (secret)->
-			@cipher = crypto.createCipher("aes-256-cbc", secret)
-			@decipher = crypto.createDecipher("aes-256-cbc", secret)
+			if secret
+				@cipher = crypto.createCipher("aes-256-cbc", secret)
+				@decipher = crypto.createDecipher("aes-256-cbc", secret)
 		encrypt: (text)->
-			crypted = @cipher.update(text, "utf8", "hex")
-			crypted += @cipher.final("hex")
+			if text
+				crypted = @cipher.update(text, "utf8", "hex")
+				crypted += @cipher.final("hex")
 			crypted
 		decrypt: (text)->
-			dec = @decipher.update(text, "hex", "utf8")
-			dec += @decipher.final("utf8")
+			if text
+				dec = @decipher.update(text, "hex", "utf8")
+				dec += @decipher.final("utf8")
 			dec
 
 
@@ -27,8 +30,10 @@ module.exports = (env) ->
 		Guest.findOne {handle: name}, (err, doc) ->
 			throw err	if err
 			if not doc then return cb name
-			if doc.pass isnt pass then return cb ""
+			if not doc.salt and pass isnt doc.pass then return cb ""
+			else if crypto.hashPassword(pass, doc.salt) isnt doc.pass then return cb ""
 			delete doc.pass
+			delete doc.salt
 			cb doc._doc
 
 	
@@ -105,11 +110,17 @@ module.exports = (env) ->
 
 
 	env.app.get "/logout", (req, res) ->
-		if not req.session.user then return res.send "OK", 200
-		if req.session.user.remember
-			delete req.session.user.pass
-		else
-			delete req.session.user
+		console.log "got logout" # jTNT remove me
+		if req.session.user
+			console.dir req.session.user # jTNT remove me
+			if req.session.user.remember
+				delete req.session.user.pass
+			else
+				delete req.session.user
+			console.dir req.session.user # jTNT remove me
+			req.session.save()
+		console.log "sending OK" # jTNT remove me
+		res.send "OK", 200
 
 
 	env.app.post "/login", (req, res) ->
@@ -137,10 +148,13 @@ module.exports = (env) ->
 	env.app.post "/register", (req, res) ->
 		validateNewRego req.body.login, req.body.email, (u) ->
 			if u then return res.send u, 404
+			password_salt = crypto.generateSalt()
 			g = new Guest(
 				handle: req.body.login
 				email: req.body.email
-				pass: req.body.password
+				salt: password_salt
+				algo: crypto.hashAlgorithm
+				pass: crypto.hashPassword req.body.password, password_salt
 				verified: false
 			)
 			g.save (err) ->

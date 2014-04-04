@@ -12,21 +12,27 @@
     Guest = env.db.model(guest);
     EmailVerification = (function() {
       function EmailVerification(secret) {
-        this.cipher = crypto.createCipher("aes-256-cbc", secret);
-        this.decipher = crypto.createDecipher("aes-256-cbc", secret);
+        if (secret) {
+          this.cipher = crypto.createCipher("aes-256-cbc", secret);
+          this.decipher = crypto.createDecipher("aes-256-cbc", secret);
+        }
       }
 
       EmailVerification.prototype.encrypt = function(text) {
         var crypted;
-        crypted = this.cipher.update(text, "utf8", "hex");
-        crypted += this.cipher.final("hex");
+        if (text) {
+          crypted = this.cipher.update(text, "utf8", "hex");
+          crypted += this.cipher.final("hex");
+        }
         return crypted;
       };
 
       EmailVerification.prototype.decrypt = function(text) {
         var dec;
-        dec = this.decipher.update(text, "hex", "utf8");
-        dec += this.decipher.final("utf8");
+        if (text) {
+          dec = this.decipher.update(text, "hex", "utf8");
+          dec += this.decipher.final("utf8");
+        }
         return dec;
       };
 
@@ -170,14 +176,19 @@
       }
     });
     env.app.get("/logout", function(req, res) {
-      if (!req.session.user) {
-        return res.send("OK", 200);
+      console.log("got logout");
+      if (req.session.user) {
+        console.dir(req.session.user);
+        if (req.session.user.remember) {
+          delete req.session.user.pass;
+        } else {
+          delete req.session.user;
+        }
+        console.dir(req.session.user);
+        req.session.save();
       }
-      if (req.session.user.remember) {
-        return delete req.session.user.pass;
-      } else {
-        return delete req.session.user;
-      }
+      console.log("sending OK");
+      return res.send("OK", 200);
     });
     env.app.post("/login", function(req, res) {
       return authenticate(req.body.login, req.body.password, function(u) {

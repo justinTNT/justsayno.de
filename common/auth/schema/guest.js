@@ -4,6 +4,7 @@ var Schema = mongoose.Schema;
 var GuestSchema = new Schema({
   handle : String
   , pass : String
+  , salt : String
   , email : String
   , created_date	: Date
   , expireOnNoVerify	: Date

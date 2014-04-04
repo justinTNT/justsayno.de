@@ -71,7 +71,9 @@ function justsayAJAJ (route, succ, fail, data) {
  * just get frament
  */
 function justGetFrag (fragname) {
-	return($(justsayno.de.skeleta[fragname]));
+	var h;
+	if (!(h = justsayno.de.skeleta[fragname])) return null;
+	return $(h);
 }
 
 

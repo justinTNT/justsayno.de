@@ -85,8 +85,13 @@ buildScripts = (e, txt, cb) ->
 			dirt.eachfile __dirname, ["justsay.js", "browserbootstrap.js"], ((fn, str) ->
 				e[libstr] += str
 			), ->
-				e[libstr] += "var justsayno = { de: {localurl:'#{e.localurl}', staticurl:'#{e.staticurl}',\n skeleta : JSON.parse('#{txt}')}\n};\n"
 				genericDynamicLoadAppFiles e, "js", libstr, ->
+					e[libstr] = """
+					var justsayno = {
+						de: {localurl:'#{e.localurl}'
+						, staticurl:'#{e.staticurl}'
+						, skeleta : JSON.parse('#{txt}')}};\n
+					""" + e[libstr]
 					if process.env.NODE_ENV
 						ast = ugly.parser.parse(e[libstr]) # parse code and get the initial AST
 						ast = ugly.uglify.ast_mangle(ast) # get a new AST with mangled names
