@@ -59,8 +59,10 @@ function justsayAJAJ (route, succ, fail, data) {
 * DEBUGGING
 				alert('AJAX ERROR for ' + route + ': ' + ststxt + ':' + err);
 */
-			if (fail) {
-				fail(jqXHR.responseText, err);
+			if (jqXHR.status == 303) {	// redirect: don't return
+				location.hash = jqXHR.responseText;
+			} else if (fail) {
+				fail(jqXHR.responseText, jqXHR.status);
 			}
 		}
 	});

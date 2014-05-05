@@ -302,7 +302,10 @@ var o;
 		if (tpls) {
 			o = {objects:objs, templates:tpls};
 			response.send(JSON.stringify(o));
-		} else response.send(JSON.stringify(objs));
+		} else {
+			if (arguments.length == 4) objs = base_tpls;
+			response.send(JSON.stringify(objs));
+		}
 	} else {
 		try {
 			if (typeof objs == 'string') { // a few admin / debug pages may be built as strings

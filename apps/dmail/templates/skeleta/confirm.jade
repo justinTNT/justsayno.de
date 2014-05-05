@@ -1,18 +1,18 @@
 .backdiv
-	img(src="http://i0.wp.com/createevoke.com.au/wp-content/uploads/2013/07/Top-end-sunset.jpg" )
+	img(src="#{LOCAL}#{APP}/images/top-end-sunset.jpg" )
 
 .rego
 	span.rego
 		span.handle
-		span @da-rw.in
-	.bigrego
+		span @darwin.email
+	.confirmation
 		p
 			span Almost there! one more step ...
 		p
-			span To complete registration, send an email to register@da-rw.in from
+			span To complete registration, send an email to register@darwin.email
+			br
+			span from&nbsp;
 			span.email
-			span &nbsp;with
-			span.code
+			span &nbsp;with your confirmation code&nbsp;
+			strong.code
 			span &nbsp;in the subject.
-		p
-			span Come back when you've done it, or simply refresh this page.

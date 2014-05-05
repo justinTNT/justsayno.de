@@ -21,6 +21,8 @@ setupRegoForm = ($f)->
 	.blur ->
 		$(this).parent().find('i.icon-info-sign').hide()
 		$(this).parent().find('.desc').fadeOut()
+	.change ->
+		$f.find('div.errmsg').text ''
 	$f.find('i.icon-info-sign').hover ->
 		$(this).parent().find('div.desc').hide()
 		$(this).parent().find('p.desc').fadeIn()
@@ -32,13 +34,15 @@ setupRegoForm = ($f)->
 		justsayAJAJ '/deregister'
 	$f.find("[type='submit']").click ->
 		if $error = validateRegoForm($f)
+			$f.find('div.errmsg').text "Invalid #{$error.attr 'name'}"
 			$error.addClass 'error'
-		else justsayAJAJ $f.attr("action"), (o)->	# success!
-			console.log 'received:' #jTNTremove
-			console.dir o
-			location.hash = "/reqcode/#{o.code}"	# display page with instructions to send code
-		, ->		# error ...
-			$f.find("input[type='password']").addClass 'error'		# probably password?
+		else justsayAJAJ $f.attr("action"), ()->	# success!
+			location.hash = "/confirm"	# server could redirect instead of returning
+		, (errstr, code)->		# error ...
+			if code is 409 then type = 'text'	# conflict - email already used
+			else type = 'password' # what else could go rong? probably password??
+			$f.find("input[type='#{type}']").addClass 'error'
+			$f.find('div.errmsg').text errstr
 		, $f.serialize()
 		false
 
@@ -61,7 +65,7 @@ callAfter = (route) ->
 	).change ->
 		$('div.rego div.errmsg').text ''
 		justsayAJAJ '/preregister', (s)->
-			location.hash = '/registration'
+			location.hash = '/registration'	# server could redirect instead of returning
 		, (e)=>
 			$(this).blur().addClass 'error'
 			$('div.rego div.errmsg').text e

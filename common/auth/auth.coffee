@@ -110,17 +110,13 @@ module.exports = (env) ->
 
 
 	env.app.get "/logout", (req, res) ->
-		console.log "got logout" # jTNT remove me
 		if req.session.user
-			console.dir req.session.user # jTNT remove me
 			if req.session.user.remember
 				delete req.session.user.pass
 			else
 				delete req.session.user
-			console.dir req.session.user # jTNT remove me
 			req.session.save()
-		console.log "sending OK" # jTNT remove me
-		res.send "OK", 200
+		res.send "/", 303		# tell web app to redraw home page on logout
 
 
 	env.app.post "/login", (req, res) ->

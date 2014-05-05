@@ -179,19 +179,15 @@
       }
     });
     env.app.get("/logout", function(req, res) {
-      console.log("got logout");
       if (req.session.user) {
-        console.dir(req.session.user);
         if (req.session.user.remember) {
           delete req.session.user.pass;
         } else {
           delete req.session.user;
         }
-        console.dir(req.session.user);
         req.session.save();
       }
-      console.log("sending OK");
-      return res.send("OK", 200);
+      return res.send("/", 303);
     });
     env.app.post("/login", function(req, res) {
       return authenticate(req.body.login, req.body.password, function(u) {

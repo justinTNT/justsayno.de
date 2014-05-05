@@ -24,12 +24,20 @@
   margin-top: -4em;
   height: 3em;
 }
+#main div.rego .errmsg {
+  margin-top: 0.5em;
+}
 #main div.registration {
   margin: 2em;
   margin-top: -7em;
-  height: 9em;
+  height: 10em;
+}
+#main div.registration .errmsg {
+  margin-top: -0.5em;
 }
 #main div.registration .buttons {
+  position: absolute;
+  bottom: 1em;
   width: 50%;
   margin-left: 25%;
 }
@@ -98,6 +106,10 @@
   font-weight: bold;
   color: #808080;
 }
+#main div.rego .confirmation,
+#main div.registration .confirmation {
+  font-size: 90%;
+}
 #main div.rego .bigrego,
 #main div.registration .bigrego {
   font-size: 200%;
@@ -125,7 +137,6 @@
 #main div.rego .errmsg,
 #main div.registration .errmsg {
   color: #f00;
-  margin-top: 0.5em;
   font-style: italic;
   text-align: center;
 }

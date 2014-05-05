@@ -33,6 +33,8 @@
     }).blur(function() {
       $(this).parent().find('i.icon-info-sign').hide();
       return $(this).parent().find('.desc').fadeOut();
+    }).change(function() {
+      return $f.find('div.errmsg').text('');
     });
     $f.find('i.icon-info-sign').hover(function() {
       $(this).parent().find('div.desc').hide();
@@ -49,14 +51,20 @@
     return $f.find("[type='submit']").click(function() {
       var $error;
       if ($error = validateRegoForm($f)) {
+        $f.find('div.errmsg').text("Invalid " + ($error.attr('name')));
         $error.addClass('error');
       } else {
-        justsayAJAJ($f.attr("action"), function(o) {
-          console.log('received:');
-          console.dir(o);
-          return location.hash = "/reqcode/" + o.code;
-        }, function() {
-          return $f.find("input[type='password']").addClass('error');
+        justsayAJAJ($f.attr("action"), function() {
+          return location.hash = "/confirm";
+        }, function(errstr, code) {
+          var type;
+          if (code === 409) {
+            type = 'text';
+          } else {
+            type = 'password';
+          }
+          $f.find("input[type='" + type + "']").addClass('error');
+          return $f.find('div.errmsg').text(errstr);
         }, $f.serialize());
       }
       return false;

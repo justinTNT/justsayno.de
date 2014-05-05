@@ -40,7 +40,7 @@
       return Guest.remove({
         handle: req.session.user.handle
       }, function(err, docs) {
-        return res.redirect('/logout');
+        return res.send('/logout', 303);
       });
     });
     env.app.get('/register', doesntHavePass, function(req, res, next) {
@@ -83,6 +83,7 @@
       });
     });
     env.app.get('/confirm', mustHaveHandle, function(req, res, next) {
+      console.log("finding " + req.session.user.handle);
       return Mailuser.find({
         handle: req.session.user.handle
       }, function(err, docs) {
@@ -100,7 +101,7 @@
               email: docs[0].email,
               code: docs[0].code
             };
-            env.respond(req, res, env.basetemps, temps, o);
+            return env.respond(req, res, env.basetemps, temps, o);
           }
         }
         return res.redirect("/user/" + req.session.user.handle);
@@ -111,40 +112,63 @@
       return console.dir(req.body);
     });
     env.app.post('/dorego', mustHaveHandle, function(req, res, next) {
-      return Guest.find({
-        handle: req.session.user.handle
+      return Mailuser.find({
+        email: req.body.email
       }, function(err, docs) {
-        var doc, i, index, u, verificationChars, verificationCode, _i;
-        if (err || (docs != null ? docs.length : void 0) !== 1) {
-          return res.send("User not found", 404);
+        if (!err && (docs != null ? docs.length : void 0)) {
+          return res.send("Email already used", 409);
         }
-        doc = docs[0];
-        doc.email = req.body.email;
-        doc.salt = crypto.generateSalt();
-        doc.pass = crypto.hashPassword(req.body.pass, doc.salt);
-        doc.save();
-        verificationCode = '';
-        verificationChars = '0123456789abcdefghijklmnopqrstuvwxyz0123456789';
-        for (i = _i = 0; _i <= 7; i = ++_i) {
-          index = Math.floor(Math.random() * verificationChars.length);
-          verificationCode += verificationChars.substring(index, index + 1);
-        }
-        u = new Mailuser({
-          handle: req.session.user.handle,
-          email: req.body.email,
-          code: verificationCode
+        return Guest.find({
+          handle: req.session.user.handle
+        }, function(err, docs) {
+          var doc;
+          if (err || (docs != null ? docs.length : void 0) !== 1) {
+            return res.send("User not found", 404);
+          }
+          doc = docs[0];
+          doc.email = req.body.email;
+          doc.salt = crypto.generateSalt();
+          doc.pass = crypto.hashPassword(req.body.pass, doc.salt);
+          return doc.save(function(err) {
+            var i, index, msg, u, verificationChars, verificationCode, _i;
+            if (err) {
+              msg = "ERROR updating guest record with password";
+              console.log(msg);
+              console.dir(doc);
+              return res.send(msg, 404);
+            }
+            verificationCode = '';
+            verificationChars = '0123456789abcdefghijklmnopqrstuvwxyz0123456789';
+            for (i = _i = 0; _i <= 7; i = ++_i) {
+              index = Math.floor(Math.random() * verificationChars.length);
+              verificationCode += verificationChars.substring(index, index + 1);
+            }
+            u = new Mailuser({
+              handle: req.session.user.handle,
+              email: req.body.email,
+              code: verificationCode
+            });
+            return u.save(function(err) {
+              if (err) {
+                msg = "ERROR writing new mailuser record ";
+                console.log(msg);
+                console.dir(u);
+                return res.send(msg, 404);
+              } else {
+                return res.send('/confirm', 303);
+              }
+            });
+          });
         });
-        u.save();
-        return res.send('OK', 200);
       });
     });
     return env.app.post('/preregister', function(req, res, next) {
       var _ref, _ref1, _ref2;
       if ((_ref = req.session) != null ? (_ref1 = _ref.user) != null ? (_ref2 = _ref1.handle) != null ? _ref2.length : void 0 : void 0 : void 0) {
-        return res.redirect("/user/" + req.session.user.handle);
+        return res.send("/user/" + req.session.user.handle, 303);
       }
-      if (!req.body.handle.match(/^[a-z0-9_]+$/)) {
-        return res.send('Not a valid email address', 404);
+      if (!req.body.handle.match(/^[a-z0-9_\.]+$/)) {
+        return res.send('Not a valid email address', 409);
       }
       return Guest.find({
         handle: req.body.handle
@@ -154,7 +178,7 @@
           throw err;
         }
         if (docs != null ? docs.length : void 0) {
-          return res.send('That user already exists', 404);
+          return res.send('That user already exists', 409);
         }
         g = new Guest({
           handle: req.body.handle,
@@ -169,7 +193,7 @@
             req.session.user = _.clone(g);
             console.log("initiated new user " + g.handle);
           }
-          return env.respond(req, res, null, null, g);
+          return env.respond(req, res, g);
         });
       });
     });
