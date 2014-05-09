@@ -4,7 +4,9 @@
 .registration
 	span.rego
 		span.handle
-		span @darwin.email is available
+		span @
+		span.emaildomain
+		span is available
 	form(action='/dorego')
 		.regoitem
 			span.label Current address:
@@ -13,8 +15,13 @@
 			div.desc
 				span This is the existing mailbox where you will receive mails addressed to&nbsp;
 				span.handle
-				span @darwin.email
-			p.desc darwin.email redirects mail to an existing mailbox that you already use.  This address will be used to manage your darwin.email account, so make sure its an address you can also send from. 
+				span @
+				span.emaildomain
+			p.desc
+				span.emaildomain
+				span &nbsp;redirects mail to an existing mailbox that you already use.  This address will be used to manage your
+				span.emaildomain
+				span &nbsp;account, so make sure its an address you can also send from. 
 		.regoitem
 			span.label Password:
 			input.password(type='password',name='password')
@@ -22,7 +29,8 @@
 			div.desc
 				span This is the new password you'll use to manage settings for&nbsp;
 				span.handle
-				span.domain @darwin.email
+				span @
+				span.emaildomain
 			p.desc For security reasons, don't use the same password that you use to log in to your existing mailbox. If you ever forget your password, you can request a reset link to be sent to the email address nominated above.
 		.errmsg
 		.buttons

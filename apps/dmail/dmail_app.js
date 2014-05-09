@@ -9,6 +9,10 @@
     app: express(),
     plugins: ['auth'],
     dir: __dirname,
+    emaildomain: 'darwin.email',
+    DNSurl: "http://sandbox.rest.easydns.net/mail/maps/darwin.email",
+    DNSuser: "OUR_API_TOKEN_HERE",
+    DNSpass: "YOUR_API_KEY_HERE",
     basetemps: [
       {
         selector: "#boilerplate-container",

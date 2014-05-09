@@ -1,6 +1,9 @@
 mailuser = require('./schema/mailuser').name
 crypto = require "../../justsayno.de/crypto"
 
+request = require 'request'
+
+
 module.exports = (env)->
 	Guest = env.db.model 'Guest'		# piggy-back on auth module
 	Mailuser = env.db.model mailuser
@@ -15,7 +18,9 @@ module.exports = (env)->
 
 	env.app.get '/registration', mustHaveHandle, doesntHavePass, (req,res,next)->
 		temps = [{selector:'#main', filename:'registration.jade'}]
-		env.respond req, res, env.basetemps, temps, handle: req.session.user.handle
+		env.respond req, res, env.basetemps, temps,
+			handle: req.session.user.handle
+			emaildomain:env.emaildomain
 
 	env.app.get '/deregister', mustHaveHandle, doesntHavePass, (req,res,next)->
 		Guest.remove {handle:req.session.user.handle}, (err, docs) ->
@@ -24,7 +29,7 @@ module.exports = (env)->
 	env.app.get '/register', doesntHavePass, (req,res,next)->
 		if req.session?.user?.handle?.length then return res.redirect "/registration"
 		temps = [{selector:'#main', filename:'rego.jade'} ]
-		env.respond req, res, env.basetemps, temps, null
+		env.respond req, res, env.basetemps, temps, emaildomain:env.emaildomain
 
 	env.app.get '/user/:handle', (req,res,next)->
 		unless req.session?.user?.handle is req.params.handle then return res.redirect '/register'
@@ -33,8 +38,9 @@ module.exports = (env)->
 				if not docs[0].complete and docs[0].code?.length
 					res.redirect '/confirm'
 			temps = [{selector:'#main', filename:'user.jade'} ]
-			o = handle: req.params.handle
-			env.respond req, res, env.basetemps, temps, o
+			env.respond req, res, env.basetemps, temps,
+				handle: req.params.handle
+				emaildomain:env.emaildomain
 
 	env.app.get '/confirm', mustHaveHandle, (req, res, next)->
 		console.log "finding #{req.session.user.handle}"
@@ -42,18 +48,102 @@ module.exports = (env)->
 			if not err and docs?.length is 1
 				if not docs[0].complete and docs[0].code?.length
 					temps = [{selector:'#main', filename:'confirm.jade'} ]
-					o = {handle: docs[0].handle, email: docs[0].email, code: docs[0].code}
-					return env.respond req, res, env.basetemps, temps, o
+					return env.respond req, res, env.basetemps, temps,
+						handle: docs[0].handle
+						email: docs[0].email
+						code: docs[0].code
+						emaildomain:env.emaildomain
 			# fall thru to redirect
 			res.redirect "/user/#{req.session.user.handle}"
 
+
+	# respond to post from mailhook (cloudmailin)
+
 	env.app.post '/confirm', (req, res, next)->
-		console.log "mailhook from cloudmailin"
-		console.dir req.body
-		# parse confirmation email
-		# compare email, code
-		# allgood? remove code and mark this user as complete
-		# finally, talk to easydns api
+		subj = req.body.headers.subj
+		themail = req.body.headers.from
+
+		# strip down sending email address from header
+		i = themail.indexOf '<'
+		unless i < 0
+			themail = themail.substr i+1
+			if (i = themail.indexOf '>') > 0
+				themail = themail.substr 0, i
+
+		# get guest record for that email
+		Guest.find {email:themail}, (err, docs) ->
+			if err or docs?.length isnt 1
+				console.log "User not found on confirmation email:"
+				console.dir req.body.headers
+				return -1
+			_doConfirmCode subj, docs[0], (doc)->
+				_doAddDNSmailMap doc, (doc)->
+					_doCompleteUser doc
+
+
+	# use DNS API to add mailmap
+	_doEachDNSmap  = (doc, cb)->
+		operation =
+			host: "@"
+			alias: doc.handle
+			destination: doc.email
+			active: "1"
+		connection =
+			url: env.DNSurl
+			auth:
+				user: env.DNSuser
+				pass: env.DNSpass
+		request.post connection, operation, (err, resp, body)->
+			if not err and resp.statusCode is 201 then return cb?()
+			console.log "DNS API did not create new map"
+			console.dir connection
+			console.dir operation
+			console.dir err
+			console.dir resp
+
+	# add mailmap
+	# if we're successful adding a mail map from the user object
+	# run the cb and look for another one to do (might be one failed previously?)
+	_doAddDNSmailMap = (doc, cb)->
+		_doEachDNSmap doc, ->
+			cb?()
+			Guest.findOne {code:null, complete:{$exists:false}}, (err, doc) ->
+				if err
+					console.log "Error looking for incomplete users to map"
+					return console.dir err
+				if not doc then return
+				_doAddDNSmailMap doc
+
+
+	# confirm code in subject
+	_doConfirmCode = (subj, doc, cb)->
+		if subj.indexOf doc.code < 0
+			console.log "code '#{docs.code}' not found in confirmation email subject:"
+			console.dir req.body.headers
+			return -1
+
+		# now remove code and mark this user as complete
+		doc.code = null
+		doc.save (err)->
+			if err
+				msg = "ERROR completing guest record"
+				console.log err
+				console.dir doc
+				return -1
+
+			# all good? continue thru to add new mapping
+			cb?()
+
+	# mark user as complete
+	_doCompleteUser = (doc)->
+		if doc.complete then return
+		doc.complete = true
+		doc.save (err)->
+			if err
+				msg = "ERROR completing guest record"
+				console.log err
+				console.dir doc
+
 
 	env.app.post '/dorego', mustHaveHandle, (req,res,next)->
 		Mailuser.find {email:req.body.email}, (err, docs) ->
