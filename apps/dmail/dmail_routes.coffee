@@ -116,9 +116,9 @@ module.exports = (env)->
 
 	# confirm code in subject
 	_doConfirmCode = (subj, doc, cb)->
-		if subj.indexOf doc.code < 0
-			console.log "code '#{docs.code}' not found in confirmation email subject:"
-			console.dir req.body.headers
+		if subj.indexOf(doc.code) < 0
+			console.log "code '#{subj}' not found in confirmation email subject:"
+			console.dir doc
 			return -1
 
 		# now remove code and mark this user as complete
@@ -131,7 +131,7 @@ module.exports = (env)->
 				return -1
 
 			# all good? continue thru to add new mapping
-			cb?()
+			cb? doc
 
 	# mark user as complete
 	_doCompleteUser = (doc)->

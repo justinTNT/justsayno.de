@@ -88,7 +88,6 @@
       });
     });
     env.app.get('/confirm', mustHaveHandle, function(req, res, next) {
-      console.log("finding " + req.session.user.handle);
       return Mailuser.find({
         handle: req.session.user.handle
       }, function(err, docs) {
@@ -114,8 +113,8 @@
     });
     env.app.post('/confirm', function(req, res, next) {
       var i, subj, themail;
-      subj = req.body.headers.subj;
-      themail = req.body.headers.from;
+      subj = req.body.headers.Subject;
+      themail = req.body.headers.From;
       i = themail.indexOf('<');
       if (!(i < 0)) {
         themail = themail.substr(i + 1);
@@ -123,7 +122,7 @@
           themail = themail.substr(0, i);
         }
       }
-      return Guest.find({
+      return Mailuser.find({
         email: themail
       }, function(err, docs) {
         if (err || (docs != null ? docs.length : void 0) !== 1) {
@@ -188,8 +187,8 @@
     };
     _doConfirmCode = function(subj, doc, cb) {
       if (subj.indexOf(doc.code < 0)) {
-        console.log("code '" + docs.code + "' not found in confirmation email subject:");
-        console.dir(req.body.headers);
+        console.log("code '" + subj + "' not found in confirmation email subject:");
+        console.dir(doc);
         return -1;
       }
       doc.code = null;
