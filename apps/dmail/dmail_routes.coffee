@@ -43,7 +43,6 @@ module.exports = (env)->
 				emaildomain:env.emaildomain
 
 	env.app.get '/confirm', mustHaveHandle, (req, res, next)->
-		console.log "finding #{req.session.user.handle}"
 		Mailuser.find {handle:req.session.user.handle}, (err, docs) ->
 			if not err and docs?.length is 1
 				if not docs[0].complete and docs[0].code?.length
@@ -60,8 +59,8 @@ module.exports = (env)->
 	# respond to post from mailhook (cloudmailin)
 
 	env.app.post '/confirm', (req, res, next)->
-		subj = req.body.headers.subj
-		themail = req.body.headers.from
+		subj = req.body.headers.Subject
+		themail = req.body.headers.From
 
 		# strip down sending email address from header
 		i = themail.indexOf '<'
@@ -71,7 +70,7 @@ module.exports = (env)->
 				themail = themail.substr 0, i
 
 		# get guest record for that email
-		Guest.find {email:themail}, (err, docs) ->
+		Mailuser.find {email:themail}, (err, docs) ->
 			if err or docs?.length isnt 1
 				console.log "User not found on confirmation email:"
 				console.dir req.body.headers
