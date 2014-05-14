@@ -9,8 +9,8 @@ module.exports = (env) ->
 	class EmailVerification
 		constructor: (secret)->
 			if secret
-				@cipher = crypto.createCipher("aes-256-cbc", secret)
-				@decipher = crypto.createDecipher("aes-256-cbc", secret)
+				@cipher = crypto.crypto.createCipher("aes-256-cbc", secret)
+				@decipher = crypto.crypto.createDecipher("aes-256-cbc", secret)
 		encrypt: (text)->
 			if text
 				crypted = @cipher.update(text, "utf8", "hex")

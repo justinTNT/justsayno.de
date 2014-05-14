@@ -16,6 +16,9 @@ options =
 		dname: ["territorytoday.loc"]
 		appname: "tt"
 	,
+		dname: ["darwin.loc"]
+		appname: "darwin"
+	,
 		dname: ["darwinmail.loc"]
 		appname: "dmail"
 	]

@@ -25,3 +25,5 @@ module.exports.hashPassword = hashPassword
 module.exports.verifyHash = verifyHash
 module.exports.hashAlgorithm = hashAlgorithm
 module.exports.uniqueHex = uniqueHex
+module.exports.crypto = crypto
+

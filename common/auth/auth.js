@@ -13,8 +13,8 @@
     EmailVerification = (function() {
       function EmailVerification(secret) {
         if (secret) {
-          this.cipher = crypto.createCipher("aes-256-cbc", secret);
-          this.decipher = crypto.createDecipher("aes-256-cbc", secret);
+          this.cipher = crypto.crypto.createCipher("aes-256-cbc", secret);
+          this.decipher = crypto.crypto.createDecipher("aes-256-cbc", secret);
         }
       }
 

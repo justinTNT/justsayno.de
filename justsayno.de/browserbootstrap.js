@@ -10,18 +10,20 @@ function updateLinks(frag){
 		frag.find('a:urlInternal').each(function() {			// all internal links,
 			if (! $(this).hasClass('hardlink')) {
 				var h=$(this).attr('href');					// get the href
-				if (h.substring(0,7) == 'http://') {		// if it's a fully qualified URL
-					h=h.substr(8);							// skip past the protocol,
-					h=h.substr(h.indexOf('/'));				// up to the path
-				}
-				if (h.indexOf('.') < 0) {			// don't intercept local files with '.' extension
-					if (h.charAt(0) != '/') h='/'+h;		// make sure there's a leading slash
-					$(this).data('ajax_link', h);
-					$(this).click(function(){							// when it's clicked,
-						$(this).blur();
-						location.hash = $(this).data('ajax_link');		// rewrite the fragment
-						return false;						// trust the router to make the server call
-					});	
+				if (h) {
+					if (h.substring(0,7) == 'http://') {		// if it's a fully qualified URL
+						h=h.substr(8);							// skip past the protocol,
+						h=h.substr(h.indexOf('/'));				// up to the path
+					}
+					if (h.indexOf('.') < 0) {			// don't intercept local files with '.' extension
+						if (h.charAt(0) != '/') h='/'+h;		// make sure there's a leading slash
+						$(this).data('ajax_link', h);
+						$(this).click(function(){							// when it's clicked,
+							$(this).blur();
+							location.hash = $(this).data('ajax_link');		// rewrite the fragment
+							return false;						// trust the router to make the server call
+						});	
+					}
 				}
 			}
 		});
