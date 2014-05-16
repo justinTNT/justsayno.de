@@ -81,7 +81,7 @@ window.runWithAuth = (->
 				<div style='clear:both'>
 					<input type='submit' value='Login'/>
 					<input type='button' name='cancel' value='Cancel'/>
-					<input type='submit' name='register' value='Register'/></div>
+					<input class='registerbutton' type='submit' name='register' value='Register'/></div>
 				<div class='reminder'>
 					<input type='checkbox' name='remember' />remember me on this computer</div>
 		</form></div></div>"

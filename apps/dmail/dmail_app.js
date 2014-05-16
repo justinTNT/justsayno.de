@@ -4,7 +4,7 @@
 
   express = require("express");
 
-  env = {
+  var env = {
     staticurl: "isnt.so",
     app: express(),
     plugins: ['auth'],

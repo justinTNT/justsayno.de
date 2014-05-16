@@ -1,15 +1,23 @@
-var env = { staticurl:'saymay.loc' };
-
 var express = require('express');
 
-env['app'] = express();
-
-env['plugins'] = ['auth'];
-
-
-env.dir = __dirname;
-
-env.basetemps = [ {selector:'#boilerplate-container', filename:'darwin.htm'} ];
+var env = {
+    staticurl: "saymay.loc",
+    app: express(),
+    plugins: ['auth'],
+	authdatabase: { name:'dmail' },
+    dir: __dirname,
+    basetemps: [
+      {
+        selector: "#boilerplate-container",
+        filename: "darwin.jade"
+      }
+    ],
+    s3: {
+      key: 'AKIAICFLGBIGUIP4WEBA',
+      secret: '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',
+      bucket: 'isnt.so'
+    }
+  };
 
 exports.setRoutes = function() {
 	require('./darw_showem.js')(env);

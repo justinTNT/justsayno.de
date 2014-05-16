@@ -102,7 +102,7 @@
       });
     };
     if (!justGetFrag("auth.jade")) {
-      justsayno.de.skeleta["auth.htm"] = "<div id='loginbackdrop'></div>\n<div id='loginpage'><div id='loginbox'>\n<form action='/login'>\n	Name: <input type='text' name='login' /><br>\n	Password: <input type='password' name='password' />\n		<div style='clear:both'>\n			<input type='submit' value='Login'/>\n			<input type='button' name='cancel' value='Cancel'/>\n			<input type='submit' name='register' value='Register'/></div>\n		<div class='reminder'>\n			<input type='checkbox' name='remember' />remember me on this computer</div>\n</form></div></div>\"";
+      justsayno.de.skeleta["auth.htm"] = "<div id='loginbackdrop'></div>\n<div id='loginpage'><div id='loginbox'>\n<form action='/login'>\n	Name: <input type='text' name='login' /><br>\n	Password: <input type='password' name='password' />\n		<div style='clear:both'>\n			<input type='submit' value='Login'/>\n			<input type='button' name='cancel' value='Cancel'/>\n			<input class='registerbutton' type='submit' name='register' value='Register'/></div>\n		<div class='reminder'>\n			<input type='checkbox' name='remember' />remember me on this computer</div>\n</form></div></div>\"";
     }
     return function(cb, silent) {
       if (_.isUndefined(cb)) {

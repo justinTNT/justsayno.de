@@ -126,6 +126,11 @@ div#botbarcontent {
 	text-align:center;
 }
 
+div#botbar i.support {
+	float:right;
+	margin-right: 1em;
+}
+
 div#mainbit {
 	position:absolute;
 	top:0px;
@@ -407,5 +412,16 @@ div.showpage {
 
 div.pagewhileloggedin {
 	margin-top:4em;
+}
+
+
+form input.registerbutton {
+	display:none;
+}
+
+#loginpage #loginbox .buttons,
+#loginpage form .buttons {
+	width: 70%;
+	margin-left: 15%;
 }
 

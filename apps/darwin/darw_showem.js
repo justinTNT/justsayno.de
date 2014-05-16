@@ -81,50 +81,51 @@ module.exports = function(env){
 
     var Card = env.db.model(card);
 
-    function doc2card (doc) {
-		var all_objs = {};
-    	if (doc) {
-			if (doc.upgrade) {
-				all_objs.showpage = { page:doc.page };
-			} else {
-				delete doc.page;
-				all_objs.card = ft.translateFields(doc);
-				var c= all_objs.card[0]
+function doc2card (doc) {
+var all_objs = {};
+	if (!doc) return all_objs;
+	if (doc._doc) doc = doc._doc;
+	if (doc.upgrade) {
+		all_objs.showpage = { page:doc.page };
+	} else {
+		delete doc.page;
+		all_objs.card = ft.translateFields(doc);
+		var c= all_objs.card[0]
 
-				for (var i in c) {
-					if (social[i]) {
-						if (c[i].length)
-							c[i + '.href'] = social[i] + c[i] + '/';
-					} else if (i == 'link') {
-						if (c[i].length)
-							c[i + '.href'] = 'http://' + c[i] + '/';
-					} else if (i == 'use_email') {
-						if (c[i]) {
-							c['email'] = c.contactemail;
-							c['email.href'] = 'mailto:' + c.email;
-						}
-					} else if (i == 'use_dmail') {
-						if (c[i] && !c['use_email']) {
-							c['email'] = c.name + '@' + env.url;
-							c['email.href'] = 'mailto:' + c.email;
-						}
-					}
-					if (awesome[i]) { 
-						if (i == 'mobile' && (! c.phone || !c.phone.length)) {
-							c[i] = makeAwesome('phone', c[i]);
-						} else if (social[i]) {
-							if (c[i].length)
-								c[i] = makeAwesome(i, '');
-							else delete c[i];
-						} else if (c[i].length) {
-							c[i] = makeAwesome(i, c[i]);
-						} else delete c[i];
-					}
+		for (var i in c) {
+			if (social[i]) {
+				if (c[i].length)
+					c[i + '.href'] = social[i] + c[i] + '/';
+			} else if (i == 'link') {
+				if (c[i].length)
+					c[i + '.href'] = 'http://' + c[i] + '/';
+			} else if (i == 'use_email') {
+				if (c[i]) {
+					c['email'] = c.email;
+					c['email.href'] = 'mailto:' + c.email;
+				}
+			} else if (i == 'use_dmail') {
+				if (c[i] && !c['use_email']) {
+					c['email'] = c.name + '@' + env.url;
+					c['email.href'] = 'mailto:' + c.email;
 				}
 			}
-    	}
-    	return all_objs;
-    }
+			if (awesome[i]) { 
+				if (i == 'mobile' && (! c.phone || !c.phone.length)) {
+					c[i] = makeAwesome('phone', c[i]);
+				} else if (social[i]) {
+					if (c[i].length)
+						c[i] = makeAwesome(i, '');
+					else delete c[i];
+				} else if (c[i].length) {
+					c[i] = makeAwesome(i, c[i]);
+				} else delete c[i];
+			}
+		}
+	}
+
+	return all_objs;
+}
     
 	function rspnd (e, r, d, q, s, n, t, o) {	// noticed I was doin a lot of this ...
 		if (r || !d) return n();
@@ -132,13 +133,13 @@ module.exports = function(env){
 		e.respond(q, s, e.basetemps, t, o);
 	}
 
-	function loggedIn (req, h) {
-		if (!h) h = req.session.user.handle;
-		return req.session.user && req.session.user.pass && req.session.user.handle == h;
+	function loggedIn (user, handle) {
+		if (!handle) handle = user.handle;
+		return user && user.pass && user.handle == handle;
 	}
 
 	function getMyCard(req, next, f) {
-		if (loggedIn(req, req.params.card)) {
+		if (loggedIn(req.session.user, req.params.card)) {
 			Card.findOne({name: req.session.user.handle}, function(err, doc) {
 				if (err || !doc) throw err;
 				f(doc._doc);
@@ -155,7 +156,7 @@ module.exports = function(env){
 			} else {
 				var f = ['url', 'name', 'email']
 				card.url = env.url;
-				card.email = req.session.user.email;
+				card.email = req.session.user.handle + '@darwin.email';
 				var o = { }; //action: 'editcardform.action'};
 				for (keys in card) {
 					if (_.indexOf(f, keys) == -1) {
@@ -171,9 +172,11 @@ module.exports = function(env){
 	}
 
 	function on404orCreate(req, res, next) {
-		if (loggedIn(req, req.params.notfound)) {
+		if (loggedIn(req.session.user, req.params.notfound)) {
 			var c = { name: req.params.notfound
                     , contactemail: req.session.user.email
+					, email: req.session.user.handle + '@darwin.email'
+					, active: false
 					};
 			new Card(c).save(function(err){
 				rspnd(env, err, c, req, res, next, 'editcard.htm', {card: ft.translateFields(c)});
@@ -187,7 +190,7 @@ module.exports = function(env){
 
 
 	env.app.get('/ck_page_browse', function(req,res) {
-		if (! loggedIn(req)) next();
+		if (! loggedIn(req.session.user)) next();
 		else {
 			var subdir = '/' + env.appname + '/' + req.session.user.handle + '/';
 			var topath = process.cwd() + '/apps/static/public' + subdir;
@@ -205,7 +208,7 @@ module.exports = function(env){
 	});
 
 	env.app.post('/ck_page_upload', function(req,res) {
-		if (! loggedIn(req)) next();
+		if (! loggedIn(req.session.user)) next();
 		else {
 			var subdir = '/' + env.appname + '/' + req.session.user.handle;
 			var topath = process.cwd() + '/apps/static/public' + subdir;
@@ -224,7 +227,7 @@ module.exports = function(env){
 
 	env.app.get("/", function(req, res, next){
 		Card.findOne({name:'darwin'}, function(err, doc) {
-			rspnd(env, err, doc, req, res, next, 'showcard.htm', doc2card(doc._doc));
+			rspnd(env, err, doc, req, res, next, 'showcard.htm', doc2card(doc));
 		});
 	});
 
@@ -234,10 +237,18 @@ module.exports = function(env){
 			var o = req.body;
 			o['modified_date'] = new Date();
 
-			if (!card.use_email) o.use_email=false;
-			if (!card.use_dmail) o.use_dmail=false;
 			if (!card.contactemail) o.contactemail = req.session.user.email;
+			if (!card.email) o.email = req.session.user.email;
 
+			// generically, it might be good to have a switch to turn email on,
+			// and contactemail might be the default email.
+			// but for darwin.email, we want to force display of email,
+			// and we want to force use of dmail (the domain mail)
+			o.use_email = true;		// specific to darwin.email !!
+			o.use_dmail = true;		// specific to darwin.email !!
+			o.email = req.session.user.handle + '@darwin.email'	// specific to darwin.email !!
+
+			if (!o.active) o.active = false;
 			Card.update({_id:card['_id']}, {$set:o}, function(err){
 				if (err) { throw err; }
 				res.send('OK');	
@@ -284,13 +295,18 @@ module.exports = function(env){
 		Card.findOne({name:req.params.card}, function(err, doc) {
 			if (err || !doc) return next();
 			doc = doc._doc;
-			if (loggedIn(req, req.params.card) && doc && _.keys(doc).length <= 2) {
-				rspnd(env, err, doc, req, res, next, 'editcard.htm', {card: ft.translateFields(doc)});
+			if (loggedIn(req.session.user, req.params.card)) {
+				if (!doc) return next();		// create if not exist
+				if (_.keys(doc).length <= 3)	// edit if not well populated
+					return rspnd(env, err, doc, req, res, next, 'editcard.htm', {card: ft.translateFields(doc)});
+				// otherwise faLl thru to default display behaviour
 			} else {
-				if (doc && doc['upgrade'])
-					rspnd(env, err, doc, req, res, next, 'showpage.htm', doc2card(doc));
-				else rspnd(env, err, doc, req, res, next, 'showcard.htm', doc2card(doc));
+				if (!doc) return next()			// show 404 if not found
+				if (!doc.active) return next()	// or not active
 			}
+			if (doc['upgrade'])
+				rspnd(env, err, doc, req, res, next, 'showpage.htm', doc2card(doc));
+			else rspnd(env, err, doc, req, res, next, 'showcard.htm', doc2card(doc));
 		});
 	});
 
@@ -298,7 +314,7 @@ module.exports = function(env){
 		on404orCreate(req, res, next);
 	});
 
-	env.app.get('/:notfound/edit', function(req, res, next){
+	env.app.get('/:notfound/:action', function(req, res, next){
 		on404orCreate(req, res, next);
 	});
 

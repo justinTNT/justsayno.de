@@ -128,7 +128,7 @@ module.exports = (env)->
 		doc.code = null
 		doc.save (err)->
 			if err
-				msg = "ERROR completing guest record"
+				msg = "ERROR completing mailuser record"
 				console.log err
 				console.dir doc
 				return -1
@@ -142,16 +142,26 @@ module.exports = (env)->
 		doc.complete = true
 		doc.save (err)->
 			if err
-				msg = "ERROR completing guest record"
+				msg = "ERROR completing mailuser record"
 				console.log err
 				console.dir doc
+			Guest.find {email: doc.email}, (err, docs)->
+				if err or docs?.length isnt 1 then return res.send "Guest not found", 404
+				d = docs[0]
+				d.verified = true
+				delete d.expireOnNoVerify
+				d.save (err)->
+					if err
+						msg = "ERROR updating guest record as verified"
+						console.log err
+						console.dir d
 
 
 	env.app.post '/dorego', mustHaveHandle, (req,res,next)->
 		Mailuser.find {email:req.body.email}, (err, docs) ->
 			if not err and docs?.length then return res.send "Email already used", 409
 			Guest.find {handle:req.session.user.handle}, (err, docs) ->
-				if err or docs?.length isnt 1 then return res.send "User not found", 404
+				if err or docs?.length isnt 1 then return res.send "Guest not found", 404
 				doc = docs[0]
 				doc.email = req.body.email
 				doc.salt = crypto.generateSalt()

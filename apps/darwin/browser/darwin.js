@@ -160,6 +160,8 @@ function goHome() {
 function finallyUpdate(route) {
 var $vor;
 
+	$('form').find('input.active').prop('checked', true);	// always push activation
+
 	$('input').focus(function(){
 		if ($(this).hasClass('error')) {
 			var beauty_opts = {
@@ -186,23 +188,24 @@ var $vor;
 	});
 
 	$.validator.addMethod('ausmobile', function(val, el){
-			return this.optional(el) || /^(\+61(\-)?|0)4[0-9]{2}(\-)?[0-9]{3}(\-)?[0-9]{3}$/.test(val);
+			return this.optional(el) || /^(\+61(\-)?|0)4[0-9]{2}([ \-])?[0-9]{3}([ \-])?[0-9]{3}$/.test(val);
 		}, "Please enter a valid mobile number, in the form 04xx-xxx-xxx");
 
 	$.validator.addMethod('darwinnumber', function(val, el){
-			return this.optional(el) || /^(08(\-)?)?8[0-9]{3}(\-)?[0-9]{4}$/.test(val);
+			return this.optional(el) || /^(08(\-)?)?8[0-9]{3}([ \-])?[0-9]{4}$/.test(val);
 		}, "Please enter a valid darwin number, in the form 08-8xxx-xxxx");
 
 	$.validator.addMethod('goog', function(val, el){
 			return this.optional(el) || /^[0-9]+$/.test(val);
+			return this.optional(el) || /^[A-Za-z0-9_\.]+$/.test(val);
 		}, "Your google+ ID should be a string of digits");
 
 	$.validator.addMethod('twit', function(val, el){
-		return this.optional(el) || /^(\@)?[A-Za-z0-9_]+$/.test(val);
+			return this.optional(el) || /^(\@)?[A-Za-z0-9_]+$/.test(val);
 		}, "Please enter a valid twitter username");
 
 	$.validator.addMethod('fb', function(val, el){
-			return this.optional(el) || /^[a-z\d.]{5,}$/.test(val);
+			return this.optional(el) || /^[a-z\d\.]{5,}$/.test(val);
 		}, "Please enter a valid facebook username");
 
 	$.validator.addMethod('link', function(val, el){
@@ -245,9 +248,7 @@ var $vor;
 						function(success){
 							location.hash = '/upgrade';
 						}, function(err) {
-							alert("You need to confirm your contact email before you can upgrade."
-							+ " We've sent a fresh verification link to your email address."
-							+ " Check your email and click thru to continue the process.");
+							alert("You need to confirm your darwin.email account first.");
 						});
 		});
 

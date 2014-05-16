@@ -1,10 +1,21 @@
 crypto = require "../../justsayno.de/crypto"
+schemetools = require "../../justsayno.de/schemetools"
 guest = require("./schema/guest").name
+
+mongoose = require "mongoose"
+
+
 module.exports = (env) ->
 	
 	mailer = require("../../justsayno.de/mail")(env)
 
-	Guest = env.db.model(guest)
+	if env.authdatabase
+		unless env.authdatabase.db
+			name = schemetools.URIofDB env.authdatabase.opts, env.authdatabase.name
+			env.authdatabase.db = mongoose.createConnection name
+	else env.authdatabase = db: env.db
+
+	Guest = env.authdatabase.db.model guest
 
 	class EmailVerification
 		constructor: (secret)->
@@ -30,7 +41,8 @@ module.exports = (env) ->
 		Guest.findOne {handle: name}, (err, doc) ->
 			throw err	if err
 			if not doc then return cb name
-			if not doc.salt and pass isnt doc.pass then return cb ""
+			if not doc.salt
+				if pass isnt doc.pass then return cb ""
 			else if crypto.hashPassword(pass, doc.salt) isnt doc.pass then return cb ""
 			delete doc.pass
 			delete doc.salt
@@ -175,9 +187,9 @@ module.exports = (env) ->
 	env.app.get "/verify/:user", (req, res) ->
 		Guest.findOne {handle:req.params.user}, (err, doc) ->
 			if not err and doc
-				unless doc.verified
-					sendVerification env, req.params.user, doc
-					res.send "not found", 404
+				if doc.verified
+					return res.send "OK", 200
+			res.send "not found", 404
 
 
 	env.app.get "/confirm/:user/:encoded_pass", (req, res) ->

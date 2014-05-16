@@ -203,7 +203,7 @@
       return doc.save(function(err) {
         var msg;
         if (err) {
-          msg = "ERROR completing guest record";
+          msg = "ERROR completing mailuser record";
           console.log(err);
           console.dir(doc);
           return -1;
@@ -219,10 +219,28 @@
       return doc.save(function(err) {
         var msg;
         if (err) {
-          msg = "ERROR completing guest record";
+          msg = "ERROR completing mailuser record";
           console.log(err);
-          return console.dir(doc);
+          console.dir(doc);
         }
+        return Guest.find({
+          email: doc.email
+        }, function(err, docs) {
+          var d;
+          if (err || (docs != null ? docs.length : void 0) !== 1) {
+            return res.send("Guest not found", 404);
+          }
+          d = docs[0];
+          d.verified = true;
+          delete d.expireOnNoVerify;
+          return d.save(function(err) {
+            if (err) {
+              msg = "ERROR updating guest record as verified";
+              console.log(err);
+              return console.dir(d);
+            }
+          });
+        });
       });
     };
     env.app.post('/dorego', mustHaveHandle, function(req, res, next) {
@@ -237,7 +255,7 @@
         }, function(err, docs) {
           var doc;
           if (err || (docs != null ? docs.length : void 0) !== 1) {
-            return res.send("User not found", 404);
+            return res.send("Guest not found", 404);
           }
           doc = docs[0];
           doc.email = req.body.email;

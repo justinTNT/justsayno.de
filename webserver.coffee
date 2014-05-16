@@ -9,6 +9,7 @@ else wserver.setProxy(wscfg.proxy_port, wscfg.ip, wscfg.clandestine)
 
 sharedConfig =
 	mailopts: wscfg.mailopts
+	mongopts: wscfg.mongopts
 	adminfromemail: wscfg.adminfromemail
 	admintoemail: wscfg.admintoemail
 

@@ -19,10 +19,12 @@ var CardSchema = new Schema({
   , twit : String
   , goog : String
   , contactemail : String
+  , email : String
   , use_email : Boolean
   , use_dmail : Boolean
   , upgrade : Boolean
   , redirect : Boolean
+  , active : Boolean
   , page : String
   , created_date	: Date
   , modified_date	: Date
