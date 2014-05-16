@@ -23,8 +23,11 @@ module.exports = (env)->
 			emaildomain:env.emaildomain
 
 	env.app.get '/deregister', mustHaveHandle, doesntHavePass, (req,res,next)->
-		Guest.remove {handle:req.session.user.handle}, (err, docs) ->
-			res.send '/logout', 303
+		Mailuser.find {handle:req.session.user.handle}, (err, docs) ->
+			if not err and docs?.length isnt 1
+				Guest.remove {handle:req.session.user.handle}, (err, docs) ->
+					res.send '/logout', 303
+			else res.send '/logout', 200
 
 	env.app.get '/register', doesntHavePass, (req,res,next)->
 		if req.session?.user?.handle?.length then return res.redirect "/registration"
@@ -152,7 +155,7 @@ module.exports = (env)->
 				doc = docs[0]
 				doc.email = req.body.email
 				doc.salt = crypto.generateSalt()
-				doc.pass = crypto.hashPassword req.body.pass, doc.salt
+				doc.pass = crypto.hashPassword req.body.password, doc.salt
 				doc.save (err)->
 					if err
 						msg = "ERROR updating guest record with password"

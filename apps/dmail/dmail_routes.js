@@ -40,10 +40,18 @@
       });
     });
     env.app.get('/deregister', mustHaveHandle, doesntHavePass, function(req, res, next) {
-      return Guest.remove({
+      return Mailuser.find({
         handle: req.session.user.handle
       }, function(err, docs) {
-        return res.send('/logout', 303);
+        if (!err && (docs != null ? docs.length : void 0) !== 1) {
+          return Guest.remove({
+            handle: req.session.user.handle
+          }, function(err, docs) {
+            return res.send('/logout', 303);
+          });
+        } else {
+          return res.send('/logout', 200);
+        }
       });
     });
     env.app.get('/register', doesntHavePass, function(req, res, next) {
@@ -186,7 +194,7 @@
       });
     };
     _doConfirmCode = function(subj, doc, cb) {
-      if (subj.indexOf(doc.code < 0)) {
+      if (subj.indexOf(doc.code) < 0) {
         console.log("code '" + subj + "' not found in confirmation email subject:");
         console.dir(doc);
         return -1;
@@ -200,7 +208,7 @@
           console.dir(doc);
           return -1;
         }
-        return typeof cb === "function" ? cb() : void 0;
+        return typeof cb === "function" ? cb(doc) : void 0;
       });
     };
     _doCompleteUser = function(doc) {
@@ -234,7 +242,7 @@
           doc = docs[0];
           doc.email = req.body.email;
           doc.salt = crypto.generateSalt();
-          doc.pass = crypto.hashPassword(req.body.pass, doc.salt);
+          doc.pass = crypto.hashPassword(req.body.password, doc.salt);
           return doc.save(function(err) {
             var i, index, msg, u, verificationChars, verificationCode, _i;
             if (err) {
