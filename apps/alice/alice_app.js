@@ -9,14 +9,14 @@
     app: express(),
     plugins: ['auth', 'mailu'],
     dir: __dirname,
-    emaildomain: 'darwin.email',
+    emaildomain: 'alicesprin.gs',
     DNSurl: "http://sandbox.rest.easydns.net/mail/maps/darwin.email",
     DNSuser: "OUR_API_TOKEN_HERE",
     DNSpass: "YOUR_API_KEY_HERE",
     basetemps: [
       {
         selector: "#boilerplate-container",
-        filename: "dmail.jade"
+        filename: "alice.jade"
       }
     ],
     s3: {
@@ -29,9 +29,9 @@
   exports.env = env;
 
   exports.setRoutes = function() {
-    return require('./dmail_routes')(env);
+    return require('./alice_routes')(env);
   };
 
 }).call(this);
 
-//# sourceMappingURL=dmail_app.map
+//# sourceMappingURL=alice_app.map

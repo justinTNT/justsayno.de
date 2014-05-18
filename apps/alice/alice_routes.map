@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "alice_routes.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "apps/alice/alice_routes.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAEA;AAAA,EAAA,MAAM,CAAC,OAAP,GAAiB,SAAC,GAAD,GAAA,CAAjB,CAAA;AAAA"
+}
