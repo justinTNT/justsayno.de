@@ -59,77 +59,7 @@ body {
 	background-color: #131313;
 }
 
-div.bars a {
-	text-decoration: none;
-	color:#986;
-	font-weight:bold;
-}
 
-div.bars a:hover {
-	text-decoration: none;
-	color:#68a;
-	font-weight:bold;
-}
-
-div.bars div.hoverbutt {
-	color:#68a;
-}
-
-div#topbar {
-	height:3em;
-	width:100%;
-	top:0px;
-	left:0px;
-	position:absolute;
-    overflow:hidden;
-}
-div#topbarinlay {
-	position:absolute;
-	width:100%;
-	height:100%;
-	top:0px;
-	left:0px;
-	background-color:#444;
-	opacity:0.5;
-	filter:Alpha(Opacity=50);
-}
-div#topbarcontent {
-	position:relative;
-	width:100%;
-	height:100%;
-}
-
-div#botbar {
-	height:2em;
-	width:100%;
-	bottom:0px;
-	left:0px;
-	position:absolute;
-	font-size:66%;
-    overflow:hidden;
-}
-div#botbarinlay {
-	position:absolute;
-	width:100%;
-	height:100%;
-	bottom:0px;
-	left:0px;
-	background-color:#444;
-	opacity:0.5;
-	filter:Alpha(Opacity=50);
-}
-div#botbarcontent {
-	position:relative;
-	width:100%;
-	height:100%;
-	margin-top:0.4em;
-	text-align:center;
-}
-
-div#botbar i.support {
-	float:right;
-	margin-right: 1em;
-}
 
 div#mainbit {
 	position:absolute;

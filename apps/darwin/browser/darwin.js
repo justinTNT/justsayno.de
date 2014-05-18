@@ -274,39 +274,40 @@ function runLoginAnim(o){
 }
 
 $(function(){
-runWithAuth(runLoginAnim, true);		// if there's a session, update the controls ... but don't prompt for logon just yet ...
-justsayUpdate(callAfter, callFirst);	// setup link handling etc
-callAfter();							// call for first hash
+	runWithAuth(runLoginAnim, true);		// if there's a session, update the controls ... but don't prompt for logon just yet ...
+	justsayUpdate(callAfter, callFirst);	// setup link handling etc
+	callAfter();							// call for first hash
 
-$('div#edithomebutt').hover(function(){
-							$(this).addClass('hoverbutt');
-						},function(){
-							$(this).removeClass('hoverbutt');
-						}).click(function(){
-							var user = runWithAuth();
-							if (user && which_route == user.handle) {
-								location.hash = '/' + user.handle + '/edit';
-							} else {
-								location.hash = '/' + user.handle;
-							}
-						});
+	$('div#edithomebutt').hover(function(){
+								$(this).addClass('hoverbutt');
+							},function(){
+								$(this).removeClass('hoverbutt');
+							}).click(function(){
+								var user = runWithAuth();
+								if (user && which_route == user.handle) {
+									location.hash = '/' + user.handle + '/edit';
+								} else {
+									location.hash = '/' + user.handle;
+								}
+							});
 
 
-$('div#onoffbutt').hover(function(){
-							if (runWithAuth()) $(this).addClass('offbutt');
-							else $(this).addClass('onbutt');
-						},function(){
-							$(this).removeClass('onbutt').removeClass('offbutt');
-						}).click(function(){
-							if (runWithAuth()) {
-								runWithAuth(null);
-								$('div#edithomebutt').animate({marginLeft:'-3em'}, function(){
-									$('div#headingtitle').animate({left:'0%'}, function(){
-										$('div#headingtitle').animate({marginLeft:'0em'});
+	$('div#onoffbutt').hover(function(){
+								if (runWithAuth()) $(this).addClass('offbutt');
+								else $(this).addClass('onbutt');
+							},function(){
+								$(this).removeClass('onbutt').removeClass('offbutt');
+							}).click(function(){
+								if (runWithAuth()) {
+									runWithAuth(null);
+									$('div#edithomebutt').animate({marginLeft:'-3em'}, function(){
+										$('div#headingtitle').animate({left:'0%'}, function(){
+											$('div#headingtitle').animate({marginLeft:'0em'});
+										});
 									});
-								});
-							} else runWithAuth(runLoginAnim);
-						});
+								} else runWithAuth(runLoginAnim);
+							});
 
-$('body').css({fontSize: Math.round($(window).width()/64)});
+	$('body').css({fontSize: Math.round($(window).width()/64)});
 });
+

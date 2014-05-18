@@ -47,19 +47,25 @@ setupRegoForm = ($f)->
 		false
 
 
+which_route = ''
+$("a.logout").click ->
+	runWithAuth null
+$("a.login").click ->
+	if runWithAuth() then runWithAuth null
+	else runWithAuth runLoginAnim
 
 # elemental updates for routes
 
 callAfter = (route) ->
 	unless route?.length
-		console.log 'going to register because of no route'	# jTNT remove
 		return location.hash = "/register"
 
-	$("a.logout").click ->
-		runWithAuth null
-	$("a.login").click ->
-		if runWithAuth() then runWithAuth null
-		else runWithAuth runLoginAnim
+	user = runWithAuth()
+	which_route = route
+	if user
+		if which_route is "user/#{user.handle}" then $('div#edithomebutt').text '\uf044'
+		else $('div#edithomebutt').text '\uf015'
+
 	$('div.rego input.handle').focus(->
 		$(this).removeClass 'error'
 	).change ->
@@ -76,12 +82,39 @@ callAfter = (route) ->
 # redraw if we log in
 
 runLoginAnim = (o) ->
+	if o
+		if which_route is o.handle then $('div#edithomebutt').text '\uf044'
+		else $('div#edithomebutt').text '\uf015'
+		$('div#edithomebutt').animate {marginLeft:'-3em'}, ->
+			$('div#edithomebutt').animate {marginLeft:'0em'}
 	if o?.handle?.length then return location.hash = "/user/#{o.handle}"
 	if o?.handle then return location.hash = "/registration"
 	return location.hash = "/register"
 
 
 $ ->
+	$('div#edithomebutt').hover(->
+		$(this).addClass 'hoverbutt'
+	, ->
+		$(this).removeClass 'hoverbutt'
+	).click ->
+		user = runWithAuth()
+		if user and which_route is "user/#{user.handle}"
+			location.hash = "/edit/#{user.handle}"
+		else location.hash = "/user/#{user.handle}"
+
+
+	$('div#onoffbutt').hover(->
+		if runWithAuth() then $(this).addClass 'offbutt'
+		else $(this).addClass 'onbutt'
+	, ->
+		$(this).removeClass('onbutt').removeClass('offbutt')
+	).click ->
+		if runWithAuth()
+			runWithAuth null
+			$('div#edithomebutt').animate {marginLeft:'-3em'}
+		else runWithAuth runLoginAnim
+
 	runWithAuth runLoginAnim, true # if there's a session, update the controls ... but don't prompt for logon just yet ...
 	justsayUpdate callAfter		# setup link handling etc
 	callAfter location.hash		# call for first hash

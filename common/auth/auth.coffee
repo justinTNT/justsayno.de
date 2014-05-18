@@ -146,7 +146,8 @@ module.exports = (env) ->
 
 
 	env.app.get "/silent_login", (req, res) ->
-		if not req.session.user then return res.send "", 404
+		if not req.session.user
+			return res.send "", 404
 		if req.session.user.pass
 			env.respond req, res, null, null, req.session.user
 		else

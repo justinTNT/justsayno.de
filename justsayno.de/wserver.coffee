@@ -82,8 +82,8 @@ setupRoutes = (ea) ->
 		# then comes routing for any plugins
 		if a.env.plugins
 			for plugin in a.env.plugins  # some common modules return a hook, or array of hooks
-				a.env.hook[plugin] = require("../common/#{plugin}/#{plugin}.js") a.env  # common routing (server script)
-
+				filename = "../common/#{plugin}/#{plugin}.js"
+				try a.env.hook[plugin] = require(filename) a.env  # common routing (server script)
 		a.setRoutes?()		# now we add all the app-specific routes
 
 		###
