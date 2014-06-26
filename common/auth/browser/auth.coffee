@@ -61,7 +61,7 @@ window.runWithAuth = (->
 			fail()
 
 	doRunWithAuth = (succ, fail, silent) ->
-		if session_user.handle then return succ()
+		if session_user and session_user.handle then return succ()
 		justsayAJAJ "/silent_login", ((o) ->
 			session_user = o
 			succ()
@@ -100,7 +100,7 @@ window.runWithAuth = (->
 	#
 	(cb, silent) ->
 		if _.isUndefined(cb)
-			return (if (session_user.handle) then session_user else null)
+			return if session_user and session_user.handle then session_user else null
 		unless cb
 			session_user = {}
 			justsayAJAJ "/logout"

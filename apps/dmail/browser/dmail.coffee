@@ -5,9 +5,13 @@ callFirst = -> true		# all good
 validateRegoForm = ($f)->
 	$field = $f.find("input[type='password']")
 	pass = $field.val()
-	if pass?.length < 8 then return $field
+	if not $f.hasClass('edit')
+		if pass?.length < 8 then return $field
 	$field = $f.find("input.email")
 	mail = $field.val()
+	if mail?.length is 0
+		if $f.hasClass('edit') then return null
+		else return $field
 	unless mail.match /^[a-zA-Z0-9_\-\.]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+$/ then return $field
 	return null
 
@@ -23,6 +27,12 @@ setupRegoForm = ($f)->
 		$(this).parent().find('.desc').fadeOut()
 	.change ->
 		$f.find('div.errmsg').text ''
+		disflag = true
+		$f.find('input').each ->
+			if this.type is 'text' or this.type is 'password'
+				if $(this).val().length then disflag = false
+		$f.find("[type='submit']").prop 'disabled', disflag
+
 	$f.find('i.icon-info-sign').hover ->
 		$(this).parent().find('div.desc').hide()
 		$(this).parent().find('p.desc').fadeIn()
@@ -31,13 +41,17 @@ setupRegoForm = ($f)->
 		if $(this).css('display') isnt 'none'
 			$(this).parent().find('div.desc').fadeIn()
 	$f.find('input.cancel').click ->
-		justsayAJAJ '/deregister'
+		if $f.hasClass 'edit' then location.hash = "/"	# no need to display confirmation code
+		else location.hash = '/deregister'
 	$f.find("[type='submit']").click ->
 		if $error = validateRegoForm($f)
 			$f.find('div.errmsg').text "Invalid #{$error.attr 'name'}"
 			$error.addClass 'error'
 		else justsayAJAJ $f.attr("action"), ()->	# success!
-			location.hash = "/confirm"	# server could redirect instead of returning
+			if $f.hasClass 'edit'
+				if not $f.find("input[type='text']").val().length	# no new password ...
+					return location.hash = "/"	# no need to display confirmation code
+			location.hash = "/confirm"
 		, (errstr, code)->		# error ...
 			if code is 409 then type = 'text'	# conflict - email already used
 			else type = 'password' # what else could go rong? probably password??
@@ -48,20 +62,21 @@ setupRegoForm = ($f)->
 
 
 which_route = ''
-$("a.logout").click ->
-	runWithAuth null
-$("a.login").click ->
-	if runWithAuth() then runWithAuth null
-	else runWithAuth runLoginAnim
 
 # elemental updates for routes
 
 callAfter = (route) ->
+	which_route = route
 	unless route?.length
 		return location.hash = "/register"
 
+	$("a.logout").click ->
+		runWithAuth null
+	$("a.login").click ->
+		if runWithAuth() then runWithAuth null
+		else runWithAuth runLoginAnim
+
 	user = runWithAuth()
-	which_route = route
 	if user
 		if which_route is "user/#{user.handle}" then $('div#edithomebutt').text '\uf044'
 		else $('div#edithomebutt').text '\uf015'

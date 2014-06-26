@@ -120,8 +120,12 @@ function weldItem (dat, $s) {
 								$tmp = $item.children().clone()
 								$item.html(str);
 								$item.prepend($tmp);
-							} else $item.attr(attrib, str);
-						} else setItem($item,str);
+							} else {
+								$item.attr(attrib, str);
+							}
+						} else {
+							setItem($item,str);
+						}
 					}
 				}
 			}
@@ -173,6 +177,10 @@ function weldTemps(templates, objects, data, sendEmOff) {
 						}
 					}
 				} else weldItem(dat, $s);
+			} else {
+				var tempo = {};
+				tempo[sel] = objects[sel];
+				weldItem(tempo, data);
 			}
 		}
 

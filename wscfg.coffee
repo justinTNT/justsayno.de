@@ -16,11 +16,16 @@ options =
 		dname: ["territorytoday.loc"]
 		appname: "tt"
 	,
+		dname: ["alice.loc"]
+		appname: "alice"
+	,
 		dname: ["darwin.loc"]
 		appname: "darwin"
+	###
 	,
 		dname: ["darwinmail.loc"]
 		appname: "dmail"
+	###
 	]
 
 	# webserver entry point.
