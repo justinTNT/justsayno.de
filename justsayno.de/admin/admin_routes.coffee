@@ -37,7 +37,7 @@ module.exports = (env, appenv, admdb) ->
 
 
 	STRstatdirlist = (path, files, stats, cb) ->
-		if not files.length then return cb stats
+		if not files?.length then return cb stats
 		fn = files.shift()
 		fs.stat path + fn, (err, s) ->
 			unless err
@@ -50,7 +50,7 @@ module.exports = (env, appenv, admdb) ->
 
 
 	statdirlist = (path, files, stats, cb) ->
-		if not files.length then return cb stats
+		if not files?.length then return cb stats
 		fn = files.shift()
 		fs.stat path + fn, (err, s) ->
 			if not err and s.isFile()
@@ -67,7 +67,7 @@ module.exports = (env, appenv, admdb) ->
 			login: name
 		, (err, docs) ->
 			throw err	if err
-			if docs.length is 0 or docs[0].passwd isnt pass then return cb()
+			if not docs?.length or docs[0].passwd isnt pass then return cb()
 			o = docs[0].toObject()
 			delete o.passwd
 			cb(o)
