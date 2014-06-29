@@ -98,9 +98,10 @@ module.exports = (env)->
 				themail = themail.substr 0, i
 
 		_doConfirm = (res, user)->
+			if not user then return res.send "OK", 200
 			_doConfirmCode subj, user, (user)->
+				if not user then return res.send "OK", 200
 				_doAddDNSmailMap user, (user)->
-					_doCompleteUser user
 					return res.send "OK", 200
 
 		# get guest record for that email
@@ -109,8 +110,7 @@ module.exports = (env)->
 			Mailuser.findOne {email:themail}, (err, user) ->
 				if err or not user
 					console.log "User #{themail} not found from confirmation email:"
-					return res.send "OK", 200
-					_doConfirm res, user
+				_doConfirm res, user
 
 
 	# use DNS API to add mailmap
@@ -125,21 +125,24 @@ module.exports = (env)->
 			auth:
 				user: env.DNSuser
 				pass: env.DNSpass
-		request.post connection, operation, (err, resp, body)->
+			form: operation
+		request.post connection, (err, resp, body)->
 			if not err and resp.statusCode is 201 then return cb? null
+			if not err then err = -1
 			console.log "DNS API did not create new map"
 			console.dir connection
-			console.dir operation
 			console.dir err
-			console.dir resp
+			cb err
 
 	# add mailmap
-	# if we're successful adding a mail map from the user object
-	# run the cb and look for another one to do (might be one failed previously?)
 	_doAddDNSmailMap = (user, cb)->
 		_doEachDNSmap user, (err)->
 			cb?()
-			unless err then Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
+			if err then return
+			# but if we're successful adding a mail map from the user object,
+			# then look for another one to do (might be one failed previously?)
+			_doCompleteUser user
+			Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
 				if err
 					console.log "Error looking for incomplete users to map"
 					return console.dir err
@@ -169,7 +172,7 @@ module.exports = (env)->
 
 	# mark user as complete
 	_doCompleteUser = (user)->
-		if user.complete then return
+		if not user or user.complete then return
 		user.complete = true
 		user.save (err)->
 			if err
@@ -222,7 +225,7 @@ module.exports = (env)->
 
 	env.app.post '/dorego', mustHaveHandle, (req, res, next)->
 		email = req.body.email
-		pass = req.body.pass
+		pass = req.body.password
 		_verifyEmail email, (err)->
 			if err then return res.send "email", 400
 			_verifyPass pass, (err)->
