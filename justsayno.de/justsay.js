@@ -177,10 +177,12 @@ function weldTemps(templates, objects, data, sendEmOff) {
 						}
 					}
 				} else weldItem(dat, $s);
-			} else {
+			} else { 
+				// at some point I thought this was useful:
+				/*
 				var tempo = {};
 				tempo[sel] = objects[sel];
-				weldItem(tempo, data);
+				weldItem(tempo, data); */
 			}
 		}
 
