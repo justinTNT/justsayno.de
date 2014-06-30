@@ -103,6 +103,11 @@ setupRoutes = (ea) ->
 		else a.app.get /\/$/, (req, res) ->
 			a.env.respond req, res, a.env.basetemps
 
+		a.app.get '*', (req, res)->
+			msg = "cant find #{req.url} from #{req.headers.host}"
+			console.dir msg
+			res.send 404, msg
+
 
 ###
  * setupServer - prepare to listen for http connections
