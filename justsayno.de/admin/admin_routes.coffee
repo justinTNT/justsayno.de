@@ -138,8 +138,8 @@ module.exports = (env, appenv, admdb) ->
 		funcNum = req.param("CKEditorFuncNum")
 		url = "http://#{env.staticurl}/#{env.targetapp}/admcke/"
 		finishFileLoad req.files.upload.path, topath + req.files.upload.name, 0, (to) ->
-			res.write "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
-			res.end()
+			res.set 'X-Frame-Options','SAMEORIGIN'
+			res.send "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
 
 
 	# list tables
