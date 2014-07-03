@@ -811,7 +811,7 @@
       }
     }
     if ($newin.hasClass("enrichme")) {
-      cki = CKEDITOR.instances["input_" + field.name];
+      cki = typeof CKEDITOR !== "undefined" && CKEDITOR !== null ? CKEDITOR.instances["input_" + field.name] : void 0;
       if (cki) {
         cki.destroy();
       }
@@ -832,11 +832,10 @@
         $instance.height(h);
         return $("div#instance_" + spanid).height(h);
       }), {
-        skin: "v2",
         filebrowserBrowseUrl: "/ck_browse",
         filebrowserUploadUrl: "/ck_upload"
       });
-      cki = CKEDITOR.instances["input_" + field.name];
+      cki = typeof CKEDITOR !== "undefined" && CKEDITOR !== null ? CKEDITOR.instances["input_" + field.name] : void 0;
       if (cki) {
         cki.on("resize", function(e) {
           var f_id, w;
@@ -909,7 +908,7 @@
     return $("button#save").click(function() {
       var instance, newobj, nowtoday;
       newobj = {};
-      for (instance in CKEDITOR.instances) {
+      for (instance in typeof CKEDITOR !== "undefined" && CKEDITOR !== null ? CKEDITOR.instances : void 0) {
         if (CKEDITOR.instances[instance].checkDirty()) {
           CKEDITOR.instances[instance].updateElement();
           $("#" + instance).addClass("altered");
@@ -1059,7 +1058,7 @@
     var cki, i, _results;
     if (typeof CKEDITOR !== "undefined") {
       _results = [];
-      for (cki in CKEDITOR.instances) {
+      for (cki in typeof CKEDITOR !== "undefined" && CKEDITOR !== null ? CKEDITOR.instances : void 0) {
         i = CKEDITOR.instances[cki];
         _results.push(i.destroy(false));
       }
