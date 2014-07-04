@@ -50,7 +50,7 @@ module.exports = (env, appenv, admdb) ->
 
 
 	statdirlist = (path, files, stats, cb) ->
-		if not files.length then return cb stats
+		if not files?.length then return cb stats
 		fn = files.shift()
 		fs.stat path + fn, (err, s) ->
 			if not err and s.isFile()
@@ -67,7 +67,7 @@ module.exports = (env, appenv, admdb) ->
 			login: name
 		, (err, docs) ->
 			throw err	if err
-			if docs.length is 0 or docs[0].passwd isnt pass then return cb()
+			if not docs?.length or docs[0].passwd isnt pass then return cb()
 			o = docs[0].toObject()
 			delete o.passwd
 			cb(o)
@@ -138,8 +138,8 @@ module.exports = (env, appenv, admdb) ->
 		funcNum = req.param("CKEditorFuncNum")
 		url = "http://#{env.staticurl}/#{env.targetapp}/admcke/"
 		finishFileLoad req.files.upload.path, topath + req.files.upload.name, 0, (to) ->
-			res.write "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
-			res.end()
+			res.set 'X-Frame-Options','SAMEORIGIN'
+			res.send "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
 
 
 	# list tables

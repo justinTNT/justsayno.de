@@ -644,7 +644,7 @@ addValueBox = (field, $newin, $where, eto_i) ->
 	
 	# add ckeditor widgets to elements that need enriching
 	if $newin.hasClass("enrichme")
-		cki = CKEDITOR.instances["input_" + field.name]
+		cki = CKEDITOR?.instances["input_" + field.name]
 		cki.destroy()	if cki
 		$newin.ckeditor (->
 			spanid = @container.$.id
@@ -661,11 +661,10 @@ addValueBox = (field, $newin, $where, eto_i) ->
 			$instance.height h
 			$("div#instance_" + spanid).height h
 		),
-			skin: "v2"
 			filebrowserBrowseUrl: "/ck_browse"
 			filebrowserUploadUrl: "/ck_upload"
 
-		cki = CKEDITOR.instances["input_" + field.name]
+		cki = CKEDITOR?.instances["input_" + field.name]
 		if cki
 			cki.on "resize", (e) ->
 				f_id = @container.$.id
@@ -726,7 +725,7 @@ drawValueBox = ->
 
 	$("button#save").click ->
 		newobj = {}
-		for instance of CKEDITOR.instances
+		for instance of CKEDITOR?.instances
 			if CKEDITOR.instances[instance].checkDirty()
 				CKEDITOR.instances[instance].updateElement()
 				$("#" + instance).addClass "altered"
@@ -825,7 +824,7 @@ scrollUpWindow = ->
 
 destroyRichEditors = ->
 	unless typeof CKEDITOR is "undefined"
-		for cki of CKEDITOR.instances
+		for cki of CKEDITOR?.instances
 			i = CKEDITOR.instances[cki]
 			i.destroy false
 

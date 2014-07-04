@@ -99,6 +99,7 @@ module.exports = (env)->
 				themail = themail.substr 0, i
 
 		_doConfirm = (res, user)->
+			if not user then return res.send "OK", 200
 			_doConfirmCode subj, user, (user)->
 				_doAddMailMap user, ->
 					return res.send "OK", 200
@@ -109,8 +110,7 @@ module.exports = (env)->
 			Mailuser.findOne {email:themail}, (err, user) ->
 				if err or not user
 					console.log "User #{themail} not found from confirmation email:"
-					return res.send "OK", 200
-					_doConfirm res, user
+				_doConfirm res, user
 
 
 	# use API to add mailmap
@@ -164,11 +164,11 @@ module.exports = (env)->
 			unless err
 				_doCompleteUser user
 				Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
-				if err
-					console.log "Error looking for incomplete users to map"
-					return console.dir err
-				if not user then return
-				_doAddMailMap user
+					if err
+						console.log "Error looking for incomplete users to map"
+						return console.dir err
+					if not user then return
+					_doAddMailMap user
 			cb?()
 
 
@@ -194,8 +194,7 @@ module.exports = (env)->
 
 	# mark user as complete
 	_doCompleteUser = (user)->
-		if not user then return
-		if user.complete then return
+		if not user or user.complete then return
 		user.complete = true
 		user.save (err)->
 			if err
@@ -248,7 +247,7 @@ module.exports = (env)->
 
 	env.app.post '/dorego', mustHaveHandle, (req, res, next)->
 		email = req.body.email
-		pass = req.body.pass
+		pass = req.body.password
 		_verifyEmail email, (err)->
 			if err then return res.send "email", 400
 			_verifyPass pass, (err)->
