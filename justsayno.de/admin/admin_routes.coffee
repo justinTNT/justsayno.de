@@ -37,7 +37,7 @@ module.exports = (env, appenv, admdb) ->
 
 
 	STRstatdirlist = (path, files, stats, cb) ->
-		if not files.length then return cb stats
+		if not files?.length then return cb stats
 		fn = files.shift()
 		fs.stat path + fn, (err, s) ->
 			unless err

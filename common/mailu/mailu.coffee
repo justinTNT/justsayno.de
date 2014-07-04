@@ -1,7 +1,8 @@
 mailuser = require('./schema/mailuser').name
 crypto = require "../../justsayno.de/crypto"
 
-request = require 'request'
+request = require 'request'	# used for easydns api
+Mailgun = require 'mailgun'	# used for mailgun api
 
 
 module.exports = (env)->
@@ -99,8 +100,7 @@ module.exports = (env)->
 
 		_doConfirm = (res, user)->
 			_doConfirmCode subj, user, (user)->
-				_doAddDNSmailMap user, (user)->
-					_doCompleteUser user
+				_doAddMailMap user, ->
 					return res.send "OK", 200
 
 		# get guest record for that email
@@ -113,38 +113,63 @@ module.exports = (env)->
 					_doConfirm res, user
 
 
-	# use DNS API to add mailmap
-	_doEachDNSmap  = (user, cb)->
-		operation =
-			host: "@"
-			alias: user.handle
-			destination: user.email
-			active: "1"
-		connection =
-			url: env.DNSurl
-			auth:
-				user: env.DNSuser
-				pass: env.DNSpass
-		request.post connection, operation, (err, resp, body)->
-			if not err and resp.statusCode is 201 then return cb? null
-			console.log "DNS API did not create new map"
-			console.dir connection
-			console.dir operation
-			console.dir err
-			console.dir resp
+	# use API to add mailmap
+	_doEachMap =
+		Mailgun: (user, cb)->	# use Mailgun API to add mailmap
+			operation =
+				match_recipient: "#{user.handle}@#{env.emaildomain}"
+				destination: user.email
+				description: user.handle
+			mailgun = new Mailgun
+				apiKey:env.MapPass
+				domain: env.emaildomain
+			if user.mailgunID then op = 'update'
+			else op = 'create'
+			mailgun.route(user.mailgunID)[op] operation, (err, body)->
+				if not err and body?.route?.id
+					user.mailgunID = body.route.id
+					# should probably save the user with the new ID
+					return cb? null
+				console.log "mailgun API did not create new map"
+				console.dir operation
+				console.dir err
+				console.dir body
+				return cb? err
+
+		EasyDNS: (user, cb)-> # use EasyDNS API to add mailmap
+			operation =
+				host: "@"
+				alias: user.handle
+				destination: user.email
+				active: "1"
+			connection =
+				url: "http://sandbox.rest.easydns.net/mail/maps/#{env.emaildomain}"
+				auth:
+					user: env.MapUser
+					pass: env.MapPass
+			request.post connection, operation, (err, resp, body)->
+				if err or resp.statusCode isnt 201
+					console.log "EasyDNS API did not create new map"
+					console.dir connection
+					console.dir operation
+					console.dir err
+					console.dir resp
+				return cb? err
 
 	# add mailmap
 	# if we're successful adding a mail map from the user object
 	# run the cb and look for another one to do (might be one failed previously?)
-	_doAddDNSmailMap = (user, cb)->
-		_doEachDNSmap user, (err)->
-			cb?()
-			unless err then Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
+	_doAddMailMap = (user, cb)->
+		_doEachMap[env.MapAPI] user, (err)->
+			unless err
+				_doCompleteUser user
+				Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
 				if err
 					console.log "Error looking for incomplete users to map"
 					return console.dir err
 				if not user then return
-				_doAddDNSmailMap user
+				_doAddMailMap user
+			cb?()
 
 
 	# confirm code in subject
@@ -169,6 +194,7 @@ module.exports = (env)->
 
 	# mark user as complete
 	_doCompleteUser = (user)->
+		if not user then return
 		if user.complete then return
 		user.complete = true
 		user.save (err)->
