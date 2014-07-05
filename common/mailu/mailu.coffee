@@ -2,7 +2,7 @@ mailuser = require('./schema/mailuser').name
 crypto = require "../../justsayno.de/crypto"
 
 request = require 'request'	# used for easydns api
-Mailgun = require 'mailgun'	# used for mailgun api
+MailgunJS = require 'mailgun-js'	# used for mailgun api
 
 
 module.exports = (env)->
@@ -99,7 +99,6 @@ module.exports = (env)->
 				themail = themail.substr 0, i
 
 		_doConfirm = (res, user)->
-			if not user then return res.send "OK", 200
 			_doConfirmCode subj, user, (user)->
 				_doAddMailMap user, ->
 					return res.send "OK", 200
@@ -117,15 +116,15 @@ module.exports = (env)->
 	_doEachMap =
 		Mailgun: (user, cb)->	# use Mailgun API to add mailmap
 			operation =
-				match_recipient: "#{user.handle}@#{env.emaildomain}"
-				destination: user.email
+				expression: "match_recipient:(\"#{user.handle}@#{env.emaildomain}\")"
+				action: "forward(\"#{user.email}\")"
 				description: user.handle
-			mailgun = new Mailgun
+			mailgun = new MailgunJS
 				apiKey:env.MapPass
 				domain: env.emaildomain
 			if user.mailgunID then op = 'update'
 			else op = 'create'
-			mailgun.route(user.mailgunID)[op] operation, (err, body)->
+			mailgun.routes(user.mailgunID)[op] operation, (err, body)->
 				if not err and body?.route?.id
 					user.mailgunID = body.route.id
 					# should probably save the user with the new ID
@@ -160,21 +159,24 @@ module.exports = (env)->
 	# if we're successful adding a mail map from the user object
 	# run the cb and look for another one to do (might be one failed previously?)
 	_doAddMailMap = (user, cb)->
+		if not user
+			console.log "Error: can't map empty user"
+			return cb?()
 		_doEachMap[env.MapAPI] user, (err)->
 			unless err
-				_doCompleteUser user
-				Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
-					if err
-						console.log "Error looking for incomplete users to map"
-						return console.dir err
-					if not user then return
-					_doAddMailMap user
+				_doCompleteUser user, ->
+					Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
+						if err
+							console.log "Error looking for incomplete users to map"
+							return console.dir err
+						if not user then return
+						_doAddMailMap user
 			cb?()
 
 
 	# confirm code in subject
 	_doConfirmCode = (subj, user, cb)->
-		if subj.indexOf(user.code) < 0
+		if subj.indexOf(user?.code) < 0
 			console.log "confirmation email subject '#{subj}' - code not found:"
 			console.dir user
 			return cb null
@@ -193,8 +195,8 @@ module.exports = (env)->
 			return cb null
 
 	# mark user as complete
-	_doCompleteUser = (user)->
-		if not user or user.complete then return
+	_doCompleteUser = (user, cb)->
+		if not user or user.complete then return cb?()
 		user.complete = true
 		user.save (err)->
 			if err
@@ -202,7 +204,10 @@ module.exports = (env)->
 				console.dir err
 				console.dir user
 			Guest.findOne {handle: user.handle}, (err, guest)->
-				if err or not guest then return res.send "Guest not found", 404
+				if err or not guest
+					console.log "that's weird: didn't expect error completing #{user.handle}"
+					console.dir err
+					return cb?()
 				guest.verified = true
 				delete guest.expireOnNoVerify
 				guest.save (err)->
@@ -210,6 +215,7 @@ module.exports = (env)->
 						console.log "ERROR updating guest record as verified"
 						console.dir err
 						console.dir guest
+					cb?()
 
 	_addVerCode = (user, req, res)->
 		verificationCode = ''

@@ -5,9 +5,9 @@ env =
 	plugins: ['auth', 'mailu']
 	dir: __dirname
 	emaildomain: 'darwin.email'
-	MapUser: "YOUR_EASYDNS_USER_HERE"
-	MapPass: "YOUR_EASYDNS_PASS_HERE"
-	MapAPI: "EasyDNS"
+	MapUser: "app"
+	MapPass: "YOUR_MAILGUN_KEY_HERE"
+	MapAPI: "Mailgun"
 	basetemps: [
 		selector: "#boilerplate-container"
 		filename: "dmail.jade"
