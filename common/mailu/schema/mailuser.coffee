@@ -5,6 +5,7 @@ MailuserSchema = new Schema
 	handle : String
 	email : String
 	code : String
+	mailgunID : String
 	newemail : String
 	haspage : Boolean
 	disabled : Boolean

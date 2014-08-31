@@ -6,6 +6,8 @@ MailgunJS = require 'mailgun-js'	# used for mailgun api
 
 
 module.exports = (env)->
+	Mailer = require("../../justsayno.de/mail")(env)
+
 	Guest = env.db.model 'Guest'		# piggy-back on auth module
 	Mailuser = env.db.model mailuser
 
@@ -112,6 +114,30 @@ module.exports = (env)->
 				_doConfirm res, user
 
 
+	# send confirmation email to recently created forward route
+
+	sendRegConfMail = (user)->
+		mailClient = Mailer.connect()
+		msg =
+			to: "#{user.handle} <#{user.handle}@#{env.emaildomain}>"
+			subject: "Your #{env.emaildomain} account has been verified"
+			html: """
+			<p>You are now receiving emails sent to #{user.handle}@#{env.emaildomain}</p>
+			"""
+		if env.carddomain then msg.html += """
+		<p>
+		You can now use the same handle and password to setup a virtual business card at
+		<a href='#{env.carddomain}'>#{env.carddomain}/#{user.handle}</a>
+		</p>
+		"""
+		Mailer.send mailClient, msg, (error, resp) ->
+			if error
+				console.dir msg
+				console.log "error sending confirmation for #{handle} to #{g.email}"
+				console.dir error
+				if resp and resp.length then console.log "got response: #{resp}"
+
+
 	# use API to add mailmap
 	_doEachMap =
 		Mailgun: (user, cb)->	# use Mailgun API to add mailmap
@@ -127,7 +153,8 @@ module.exports = (env)->
 			mailgun.routes(user.mailgunID)[op] operation, (err, body)->
 				if not err and body?.route?.id
 					user.mailgunID = body.route.id
-					# should probably save the user with the new ID
+					sendRegConfMail user
+					# will fall through save the user with the new ID
 					return cb? null
 				console.log "mailgun API did not create new map"
 				console.dir operation
@@ -153,6 +180,9 @@ module.exports = (env)->
 					console.dir operation
 					console.dir err
 					console.dir resp
+				else
+					sendRegConfMail user
+					# will fall through save the user with the new ID
 				return cb? err
 
 	# add mailmap

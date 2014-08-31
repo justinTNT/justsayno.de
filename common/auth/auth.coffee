@@ -7,7 +7,7 @@ mongoose = require "mongoose"
 
 module.exports = (env) ->
 	
-	mailer = require("../../justsayno.de/mail")(env)
+	Mailer = require("../../justsayno.de/mail")(env)
 
 	if env.authdatabase
 		unless env.authdatabase.db
@@ -80,12 +80,12 @@ module.exports = (env) ->
 		encrypter = new EmailVerification(g.email)
 		encoded = encrypter.encrypt(g.pass)
 		confirmlink = "#{env.url}/confirm/#{handle}/#{encoded}"
-		mailClient = mailer.connect()
+		mailClient = Mailer.connect()
 		msg =
 			to: "#{g.handle} <#{g.email}>"
 			subject: "Please confirm your account"
 			html: "<p>Click on this link to verify your account:<br>" + "<a href='" + confirmlink + "'>" + confirmlink + "</a></p>" + "<p>This link will expire in two days</p>"
-		mailer.send mailClient, msg, (error, resp) ->
+		Mailer.send mailClient, msg, (error, resp) ->
 			if error
 				console.dir msg
 				console.log "error sending confirmation for #{handle} to #{g.email}"

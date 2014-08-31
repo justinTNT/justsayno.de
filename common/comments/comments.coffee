@@ -4,7 +4,7 @@ _ = require "underscore"
 
 module.exports = (env) ->
 	
-	mailer = require("../../justsayno.de/mail")(env)
+	Mailer = require("../../justsayno.de/mail")(env)
 
 	# this function is returned when the module is applied
 	# so that the including app can use it to add a comment count to other requests
@@ -26,8 +26,8 @@ module.exports = (env) ->
 			if err # if it is a validation error, send something sensible back to the client...
 				res.send "failed to save comment: #{err}", 404
 				throw err
-			mailClient = mailer.connect()
-			mailer.send mailClient, {
+			mailClient = Mailer.connect()
+			Mailer.send mailClient, {
 				to: env.admintoemail
 				subject: "new comment on #{env.appname}"
 				html: "<p>New comment from: #{o.name}<br> #{o.comment}<br> at #{o.subject}</p>"
