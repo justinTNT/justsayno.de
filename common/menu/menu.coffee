@@ -4,7 +4,7 @@ module.exports = (env) ->
 	Menu = env.db.model require("./schema/menu").name
 
 	env.app.get "/menu/:menu_name", (req, res) ->
-		Menu.find(name: req.params.menu_name).sort("-parent_item order").execFind (err, docs) ->
+		Menu.find(name: req.params.menu_name).sort("-parent_item order").exec (err, docs) ->
 			console.log err	if err
 			if docs.length
 				which_fields = [

@@ -1,5 +1,7 @@
 mongoose = require("mongoose")
 _ = require("underscore")
+_.mixin capitalize: (string)-> string.charAt(0).toUpperCasse() + string.substring(1).toLowerCase()
+
 fs = require("fs")
 sys = require("util")
 
@@ -100,6 +102,7 @@ module.exports = (env, appenv, admdb) ->
 						try
 							sch = require "../../common/#{appenv.plugins[i]}/schema/#{req.params.table}"
 			if sch then req.params.theTable = env.targetenv.db.model(sch.name)
+			else req.params.theTable = env.targetenv.db.model _.capitalize req.params.table
 			next()
 	
 
