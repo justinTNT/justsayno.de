@@ -31,6 +31,7 @@ URIofDB = (opts, name) ->
 # * and sets default values for this field's admin configuration
 #
 addAdField = (app, tab, field, cnt, cb) ->
+
 	AdminFields.find {appname:app, table:tab, name:field.name}, (err, docs) ->
 		if err
 			console.log "error checking in on key " + field.name + " in " + app + "'s " + tab + " table."
@@ -77,7 +78,6 @@ load_schema = (e, dirname, filename, cb) ->
 	thech = modelname
 	thech = thech.schema.paths
 	filename = filename.substr(0, filename.indexOf("."))
-
 	for key of thech
 		t = util.inspect(thech[key].options.type)
 		i = t.indexOf("[Function: ")
@@ -160,7 +160,7 @@ ensureAdFieldCfg = (e, appdir, commondir, fcb) ->
 	), ->
 		if appdir is commondir or commondir is null then return fcb?()
 		a = require "#{appdir}/#{e.appname}_app"
-		runThruPlugs a.env.plugins.slice(0), e, commondir, fcb
+		runThruPlugs a.env.plugins?.slice(0), e, commondir, fcb
 
 
 runThruPlugs = (plugin_list, e, cdir, fcb) ->

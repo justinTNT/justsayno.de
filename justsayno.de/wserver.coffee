@@ -144,16 +144,16 @@ setupServer = (port, applist, ip, setuid, passon) ->
 					e[key] = passon[key]
 
 			eachapp.app = configureAppEnv e, dbname
-			setupRoutes eachapp
 
 			this_admin = require('./admin/admin') e, admdb
 			this_admin.app = configureAppEnv this_admin.env, dbname
 			setupRoutes this_admin
 			webserver_app.use express.vhost("admin." + e.url, this_admin.app)
 
-			schemetools.configureDBschema admdb, e
-			e.db = mongoose.createConnection schemetools.URIofDB(e.mongopts, n)
-			dbs.push e.db
+			schemetools.configureDBschema admdb, e, ->
+				e.db = mongoose.createConnection schemetools.URIofDB(e.mongopts, n)
+				dbs.push e.db
+				setupRoutes eachapp
 
 		for dname in app.dname
 			webserver_app.use express.vhost(dname, eachapp.app)
