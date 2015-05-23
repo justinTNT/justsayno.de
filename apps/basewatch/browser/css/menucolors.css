@@ -1,0 +1,36 @@
+#menu-base .sf-menu a, .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#cde;
+}
+#menu-base .sf-menu li {
+	background:		#558;
+}
+#menu-base .sf-menu li li {
+	background:		#559;
+}
+#menu-base .sf-menu li li li {
+	background:		#55a;
+}
+#menu-base .sf-menu li:hover, #menu-base .sf-menu li.sfHover,
+#menu-base .sf-menu a:focus, #menu-base .sf-menu a:hover, #menu-base .sf-menu a:active {
+	background:		#66c;
+}
+
+/*** arrows **/
+#menu-base .sf-menu a.sf-with-ul {
+	padding-right: 	2.25em;
+	min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
+}
+#menu-base .sf-sub-indicator {
+	background:		url('/browser/images/menu/arrows-ffffff.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+
+/*** shadows for all but IE6 ***/
+#menu-base .sf-shadow ul {
+	background:	url('/browser/images/menu/shadow.png') no-repeat bottom right;
+}
+
+#menu-base .sf-menu a {
+    border-left:    1px solid #353;
+    border-top:     1px solid #353;
+}
+

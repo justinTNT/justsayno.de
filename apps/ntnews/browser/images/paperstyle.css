@@ -1,0 +1,337 @@
+
+
+a:link {
+   color : #191970;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a:visited {
+   color : #191970;
+   font-weight : bold;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a:active {
+   color : #000000;
+   font-weight : bold;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a:hover {
+   color : red;
+   font-weight : bold;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a.mainnav:link {
+   color : #ffffe8;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a.mainnav:visited {
+   color : #ffffe8;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a.mainnav:active {
+   color : brown;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a.mainnav:hover {
+   color : lightblue;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+   font-weight : normal;
+   text-decoration : none;
+}
+
+a.rightpanel:link {
+   color : #8b0000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : normal;
+   font-size : 10pt;   
+}
+
+a.rightpanel:visited {
+   color : #8b0000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : normal;
+      font-size : 10pt;
+}
+
+a.rightpanel:active {
+   color : #8b0000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : normal;
+   font-size : 10pt;   
+}
+
+a.rightpanel:hover {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : normal;
+   font-size : 10pt;   
+}
+
+a.nilink {color : #ffffff;font-weight : bold;text-decoration : none;}
+a.nilink:visited {color : #ffffff;font-weight : bold;text-decoration : none;}
+a.nilink:active {color : #ffffff;font-weight : bold;text-decoration : none;}
+a.nilink:hover {color : #ffffff;font-weight : bold;text-decoration : none;}
+
+td {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+}
+
+div {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 10pt;
+}
+
+
+
+.body {
+   font-family: arial, helvetica, verdana, sans-serif;
+   font-size: 10pt;
+}
+
+
+.headline {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 14pt;
+}
+
+.largeheadline {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 20pt;
+}
+
+.mediumheadline {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 12pt;
+}
+
+.bodyheadline {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 10pt;
+}
+
+.smallheadline {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 8pt;
+}
+
+
+.bodytext {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 10pt;
+}
+
+.bodytext-bold {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;   
+   font-size : 10pt;
+}
+
+.source {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 8pt;
+}
+
+
+.pubtime {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 8pt;
+}
+
+.datelist {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 10pt;
+}
+
+.caption {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+}
+
+.intro {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+}
+
+
+.crosshead {
+   color : ffffff;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 9pt;
+}
+
+.byline {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+}
+
+.mainnav-heading {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 9pt;
+   font-weight : bold;  
+}
+
+.rightpanel-heading {
+   color : #ffffff;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 9pt;
+}
+
+.rightpanel-title {
+   color : #000000;
+   font-family : verdana, arial, helvetica, sans-serif;
+   font-weight : bold;
+   font-size : 9pt;
+}
+
+.rightpanel-text {
+   color : #000000;
+   font-family : verdana, arial, helvetica, sans-serif;
+   font-size : 8pt;
+}
+
+.rightpanel-form
+{
+   color : #000000;
+   font-family : arial, helvetica, sans-serif;
+   font-size : 8pt;
+}
+
+.pageheading {
+   color : #800000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 14pt;
+   text-transform : uppercase;
+}
+
+.subheading-title {
+   color : white;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 10pt;
+}
+
+.white11 {
+   color : black;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : normal;
+   font-size : 9pt;
+}
+
+.yellow12 {
+   color : black;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 9pt;
+}
+
+.subheading {
+   color : #000000;
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-weight : bold;
+   font-size : 10pt;
+   text-transform : uppercase;
+}
+
+.current-date {
+   color : white;
+   font-family : verdana, arial, helvetica, sans-serif;
+   font-weight : bold;
+   font-size : 8pt;
+}
+
+
+td.mainnav-heading {
+   background-color : #CC6600;
+}
+
+td.mainnav {
+   background-color : #FF9900;
+}
+td.mainnav-border {
+   background-color : black;
+}
+td.rightpanel-heading {
+   background-color :  #003995;
+}
+
+td.rightpanel {
+   background-color : whitesmoke;
+}
+td.rightpanel-border {
+   background-color : #000000;
+}
+td.rightpanel-news {
+   background-color : whitesmoke;
+}
+td.divide {
+   background-color : #FFCC99 ;
+}
+
+td.highlightbox {
+    background-color : #F8ECD6;
+    border : solid .05em black;
+	}
+
+td.thinborder {
+    background-color : #003995;
+    border : solid .05em black;	
+}
+
+td.smokeyborder {
+    background-color : whitesmoke;
+    border : solid .05em black;	
+}
+
+td.captioncell {
+    background-color : whitesmoke;
+}
+
+td.crosshead {
+    background-color : #DEFADE;
+
+    
+}
+
+td.borderless {
+   font-family : arial, helvetica, verdana, sans-serif;
+   font-size : 10pt;
+}
+

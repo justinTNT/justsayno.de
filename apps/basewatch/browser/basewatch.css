@@ -1,0 +1,237 @@
+@font-face {
+  font-family: 'Kabel';
+  src: url('/browser/fonts/ITCKabelStd-Book.eot');
+  src: local('jtntKabel'), url('/browser/fonts/ITCKabelStd-Book.otf') format('opentype');
+  font-weight:normal;
+  font-style:normal;
+}
+
+
+
+
+body {
+	font-family: 'Kabel';
+	margin:0; padding:0;
+	width:auto; height:auto;
+	background-color:#fff;
+	line-height:160%;
+	font-size:16pt;
+}
+
+div#toplogo {
+	top: 30px;
+	left: 50%;
+	margin-left: -512px;
+	background-color: #fff;
+	width: 1024px;
+	-webkit-border-radius: 1em;
+	-moz-border-radius: 1em;
+	border-radius: 1em;
+	z-index:5;
+	position:relative;
+}
+
+div#menu-base {
+	font-size:80%;
+	margin-top:2.5em;
+	height:3.5em;
+	left:0px;
+	width:100%;
+	z-index:6;
+	position:relative;
+}
+
+div#innermaintabbox {
+	z-index:5;
+	background-color:#fff;
+	-webkit-border-radius: 1em;
+	-moz-border-radius: 1em;
+	border-radius: 1em;
+}
+
+div#maintabbox {
+	padding:0.1em 1em;
+	margin-left:-1em;
+	background-image: url('/browser/images/bwedge.jpg');
+	left:10%;
+	width:80%;
+
+	-webkit-border-radius: 2em;
+	-moz-border-radius: 2em;
+	border-radius: 2em;
+
+	-webkit-box-shadow: 3px 3px 13px 13px rgba(23, 13, 7, .7);
+	-moz-box-shadow: 3px 3px 13px 13px rgba(23, 13, 7, .7);
+	box-shadow: 3px 3px 13px 13px rgba(23, 13, 7, .7);
+
+	z-index:4;
+	position:relative;
+}
+
+
+div#maintab {
+	padding:2em;
+	margin:1em;
+	z-index:2;
+	position:relative;
+}
+
+div#botbakdiv {
+	height:123px;
+	width:100%;
+	position:relative;
+}
+img#botbak {
+	margin-top:-456px;
+	z-index:1;
+	position:absolute;
+	bottom:0px;
+}
+
+div#botbaktail {
+	width:100%;
+	position:absolute;
+	z-index:1;
+	bottom:0px;
+}
+img#tailback {
+	margin-top:-456px;
+	z-index:1;
+	opacity:0.1;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=10);
+	position:absolute;
+	bottom:0px;
+}
+img#topbak {
+	position:absolute;
+	top:0px;
+	left:0px;
+	z-index:3;
+}
+
+h3, h2, h1 {
+	font-size:200%;
+}
+
+h3.title {
+	margin-bottom: 0.4em;
+	text-align: center;
+}
+
+
+a.comments {
+	margin-left:9em;
+}
+
+div#maintab>div.comment_reply {
+	margin:4em;
+	height:8em;
+}
+
+div.comment_reply {
+	clear:both;
+}
+
+div.eachcomment {
+	margin-left: 10%;
+	margin-bottom: 1em;
+	margin-top: 1em;
+	clear:both;
+}
+div.comment_name {
+	font-size:150%;
+	line-height:150%:
+	font-weight:bold;
+}
+div.comment_reply a {
+	color:#607890;
+	font-weight:normal;
+	text-decoration:none;
+}
+div.comment_reply a:hover {
+	color:#000;
+}
+form.addcomment textarea {
+	float:left;
+	margin:1em;
+	margin-left:0px;
+}
+form.addcomment input.savecomment {
+	float:left;
+	margin:2em;
+}
+div.mycomment {
+	margin:2em;
+	color:#342;
+}
+
+p {
+	margin-top:1.5em;
+	margin-bottom:1.5em;
+}
+
+
+/**** Speech Bubble Icons *****/
+a.spch-bub-inside,
+a.spch-bub-outside {
+  color: #354;
+}
+.spch-bub-inside em {
+  background: #354;
+  color: #fff;
+}
+.spch-bub-inside .point,
+.spch-bub-outside .point {
+  border-right-color: #354;
+}
+.spch-bub-outside .bubble {
+  background: #354;
+}
+
+
+a.spch-bub-inside:hover,
+a.spch-bub-outside:hover {
+  color: #ab9;
+}
+a.spch-bub-inside:hover em,
+a.spch-bub-outside:hover .bubble  {
+  background: #ab9;
+  color: #201;
+}
+a.spch-bub-inside:hover .point,
+a.spch-bub-outside:hover .point {
+  border-right-color: #ab9;
+}
+
+
+div.speachpoint {
+  border-left-color: #ab9;
+  border-bottom-color: #ab9; /* IE fix */
+  border-bottom-color: rgba(0,0,0,0);
+}
+
+div.border-point {
+  border-left-color: #473;
+  border-bottom-color: #473; /* IE fix */
+  border-bottom-color: rgba(0,0,0,0);
+}
+
+div.border-bubble {
+    border-color: #473;
+    border-bottom-color: #352;
+}
+
+
+div.comment {
+    background: #ab9;
+}
+
+div.paginationlink {
+	clear:both;
+}
+
+div.addnewcomment {
+	clear:both;
+	margin:1em;
+}
+

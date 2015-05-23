@@ -1,0 +1,120 @@
+#ninnbar {
+	width:760px;
+	height: 22px;
+	margin: 1px 0px 2px 0px;
+	background: url(http://central.news.com.au/ninnbar/images/bg_ninnbar.gif) no-repeat left #24247C;
+}
+
+#ninnbar div {
+	font-family:Tahoma,Geneva,arial;
+	background: url(http://central.news.com.au/ninnbar/images/bg_ninnbar_tab.gif) no-repeat right;
+	text-align: center;
+	margin: 0px 0px 0px 0px;
+	height: 22px;
+	float: left;
+}
+
+#ninnbar #nnFixed {
+	width:757px;
+	background:none;
+}
+
+#ninnbar a:link, #ninnbar a:visited  {
+	display: block;
+	font-family:Tahoma,Geneva,arial;
+	font-size: 10px;
+	color: #ffffff;
+	text-decoration:none;
+	font-weight: bold;
+	line-height: 16px;
+	height: 17px;
+	padding: 0px 0px 0px 0px;
+	margin: 3px 1px 0px 0px;
+}
+
+#ninnbar a:hover { background: #2179AF; }
+
+#ninnbar #nnNews {
+	display: inline;
+	width: 77px;
+	margin: 0px 3px 0px 77px;
+}
+
+
+#ninnbar #nnFox { width: 74px; margin: 0px 3px 0px 0px;}  
+#ninnbar #nnClassifieds { width: 78px; margin: 0px 3px 0px 0px;}
+#ninnbar #nnNewspapers {width:79px;	margin: 0px 3px 0px 0px;}
+
+#ninnbar #nnSpacer {
+	background: none;
+	width: 177px;
+}
+
+#ninnbar #nnSearch {
+	float:left;
+	width:212px;
+	display:inline;
+	background: none;
+	margin: 0px 0px 0px 142px;
+	text-align:right;
+}
+
+#ninnbar #nnSearch div {
+	font-size: 10px;
+	height:17px;
+	background: none;
+	font-weight: bold;
+	color:#ffffff;
+	margin: 4px 3px 0px 0px;
+}
+
+#ninnbar #nnSearch #nnSearchText {
+	width:78px;
+	line-height:15px;
+	font-weight:bold;
+}
+
+#ninnbar #nnSearch #nnSearchInput {width:100px;margin-right:0px;}
+#ninnbar #nnSearch #nnSearchGo {}
+
+
+form.nnsearchForm {
+    margin: 0px;
+}
+
+form.nnsearchForm input.searchText {
+    margin: 0px;
+    width: 90px;
+	height: 15px;
+    color: #363535;
+    font-size: 10px;
+	font-weight:normal;
+	line-height:14px;
+    background: #ffffff;
+    border: none;;
+    padding: 0px 0px 0px 5px;
+	margin: 0px 0px 0px 0px;
+}
+
+.searchGo {
+	background: #F1F1F1;
+	font-size: 11px;
+	font-weight: bold;
+	width: 22px;
+	height: 15px;
+	color: #EAA001;
+	border: #B9B8B8 1px solid;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
+	cursor: pointer;
+	letter-spacing: -1px;
+	line-height: 12px;
+}	
+
+form.nnsearchForm select.searchDrop {
+    color: #363535;
+    width: 108px;
+    font-size: 9px;
+    border: #B5C1CE 1px solid;
+    margin: 5px 0px 0px 0px;
+}

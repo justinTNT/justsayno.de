@@ -1,0 +1,105 @@
+div.bgimgd {
+	position:absolute;
+	left:0;
+	bottom:0;
+	width:100%;
+}
+
+div.selectd {
+	position:absolute;
+	top:8px;
+	left:8px;
+	width:80%;
+	font-size:333%;
+}
+
+div.playlistd {
+	position:absolute;
+	 left:8px;
+	 top:88px;
+	 width:80%;
+	 opacity:0.66;
+	 moz-opacity:66;
+}
+
+div.homed {
+	text-align:center;
+	position:fixed;
+	right:0;
+	top:0;
+	width:25%
+	z-index:69;
+	border-width:0;
+}
+
+div.mixd {
+	position:absolute;
+	left:5%;
+	bottom:0;
+	width:20%
+	z-index:69;
+}
+
+div.contactd {
+	position:fixed;
+	right:0;
+	bottom:0;
+	width:25%
+	z-index:69;
+	text-align:center;
+	border-width:0;
+}
+
+div.downloadd {
+	position:absolute;
+	left:33%;
+	bottom:0;
+	width:33%
+	height:100px;
+	z-index:69;
+	text-align:center;
+}
+
+div.tapeclass {
+	text-align:center;
+	width:385px;
+	height:250px;
+	background-image:url('/images/smalltapes.jpg');
+	font-family: "Rockwell Extra Bold";
+}
+
+div.textintape {
+	text-align:center;
+	padding-left:0.7em;
+	line-height:0.5em;
+	padding-top:0.6em;
+	font-family: RapScript;
+	font-size:44px;
+}
+
+
+img {
+	border-width:0px; }
+
+div.tapespage {
+	width:400px;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+div.binder {
+	width:200px;
+	left:0;
+	height:20px;
+	background-color:#123;
+}
+
+a.biglink:visited {
+	color:#000;
+	text-decoration:none;
+}
+
+a.biglink:link {
+	color:#000;
+}
+

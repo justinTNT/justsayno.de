@@ -1,0 +1,85 @@
+<!DOCTYPE html>  
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ --> 
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ielt9 ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ielt9 ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ielt9 ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <html lang="en" class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame 
+       Remove this if you use the .htaccess -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <!--  Mobile viewport optimized: j.mp/bplateviewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+
+  <!-- Place favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+  <link rel="shortcut icon" href="{{LOCAL}}{{APP}}/favicon.ico">
+  <link rel="apple-touch-icon" href="{{LOCAL}}{{APP}}/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="/{{APP}}.css">
+<!--[if IE 7]>
+  <link rel="stylesheet" href="{{LOCAL}}css/font-awesome-ie7.min.css">
+<![endif]-->
+
+  <!--	All JavaScript at the bottom, except for :
+		this crazy nonsense which decides whether to rewrite the url -->
+  <script type="text/javascript" language="javascript">
+	var prefix = 'st';
+	var newp, newh;
+	var p = window.location.pathname;
+	var h = window.location.hash;
+	var host = window.location.host;
+	var prot = window.location.protocol;
+	while (h.charAt(0) == '#') h=h.substring(1);
+	while (h.charAt(0) == '/') h=h.substring(1);
+	while (p.charAt(0) == '/') p=p.substring(1);
+	if (p.charAt(p.length-1) == '/') p=p.substring(0,p.length-1);
+	if (p.length == 2 && p == prefix) newp='';
+	else if (p.length > 2 && p.substring(0,3) == prefix+'/') newp=p.substring(3);
+	else newp=p;
+	if (h.substring(0,3) == prefix+'/') h=h.substring(3);
+	if (h.length && h.charAt(h.length-1) == '/') h=h.substring(0,h.length-1);
+	if (newp.length && newp.indexOf('.') < 0) { // load resources without ajax
+		newh='/'+newp;
+		if (h.length) newh += '/' +h;
+	} else newh=h
+	if (h != newh || p != prefix) {
+		window.location.href = prot+ '//' +host+ '/' +prefix+ '/#/' +newh;
+	}
+  </script>
+</head>
+
+<body>
+  <div id="boilerplate-container">
+  </div> <!--! end of #container -->
+
+  <!-- Javascript at the bottom for fast page loading -->
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline
+  -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <!--
+  <script>window.jQuery || document.write('<script src="{{LOCAL}}jquery/jquery.min.js"><\/script>')</script>
+  <script src="{{LOCAL}}jquery/jquery.min.js"></script>
+  --> 
+
+  <!-- all else, concatenated (libs first) (and uglified in production) --> 
+  <script src="/{{APP}}.js"></script>
+  
+
+  <!--[if lt IE 7 ]>
+    <script src="{{LOCAL}}js/dd_belatedpng.js"></script>
+  <!--
+    <script type="text/javascript" language="javascript"> DD_belatedPNG.fix('img, .png_bg'); //fix any <img> or .png_bg background-images </script>
+	-->
+  <![endif]-->
+
+</body>
+</html>
