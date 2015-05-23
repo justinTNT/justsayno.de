@@ -10,7 +10,7 @@
     env.app.get("/menu/:menu_name", function(req, res) {
       return Menu.find({
         name: req.params.menu_name
-      }).sort("-parent_item order").execFind(function(err, docs) {
+      }).sort("-parent_item order").exec(function(err, docs) {
         var all_objs, which_fields;
         if (err) {
           console.log(err);

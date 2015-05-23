@@ -11,8 +11,8 @@
   mongoose = require("mongoose");
 
   module.exports = function(env) {
-    var EmailVerification, Guest, authenticate, mailer, name, sendVerification, sendVerwDoc, validateNewRego;
-    mailer = require("../../justsayno.de/mail")(env);
+    var EmailVerification, Guest, Mailer, authenticate, name, sendVerification, sendVerwDoc, validateNewRego;
+    Mailer = require("../../justsayno.de/mail")(env);
     if (env.authdatabase) {
       if (!env.authdatabase.db) {
         name = schemetools.URIofDB(env.authdatabase.opts, env.authdatabase.name);
@@ -129,13 +129,13 @@
       encrypter = new EmailVerification(g.email);
       encoded = encrypter.encrypt(g.pass);
       confirmlink = "" + env.url + "/confirm/" + handle + "/" + encoded;
-      mailClient = mailer.connect();
+      mailClient = Mailer.connect();
       msg = {
         to: "" + g.handle + " <" + g.email + ">",
         subject: "Please confirm your account",
         html: "<p>Click on this link to verify your account:<br>" + "<a href='" + confirmlink + "'>" + confirmlink + "</a></p>" + "<p>This link will expire in two days</p>"
       };
-      return mailer.send(mailClient, msg, function(error, resp) {
+      return Mailer.send(mailClient, msg, function(error, resp) {
         if (error) {
           console.dir(msg);
           console.log("error sending confirmation for " + handle + " to " + g.email);

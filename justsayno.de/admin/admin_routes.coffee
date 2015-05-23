@@ -1,6 +1,6 @@
 mongoose = require("mongoose")
 _ = require("underscore")
-_.mixin capitalize: (string)-> string.charAt(0).toUpperCasse() + string.substring(1).toLowerCase()
+_.mixin capitalize: (string)-> string.charAt(0).toUpperCase() + string.substring(1).toLowerCase()
 
 fs = require("fs")
 sys = require("util")

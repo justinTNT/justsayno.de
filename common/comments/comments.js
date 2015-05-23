@@ -9,8 +9,8 @@
   _ = require("underscore");
 
   module.exports = function(env) {
-    var Comment, comment, countComments, mailer;
-    mailer = require("../../justsayno.de/mail")(env);
+    var Comment, Mailer, comment, countComments;
+    Mailer = require("../../justsayno.de/mail")(env);
     countComments = function(s, cb) {
       s = s != null ? s.replace(/\//g, " ") : void 0;
       return Comment.count({
@@ -35,8 +35,8 @@
           res.send("failed to save comment: " + err, 404);
           throw err;
         }
-        mailClient = mailer.connect();
-        return mailer.send(mailClient, {
+        mailClient = Mailer.connect();
+        return Mailer.send(mailClient, {
           to: env.admintoemail,
           subject: "new comment on " + env.appname,
           html: "<p>New comment from: " + o.name + "<br> " + o.comment + "<br> at " + o.subject + "</p>"

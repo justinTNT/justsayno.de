@@ -74,7 +74,14 @@ addFields = (app, tab, fields, cnt, cb) ->
 #
 load_schema = (e, dirname, filename, cb) ->
 	fields = []
-	modelname = require "#{dirname}/#{filename}"
+
+	try
+		modelname = require "#{dirname}/#{filename}"
+	catch (e) ->
+		console.log "error finding #{dirname}/#{filename}"
+		console.dir e
+		return cb()
+
 	thech = modelname
 	thech = thech.schema.paths
 	filename = filename.substr(0, filename.indexOf("."))
