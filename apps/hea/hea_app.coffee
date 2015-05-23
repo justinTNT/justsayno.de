@@ -1,16 +1,19 @@
 express = require "express"
 env =
-	staticurl: "isnt.so"
+	staticurl: "saymay.be"
 	app: express()
-	plugins: ["auth", "comments", "wblg"]
 	dir: __dirname
+	plugins: []
 	basetemps: [
 		selector: "#boilerplate-container"
-		filename: "tt.jade"
+		filename: "hea.jade"
 	]
 	s3:
 		key: 'GOES_HERE'
 		secret: 'GOES_HERE'
-		bucket: 'isnt.so'
+		bucket: 'dphon.es'
+
+exports.setRoutes = ->
+	require('./hea_routes') env
 
 exports.env = env

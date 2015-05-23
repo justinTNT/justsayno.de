@@ -1,0 +1,53 @@
+link(rel="stylesheet", href="/browser/page-player.css")
+.bgimgd
+  img(src='#{STATIC}#{APP}/images/deadphones.jpg', width="100%")
+
+.selectd
+  select#artists(name="artists")
+
+.playlistd
+  ul.playlist
+    li
+      a(href='/test') select an artist from the list above...
+
+.homed
+  a(alt="home", href="//hea.dphon.es/")
+    img(src="#{STATIC}#{APP}/images/handy.gif")
+
+.mixd
+  a(alt="mixtapes", href="//dea.dphon.es")
+    img(src="#{STATIC}#{APP}/images/mixen.jpg")
+
+.contactd
+  a(alt="contact", href="mailto:he@dphon.es")
+    img(src="#{STATIC}#{APP}/images/mailme.gif")
+  br
+  a(alt="contact", href="mailto:he@dphon.es") contact
+
+.downloadd
+  select#downloads(name="downloads")
+    option(value="selectd") downloads ...
+    option(value="headphones.zip") entire mp3 catalog
+
+
+  
+#control-template
+  .controls
+    .statusbar
+      .loading
+        .position
+
+  .timing
+    #sm2_timing
+      span.sm2_position
+      span /
+      span.sm2_total
+  .peak
+    .peak-box
+      span.l
+      span.r
+
+
+  #spectrum-container.spectrum-container
+    .spectrum-box
+      .spectrum

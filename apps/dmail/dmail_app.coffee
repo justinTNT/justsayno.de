@@ -5,6 +5,8 @@ env =
 	plugins: ['auth', 'mailu']
 	dir: __dirname
 	emaildomain: 'darwin.email'
+	carddomain: 'da-rw.in'
+	adminfromemail: 'd@r-w.in'
 	MapUser: "app"
 	MapPass: "YOUR_MAILGUN_KEY_HERE"
 	MapAPI: "Mailgun"
@@ -19,3 +21,4 @@ env =
 
 exports.env = env
 exports.setRoutes = -> require('./dmail_routes') env
+
