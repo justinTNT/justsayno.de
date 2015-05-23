@@ -66,15 +66,15 @@ module.exports = (env)->
 				if user.code?.length
 					email = user.newemail or user.email
 
-                    mailClient = Mailer.connect()
-                    Mailer.send mailClient, {
-                        to: env.admintoemail
-                        subject: "waiting for confirmation of new user #{user.handle} <#{email}>on #{env.appname}"
-                        html: "<p>waiting for confirmation of new user #{user.handle} <#{email}><br></p>"
-                    }, (err, resp) ->
-                        if err then console.log "alerting admin of potential user => mail fail: #{err}"
-                        else console.log "alerted #{env.admintoemail} about potential user #{user.handle}<#{email}> on #{env.appname}"
-                        res.send "OK"
+					mailClient = Mailer.connect()
+					Mailer.send mailClient, {
+						to: env.admintoemail
+						subject: "waiting for confirmation of new user #{user.handle} <#{email}>on #{env.appname}"
+						html: "<p>waiting for confirmation of new user #{user.handle} <#{email}><br></p>"
+					}, (err, resp) ->
+						if err then console.log "alerting admin of potential user => mail fail: #{err}"
+						else console.log "alerted #{env.admintoemail} about potential user #{user.handle}<#{email}> on #{env.appname}"
+						res.send "OK"
 
 					temps = [{selector:'#maindiv', filename:'confirm.jade'} ]
 					return env.respond req, res, env.basetemps, temps,

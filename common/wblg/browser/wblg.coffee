@@ -11,9 +11,9 @@ editInPlace = ($d, tag, id) ->
 		$d.find(r + "#" + id).focus().blur ->
 			v = $(this).val()
 			if v.length
-                v = v.replace(/\n/g, '\n<br>')	unless id is "image"
+				v = v.replace(/\n/g, '\n<br>')	unless id is "image"
 				$(this).replaceWith "<" + tag + "	id='" + id + "' class='canhide'>" + v + "</" + tag + ">"
-				$d.find("img#postimg").attr("src", v).removeClass "hide4now"	if id is "image"
+				$d.find("img#postimg").attr("src", v).removeClass("hide4now")	if id is "image"
 			else
 				$d.find("img#postimg").addClass "hide4now"	if id is "image"
 			editInPlace $d, tag, id

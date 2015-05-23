@@ -77,9 +77,9 @@ load_schema = (e, dirname, filename, cb) ->
 
 	try
 		modelname = require "#{dirname}/#{filename}"
-	catch (e) ->
+	catch err
 		console.log "error finding #{dirname}/#{filename}"
-		console.dir e
+		console.dir err
 		return cb()
 
 	thech = modelname
