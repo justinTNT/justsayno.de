@@ -81,51 +81,51 @@ module.exports = function(env){
 
     var Card = env.db.model(card);
 
-function doc2card (doc) {
-var all_objs = {};
-	if (!doc) return all_objs;
-	if (doc._doc) doc = doc._doc;
-	if (doc.upgrade) {
-		all_objs.showpage = { page:doc.page };
-	} else {
-		delete doc.page;
-		all_objs.card = ft.translateFields(doc);
-		var c= all_objs.card[0]
+	function doc2card (doc) {
+	var all_objs = {};
+		if (!doc) return all_objs;
+		if (doc._doc) doc = doc._doc;
+		if (doc.upgrade) {
+			all_objs.showpage = { page:doc.page };
+		} else {
+			delete doc.page;
+			all_objs.card = ft.translateFields(doc);
+			var c= all_objs.card[0]
 
-		for (var i in c) {
-			if (social[i]) {
-				if (c[i].length)
-					c[i + '.href'] = social[i] + c[i] + '/';
-			} else if (i == 'link') {
-				if (c[i].length)
-					c[i + '.href'] = 'http://' + c[i] + '/';
-			} else if (i == 'use_email') {
-				if (c[i]) {
-					c['email'] = c.email;
-					c['email.href'] = 'mailto:' + c.email;
-				}
-			} else if (i == 'use_dmail') {
-				if (c[i] && !c['use_email']) {
-					c['email'] = c.name + '@' + env.url;
-					c['email.href'] = 'mailto:' + c.email;
-				}
-			}
-			if (awesome[i]) { 
-				if (i == 'mobile' && (! c.phone || !c.phone.length)) {
-					c[i] = makeAwesome('phone', c[i]);
-				} else if (social[i]) {
+			for (var i in c) {
+				if (social[i]) {
 					if (c[i].length)
-						c[i] = makeAwesome(i, '');
-					else delete c[i];
-				} else if (c[i].length) {
-					c[i] = makeAwesome(i, c[i]);
-				} else delete c[i];
+						c[i + '.href'] = social[i] + c[i] + '/';
+				} else if (i == 'link') {
+					if (c[i].length)
+						c[i + '.href'] = 'http://' + c[i] + '/';
+				} else if (i == 'use_email') {
+					if (c[i]) {
+						c['email'] = c.email;
+						c['email.href'] = 'mailto:' + c.email;
+					}
+				} else if (i == 'use_dmail') {
+					if (c[i] && !c['use_email']) {
+						c['email'] = c.name + '@' + env.url;
+						c['email.href'] = 'mailto:' + c.email;
+					}
+				}
+				if (awesome[i]) { 
+					if (i == 'mobile' && (! c.phone || !c.phone.length)) {
+						c[i] = makeAwesome('phone', c[i]);
+					} else if (social[i]) {
+						if (c[i].length)
+							c[i] = makeAwesome(i, '');
+						else delete c[i];
+					} else if (c[i].length) {
+						c[i] = makeAwesome(i, c[i]);
+					} else delete c[i];
+				}
 			}
 		}
-	}
 
-	return all_objs;
-}
+		return all_objs;
+	}
     
 	function rspnd (e, r, d, q, s, n, t, o) {	// noticed I was doin a lot of this ...
 		if (r || !d) return n();

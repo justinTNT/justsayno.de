@@ -77,7 +77,10 @@ function callFirst(route, almostReady) {
             $d.animate({top:$(window).height()}, 666, function(){
                 almostReady();
             });
+        } else {
+			almostReady();
         }
+
         if (!looksLikeEdit(route)) {
             showBars();
         }

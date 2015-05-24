@@ -128,12 +128,12 @@ module.exports = (env) ->
 			else
 				delete req.session.user
 			req.session.save()
-		res.send "/", 303		# tell web app to redraw home page on logout
+		res.status(303).send '/'		# tell web app to redraw home page on logout
 
 
 	env.app.post "/login", (req, res) ->
 		authenticate req.body.login, req.body.password, (u) ->
-			if typeof u isnt "object" then return res.send u, 404
+			if typeof u isnt "object" then return res.status(404).send u
 			req.session.user = _.clone(u)
 			req.session.user.remember = req.body.remember
 			delete u.pass
@@ -147,16 +147,16 @@ module.exports = (env) ->
 
 	env.app.get "/silent_login", (req, res) ->
 		if not req.session.user
-			return res.send "", 404
+			return res.status(404).send ""
 		if req.session.user.pass
 			env.respond req, res, null, null, req.session.user
 		else
-			res.send req.session.user.handle, 404
+			res.status(404).send req.session.user.handle
 
 
 	env.app.post "/register", (req, res) ->
 		validateNewRego req.body.login, req.body.email, (u) ->
-			if u then return res.send u, 404
+			if u then return res.status(404).send u
 			password_salt = crypto.generateSalt()
 			g = new Guest(
 				handle: req.body.login
@@ -189,21 +189,21 @@ module.exports = (env) ->
 		Guest.findOne {handle:req.params.user}, (err, doc) ->
 			if not err and doc
 				if doc.verified
-					return res.send "OK", 200
-			res.send "not found", 404
+					return res.status(200).send "OK"
+			res.status(404).send "not found"
 
 
 	env.app.get "/confirm/:user/:encoded_pass", (req, res) ->
 		Guest.findOne {handle:req.params.user}, (err, doc) ->
-			if err or not doc then return res.send "Invalid user", 404
+			if err or not doc then return res.status(404).send "Invalid user"
 			decrypter = new EmailVerification(doc.email)
 			decoded = decrypter.decrypt(req.params.encoded_pass)
 			unless decoded is doc.pass
-				return res.send "Invalid confirmation code " + decoded, 404
+				return res.status(404).send "Invalid confirmation code " + decoded
 			unless doc.expireOnNoVerify
 				req.session.user = _.clone(doc._doc)
 				sendVerification env, req.params.user, doc
-				return res.send "confirmation code expired - a new code has been sent to your email", 404
+				return res.status(404).send "confirmation code expired - a new code has been sent to your email"
 			doc.expireOnNoVerify = null
 			doc.verified = true
 			doc.save (err, docs) ->

@@ -6,8 +6,8 @@
 
 if (typeof $ == 'undefined') {					// no jquery? server side
 var jsdom = require('jsdom');
-  window = jsdom.jsdom().createWindow();		// global window object: we should really move to cheerio
-  document = window.document;
+  document = jsdom.jsdom();		// global window object: we should really move to cheerio
+  window = document.defaultView;
   $ = require('jquery').create(window);
   _ = require('underscore');
 }
