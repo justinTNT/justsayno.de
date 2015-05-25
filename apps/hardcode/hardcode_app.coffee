@@ -2,12 +2,14 @@ express = require "express"
 env =
 	staticurl: "isnt.so"
 	app: express()
-	plugins: ["auth", "comments", "wblg"]
+	plugins: ["auth", "comments", "codeblg"]
 	dir: __dirname
 	basetemps: [
 		selector: "#boilerplate-container"
 		filename: "blog.jade"
 	]
+	urlprefix:'de'
+	customplate:'hardcode.tpl'
 	auth:
 		facebook:
 			clientID: 'GOES_HERE'

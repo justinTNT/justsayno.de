@@ -119,7 +119,7 @@ module.exports = (env) ->
 		s.modified_date = s.created_date
 
 		unless req.body.url and req.body.url.length
-			return res.send "no post", 404
+			return res.status(404).send "no post"
 
 		if looksLikeImage(req.body.url)
 			s.image = req.body.url
@@ -149,9 +149,9 @@ module.exports = (env) ->
 						s.tags = ids
 						new Story(s).save (err, savedsig) ->
 							throw err	if err
-							res.send "ok", 200
+							res.status(200).send "ok"
 				else
-					res.send "bad fetch", 404
+					res.status(404).send "bad fetch"
 
 
 	env.app.get "/consider/:url", (req, res, next) ->
@@ -203,7 +203,7 @@ module.exports = (env) ->
 				payload.image = base + payload.image unless payload.image.substr(0, 7) is protocol if payload.image
 				env.respond req, res, null, null, [payload]
 			else
-				res.send "Bad Fetch", 404
+				res.status(404).send "Bad Fetch"
 
 
 	showArt = (req, res, next) ->
@@ -237,6 +237,6 @@ module.exports = (env) ->
 							all_objs.story.tags = ft.translateFields tags, {name:'tags', link:'tags.href'}
 							env.respond req, res, env.basetemps, temps, all_objs
 
-	if env.urlprefix
-		env.app.get "#{urlpre}/:date/:month/:year/:name", showArt
-	env.app.get "/:date/:month/:year/:name", showArt
+	artRout = "/:date/:month/:year/:name"
+	if env.urlprefix then artRout = env.urlprefix + artRout
+	env.app.get artRout, showArt
