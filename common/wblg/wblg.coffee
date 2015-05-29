@@ -65,9 +65,7 @@ module.exports = (env) ->
 	urlpre = urlpost = "/"
 	if env.urlprefix
 		urlpre = "/#{env.urlprefix}"
-		urlpost = "/#{env.urlprefix}/"
-		env.app.get "#{urlpost}", (req, res, next) ->
-			res.redirect urlpre
+		urlpost = "#{urlpre}/"
 
 	taginConfig =
 		nakedRoute: "#{urlpost}tag/:tag"			# route for first and subsequent page

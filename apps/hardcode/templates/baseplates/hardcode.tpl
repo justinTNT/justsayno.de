@@ -38,7 +38,6 @@
 	var h = window.location.hash;
 	var host = window.location.host;
 	var prot = window.location.protocol;
-    if (!test) { throw 'error'; }
 	while (h.charAt(0) == '#') h=h.substring(1);
 	while (h.charAt(0) == '/') h=h.substring(1);
 	while (p.charAt(0) == '/') p=p.substring(1);

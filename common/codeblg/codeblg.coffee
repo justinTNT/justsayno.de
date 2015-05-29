@@ -28,15 +28,13 @@ module.exports = (env) ->
 
 	codestory = require("./schema/codestory").name
 	Codestory = env.db.model(codestory)
-	tag = require("./schema/tag").name
-	Tag = env.db.model(tag)
+	codetag = require("./schema/codetag").name
+	Codetag = env.db.model(codetag)
 
 	urlpre = urlpost = "/"
 	if env.urlprefix
 		urlpre = "/#{env.urlprefix}"
-		urlpost = "/#{env.urlprefix}/"
-		env.app.get "#{urlpost}", (req, res, next) ->
-			res.redirect urlpre
+		urlpost = "#{urlpre}/"
 
 	taginConfig =
 		nakedRoute: "#{urlpost}tag/:tag"					# route for first and subsequent page
@@ -64,12 +62,12 @@ module.exports = (env) ->
 		if not textTags or not textTags.length then return cb ids
 		tag = textTags.shift()
 		o = name:tag
-		Tag.findOne o, (err, t)->
+		Codetag.findOne o, (err, t)->
 			if not err and t and t.name is tag and t._id
 				if not ids then ids=[]
 				ids.push t._id
 				return tagsFromText textTags, cb, ids
-			new Tag(o).save (err, t)->
+			new Codetag(o).save (err, t)->
 				if not err and t and t.name is tag and t._id
 					if not ids then ids=[]
 					ids.push t._id
@@ -77,7 +75,7 @@ module.exports = (env) ->
 
 
 	env.app.get "/tags", (req, res, next) ->
-		Tag.find {}, (err, tags) ->
+		Codetag.find {}, (err, tags) ->
 			env.respond req, res, null, null, _.uniq _.pluck tags, 'name'
 
 	env.app.post "/blog", (req, res, next) ->
@@ -124,7 +122,7 @@ module.exports = (env) ->
 					all_objs.commentcnt = c
 					if not all_objs.story.tags or not all_objs.story.tags.length
 						env.respond req, res, env.basetemps, temps, all_objs
-					else Tag.find {_id: $in: all_objs.story.tags}, (err, tags)->
+					else Codetag.find {_id: $in: all_objs.story.tags}, (err, tags)->
 						unless err or not tags
 							_.each tags, (t) -> t.link = '/tag/' + t._id
 							all_objs.story.tags = ft.translateFields tags, {name:'tags', link:'tags.href'}
