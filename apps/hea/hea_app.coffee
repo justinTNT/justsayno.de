@@ -12,6 +12,7 @@ env =
 		key: 'GOES_HERE'
 		secret: 'GOES_HERE'
 		bucket: 'dphon.es'
+		region: 'ap-southeast-2'
 
 exports.setRoutes = ->
 	require('./hea_routes') env

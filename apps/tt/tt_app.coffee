@@ -12,5 +12,6 @@ env =
 		key: 'GOES_HERE'
 		secret: 'GOES_HERE'
 		bucket: 'isnt.so'
+		region: 'ap-southeast-2'
 
 exports.env = env

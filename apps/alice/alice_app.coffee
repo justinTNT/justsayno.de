@@ -16,6 +16,7 @@ env =
 		key: 'YOUR_S3_KEY_HERE'
 		secret: 'YOUR_S3_SECRET_HERE'
 		bucket: 'isnt.so'
+		region: 'ap-southeast-2'
 
 exports.env = env
 exports.setRoutes = -> require('./alice_routes') env

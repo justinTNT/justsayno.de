@@ -8,8 +8,93 @@ path = require "path"
 mongoose = require "mongoose"
 _ = require 'underscore'
 
+Grant = require 'grant-express'
+Purest = require 'purest'
 
 module.exports = (env) ->
+
+	storyToLink = (o) ->
+		"/#{o.created_date.getDate()}/#{o.created_date.getMonth()+1}/#{o.created_date.getFullYear()}/#{encodeURIComponent(o.name)}"
+	linkToStory = (o) ->
+		env.url + storyToLink o
+
+	grantOpts =
+		server:
+			protocol: "http"
+			host: env.url
+			transport: "session"
+			state: true
+			callback: '/callback'
+
+	if oauthList = (if env.auth then _.keys env.auth)
+		env.app.use grant = new Grant _.extend grantOpts, env.auth
+
+	sendStoryToService = (story, service, cb) ->
+		auth = env.auth[service]
+		unless auth.handler
+			auth.handler = switch service
+				when 'twitter'
+					new Purest
+						provider: 'twitter'
+						key: auth.key
+						secret: auth.secret
+				when 'facebook' then new Purest provider: 'facebook'
+
+		if auth.handler then switch service
+			when 'twitter'
+				###
+				return auth.handler.post 'statuses/update',
+					oauth: { token: auth.granted.access_token, secret: auth.granted.access_secret }
+					form: status: "#{story.comment[0..111]} #{linkToStory story}"
+				, (err, res, body) ->
+				###
+				return auth.handler.query().post('statuses/update')
+				.form(status: "#{story.comment[0..111]} #{linkToStory story}")
+				.auth(auth.granted.access_token, auth.granted.access_secret)
+				.request (err, res, body) ->
+					if err then console.dir err
+					cb()
+			when 'facebook'
+				data =
+					message: story.comment
+					link: linkToStory story
+					picture: story.image
+					name: story.title
+					caption: env.url
+					description: story.teaser
+				return auth.handler.post 'me/feed', {
+					qs: { access_token: auth.granted.access_token}
+					form: data
+				}, (err, res, body) ->
+					if err then console.dir err
+					cb()
+		cb()
+
+	# relies on there only being one admin user doing this at a time
+	# if there were multiple users with authorised services, we'd need to keep track of state
+	nextCallBack = null
+	env.app.get "/callback", (req, res, next) ->
+		nextCallBack? req, res, next
+
+	sendStoryToServices = (story, services, req, res) ->
+		return res.redirect "/#" unless services?.length
+
+		service = services?.pop()
+
+		if env.auth[service].granted
+			return sendStoryToService story, service, ->
+				sendStoryToServices story, services, req, res
+
+		nextCallBack = (req, res, next) ->
+			env.auth[service].granted = req.session.grant.response
+			sendStoryToService story, service, ->
+				sendStoryToServices story, services, req, res
+
+		if req.xhr
+			res.status(303).send "/connect/#{service}"
+		else
+			res.redirect "/connect/#{service}"
+
 
 	# sniff at the file extension
 	looksLikeImage = (u) ->
@@ -45,7 +130,7 @@ module.exports = (env) ->
 		]
 		if not docs then return env.respond req, res, env.basetemps, temps, null
 		_.each docs, (o) ->
-			o.link = "/#{o.created_date.getDate()}/#{o.created_date.getMonth()+1}/#{o.created_date.getFullYear()}/#{encodeURIComponent(o.name)}"
+			o.link = storyToLink o
 			o.month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][o.created_date.getMonth()]
 			o.day = o.created_date.getDate()
 
@@ -135,8 +220,8 @@ module.exports = (env) ->
 		storeImage s.image, (err, newimage) ->
 			if not err and newimage
 				s.image = newimage
-			if s.image and s.image.length
-				s.image ="#{protocol}#{env.staticurl}/#{newimage}"
+			if s.image?.length
+				s.image ="#{protocol}#{env.staticurl}/#{s.image}"
 			u = decodeURIComponent(req.body.url)
 			u = protocol + u	unless u.substr(0, 7) is protocol
 			base = u.substr(0, u.substr(7).indexOf("/") + 7)
@@ -147,7 +232,7 @@ module.exports = (env) ->
 						s.tags = ids
 						new Story(s).save (err, savedsig) ->
 							throw err	if err
-							res.status(200).send "ok"
+							sendStoryToServices s, oauthList?.slice(), req, res
 				else
 					res.status(404).send "bad fetch"
 
