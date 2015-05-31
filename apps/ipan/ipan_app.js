@@ -3,7 +3,7 @@ var express = require('express');
 
 var env = { staticurl:'saymay.be'
 			, app: express()
-			, plugins: ['auth', 'comments', 'menu']
+			, plugins: ['auth', 'comments', 'menu', 'story']
 			, dir: __dirname
 			, basetemps: [ {selector:'#boilerplate-container', filename:'ipan.htm'} ]
 		};
