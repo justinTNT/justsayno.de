@@ -42,16 +42,10 @@ module.exports = (env) ->
 
 		if auth.handler then switch service
 			when 'twitter'
-				###
 				return auth.handler.post 'statuses/update',
 					oauth: { token: auth.granted.access_token, secret: auth.granted.access_secret }
 					form: status: "#{story.comment[0..111]} #{linkToStory story}"
 				, (err, res, body) ->
-				###
-				return auth.handler.query().post('statuses/update')
-				.form(status: "#{story.comment[0..111]} #{linkToStory story}")
-				.auth(auth.granted.access_token, auth.granted.access_secret)
-				.request (err, res, body) ->
 					if err then console.dir err
 					cb()
 			when 'facebook'
@@ -81,19 +75,47 @@ module.exports = (env) ->
 
 		service = services?.pop()
 
+		console.log ''
+		console.log 'sniffing granted'
+		console.log ''
 		if env.auth[service].granted
 			return sendStoryToService story, service, ->
 				sendStoryToServices story, services, req, res
 
-		nextCallBack = (req, res, next) ->
-			env.auth[service].granted = req.session.grant.response
-			sendStoryToService story, service, ->
-				sendStoryToServices story, services, req, res
+		console.log ''
+		console.log 'peeking db'
+		console.log ''
+		# first, try to get the credentials from the database
+		Credentials.findOne name: service, (err, t)->
+			if not err and t?.name is service
+				env.auth[service].granted =
+					access_token: t.key
+					access_secret: t.secret
+				return sendStoryToService story, service, ->
+					sendStoryToServices story, services, req, res
 
-		if req.xhr
-			res.status(303).send "/connect/#{service}"
-		else
-			res.redirect "/connect/#{service}"
+			# if that didn't work, fall thru to use the service's oauth to get new credentials:
+
+			# Setup the callback ...
+			nextCallBack = (req, res, next) ->
+				new Credentials
+					name: service
+					key: req.session.grant.response.access_token
+					secret: req.session.grant.response.access_secret
+				.save (err) ->
+					console.dir err if err
+				env.auth[service].granted = req.session.grant.response
+				sendStoryToService story, service, ->
+					sendStoryToServices story, services, req, res
+	
+			console.log ''
+			console.log 'running oauth'
+			console.log ''
+			# ... and make the call.
+			if req.xhr
+				res.status(303).send "/connect/#{service}"
+			else
+				res.redirect "/connect/#{service}"
 
 
 	# sniff at the file extension
@@ -146,6 +168,8 @@ module.exports = (env) ->
 	Story = env.db.model(story)
 	tag = require("./schema/tag").name
 	Tag = env.db.model(tag)
+	credentials = require("./schema/credentials").name
+	Credentials = env.db.model(credentials)
 
 	urlpre = urlpost = "/"
 	if env.urlprefix
@@ -223,7 +247,7 @@ module.exports = (env) ->
 			if s.image?.length
 				s.image ="#{protocol}#{env.staticurl}/#{s.image}"
 			u = decodeURIComponent(req.body.url)
-			u = protocol + u	unless u.substr(0, 7) is protocol
+			u = protocol + u	unless u.substr(0, 7) is protocol or u.substr(0, 8) is 'https://'
 			base = u.substr(0, u.substr(7).indexOf("/") + 7)
 			request u, (err, resp, bod) ->
 				if not err and resp.statusCode is 200
@@ -234,13 +258,16 @@ module.exports = (env) ->
 							throw err	if err
 							sendStoryToServices s, oauthList?.slice(), req, res
 				else
+					console.dir err
+					console.dir resp.statusCode
 					res.status(404).send "bad fetch"
 
 
 	env.app.get "/consider/:url", (req, res, next) ->
 		protocol = "http://"
+		secure = 'https://'
 		u = decodeURIComponent(req.params.url)
-		u = "#{protocol}#{u}"	unless u.substr(0, 7) is protocol
+		u = "#{protocol}#{u}"	unless u.substr(0, 7) is protocol or u.substr(0, 8) is secure
 		base = u.substr(0, u.substr(7).indexOf("/") + 7)
 		request u, (err, resp, bod) ->
 			if not err and resp.statusCode is 200
@@ -283,7 +310,9 @@ module.exports = (env) ->
 					$("body").find("img").each ->
 						payload.image = $(this).attr("src")	if $(this).attr("alt")	unless payload.image
 
-				payload.image = base + payload.image unless payload.image.substr(0, 7) is protocol if payload.image
+				if payload.image
+					unless payload.image.substr(0, 7) is protocol or payload.image.substr(0, 8) is secure
+						payload.image = base + payload.image
 				env.respond req, res, null, null, [payload]
 			else
 				res.status(404).send "Bad Fetch"

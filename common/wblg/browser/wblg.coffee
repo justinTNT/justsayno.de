@@ -57,7 +57,7 @@ window.setupEdit = ->
 		editInPlace $d, "span", "image"
 		$d.find("input#url").change ->
 			u = $(this).val()
-			u = "http://" + u	unless u.substr(0, 7) is "http://"
+			u = "http://#{u}"	unless u.substr(0, 7) is 'http://' or u.substr(0,8) is 'https://'
 			$(this).parent().find(".canhide").addClass "hide4now"
 			if looksLikeImage(u)
 				$d.find("span#image").text u
@@ -74,7 +74,7 @@ window.setupEdit = ->
 
 		$d.find("button").click ->
 			u = $d.find("input#url").val()
-			u = "http://" + u	unless u.substr(0, 7) is "http://"
+			u = "http://#{u}"	unless u.substr(0, 7) is 'http://' or u.substr(0,8) is 'https://'
 			payload =
 				url: u
 				comment: $d.find("textarea#comment").val()
