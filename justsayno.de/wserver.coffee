@@ -165,7 +165,7 @@ setupServer = (port, applist, ip, setuid, passon) ->
 
 			do (eachapp) ->
 				schemetools.configureDBschema admdb, eachapp.env, ->
-					eachapp.env.db = mongoose.createConnection schemetools.URIofDB(eachapp.env.mongopts, n)
+					eachapp.env.db = mongoose.createConnection schemetools.URIofDB(eachapp.env.mongopts, eachapp.env.appname)
 					dbs.push eachapp.env.db
 					setupRoutes eachapp
 

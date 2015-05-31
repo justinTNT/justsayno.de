@@ -42,9 +42,12 @@ module.exports = (env) ->
 
 		if auth.handler then switch service
 			when 'twitter'
+				data =
+					status: "#{story.comment[0..111]} #{linkToStory story}"
+					# 'media[]': fs.readFileSync('/absolute/path/to/cat.jpg')
 				return auth.handler.post 'statuses/update',
 					oauth: { token: auth.granted.access_token, secret: auth.granted.access_secret }
-					form: status: "#{story.comment[0..111]} #{linkToStory story}"
+					form: data
 				, (err, res, body) ->
 					if err then console.dir err
 					cb()
@@ -55,7 +58,7 @@ module.exports = (env) ->
 					picture: story.image
 					name: story.title
 					caption: env.url
-					description: story.teaser
+					description: story.teaser.replace(/<br>/g, '')
 				return auth.handler.post 'me/feed', {
 					qs: { access_token: auth.granted.access_token}
 					form: data
@@ -75,16 +78,10 @@ module.exports = (env) ->
 
 		service = services?.pop()
 
-		console.log ''
-		console.log 'sniffing granted'
-		console.log ''
 		if env.auth[service].granted
 			return sendStoryToService story, service, ->
 				sendStoryToServices story, services, req, res
 
-		console.log ''
-		console.log 'peeking db'
-		console.log ''
 		# first, try to get the credentials from the database
 		Credentials.findOne name: service, (err, t)->
 			if not err and t?.name is service
@@ -108,9 +105,6 @@ module.exports = (env) ->
 				sendStoryToService story, service, ->
 					sendStoryToServices story, services, req, res
 	
-			console.log ''
-			console.log 'running oauth'
-			console.log ''
 			# ... and make the call.
 			if req.xhr
 				res.status(303).send "/connect/#{service}"
@@ -243,9 +237,8 @@ module.exports = (env) ->
 		# copy image locally ...
 		storeImage s.image, (err, newimage) ->
 			if not err and newimage
-				s.image = newimage
-			if s.image?.length
-				s.image ="#{protocol}#{env.staticurl}/#{s.image}"
+				s.image = "#{protocol}#{env.staticurl}/#{newimage}"
+
 			u = decodeURIComponent(req.body.url)
 			u = protocol + u	unless u.substr(0, 7) is protocol or u.substr(0, 8) is 'https://'
 			base = u.substr(0, u.substr(7).indexOf("/") + 7)
