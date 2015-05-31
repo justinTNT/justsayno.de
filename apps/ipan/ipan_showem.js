@@ -1,17 +1,17 @@
 var ft = require('../../justsayno.de/fieldtools');
-var story = 'Story';
+var story = 'Page';
 
 
 module.exports = function(env){
 
-	var Story = env.db.model(story);
+	var Page = env.db.model(story);
 
 	// either define here, or use env.basetemps
 	var basetemps = [ {selector:'#boilerplate-container', filename:'ipan.htm'}
 					];
 
 	function showlist(req, res) {
-		Story.find({}, 'name title teaser created_date')
+		Page.find({}, 'name title teaser created_date')
 					.sort('-created_date')
 					.exec( function(err, docs) {
 			_.each(docs, function(o) {
@@ -29,7 +29,7 @@ module.exports = function(env){
 
 	function loadFront(story, req, res, next) {
 		var which_fields = ['title', 'body'];
-		Story.findOne({name:story}, ft.toStr(which_fields), function(err, doc) {
+		Page.findOne({name:story}, ft.toStr(which_fields), function(err, doc) {
 			if (err || !doc) showlist(req,res);
 			else {
 				var temps = [{selector:'#maintab', filename:'showfront.htm'}
@@ -39,11 +39,11 @@ module.exports = function(env){
 		});
 	}
 
-	function loadStory(story, req, res, next) {
+	function loadPage(story, req, res, next) {
 		if (story == 'front' || story == 'signup')
 			return loadFront(story, req, res, next);
 		var which_fields = ['title', 'body'];
-		Story.findOne({name:story}, ft.toStr(which_fields), function(err, doc) {
+		Page.findOne({name:story}, ft.toStr(which_fields), function(err, doc) {
 			if (err || !doc) showlist(req,res);
 			else {
 				var temps = [{selector:'#maintab', filename:'showstory.htm'}
@@ -65,7 +65,7 @@ module.exports = function(env){
 
 
 	env.app.get('/:post', function(req, res, next){
-		loadStory(req.params.post, req, res, next);
+		loadPage(req.params.post, req, res, next);
 	});
 
 

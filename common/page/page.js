@@ -2,7 +2,7 @@ var	mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 
-var StorySchema = new Schema({
+var PageSchema = new Schema({
   name	: String
   , title	: String
   , teaser	: String
@@ -10,7 +10,7 @@ var StorySchema = new Schema({
   , created_date	: Date
   , modified_date	: Date
 });
-mongoose.model('Story', StorySchema);
+mongoose.model('Page', PageSchema);
 
-module.exports.name = 'Story';
-module.exports.schema = StorySchema;
+module.exports.name = 'Page';
+module.exports.schema = PageSchema;
