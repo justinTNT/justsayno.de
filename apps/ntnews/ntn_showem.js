@@ -108,7 +108,9 @@ module.exports = function(env){
         });
 
         var which_fields = ['title', 'year', 'month', { link:'link.href' }];
-        objs['eachart'] = ft.translateFields(docs, which_fields);
+		if (objs) {
+	        objs['eachart'] = ft.translateFields(docs, which_fields);
+		}
 
         var temps = [];
         if (!subsequent_flag) {
