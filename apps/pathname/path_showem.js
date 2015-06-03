@@ -21,14 +21,14 @@ module.exports = function(env){
 			if (err) c=0;
 			if (p > 3 && p < 74) {
 				temps = {selector:'#maintab', filename:'showpages.htm'};
-				all_objs = {image1:'/browser/images/comic/' + p + '.jpg'
-								,image2:'/browser/images/comic/' + (p+1) + '.jpg'
+				all_objs = {image1: 'http://'+env.staticurl+'/pathname/images/comic/' + p + '.jpg'
+								,image2: 'http://'+env.staticurl+'/pathname/images/comic/' + (p+1) + '.jpg'
 								,url:'/' + (p+2)
 								};
 			}
 			else {
 				temps = {selector:'#maintab', filename:'showpage.htm'};
-				all_objs = {image:'/browser/images/comic/' + p + '.jpg'
+				all_objs = {image: 'http://'+env.staticurl+'/pathname/images/comic/' + p + '.jpg'
 								,url:'/' + (p+1)
 								};
 			}

@@ -25,7 +25,7 @@ module.exports = function(env){
         });
 
         var which_fields = ['title', 'teaser', 'month', {date:'day', link:'link.href' }];
-        objs.eachpost = ft.translateFields(docs, which_fields);
+        if (docs) objs.eachpost = ft.translateFields(docs, which_fields);
 
         var temps = [{selector:'#maintab', filename:'showall.htm'}
                     ];
