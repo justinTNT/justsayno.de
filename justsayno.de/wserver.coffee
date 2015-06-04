@@ -9,7 +9,6 @@ mongoose = require 'mongoose'
 session = require 'express-session'
 MongoStore = require('connect-mongo') session
 cookieParser = require 'cookie-parser'
-bodyParser = require 'body-parser'
 methodOverride = require 'method-override'
 favicon = require 'serve-favicon'
 createStatic = require 'connect-static'
@@ -43,8 +42,6 @@ configureAppEnv = (e, dbname) ->
 	# don't broadcasting webserver info to potential attackers
 	e.app.disable 'x-powered-by'
 
-	e.app.use bodyParser.urlencoded extended: true
-	e.app.use bodyParser.json()
 	e.app.use helmet.xframe()
 	e.app.use helmet.noSniff()
 	e.app.use helmet.noCache()
@@ -229,9 +226,8 @@ setupServer = (port, applist, ip, setuid, passon) ->
 	process.on "SIGINT", ->
 		console.log 'closing webservers ...'
 
-		if proxy_server
-			proxy_server.close()
-			proxy_server = null
+		proxy_server?.close()
+		proxy_server = null
 
 		for i in [0...dbs.length]
 			dbs[i].close()
@@ -244,11 +240,12 @@ setupServer = (port, applist, ip, setuid, passon) ->
 
 	webserverserver.on 'close', ->
 		console.log 'webserver closing'
-	proxy_server.on 'close', ->
+	proxy_server?.on 'close', ->
 		console.log 'proxyserver closing'
 
 
 getProxy = (name, port, clandestine, proxies) ->
+	return unless port
 	# connect to name:port, to let the proxy server know where we are
 	c = net.createConnection port, name
 	c.on 'connect', (s) ->
@@ -266,6 +263,7 @@ getProxy = (name, port, clandestine, proxies) ->
 
 proxy_server = null
 setProxy = (port, ip, clandestine) ->
+	return unless port
 	prollyproxy = {}
 	# listen to port.
 	# when someone connects, match their IP to the nominated list of hosts to serve for them

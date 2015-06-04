@@ -4,6 +4,8 @@ guest = require("./schema/guest").name
 
 mongoose = require "mongoose"
 
+bodyParser = require 'body-parser'
+urlencodedParser = bodyParser.urlencoded extended:true
 
 module.exports = (env) ->
 	
@@ -131,7 +133,7 @@ module.exports = (env) ->
 		res.status(303).send '/'		# tell web app to redraw home page on logout
 
 
-	env.app.post "/login", (req, res) ->
+	env.app.post "/login", urlencodedParser, (req, res) ->
 		authenticate req.body.login, req.body.password, (u) ->
 			if typeof u isnt "object" then return res.status(404).send u
 			req.session.user = _.clone(u)
@@ -154,7 +156,7 @@ module.exports = (env) ->
 			res.status(404).send req.session.user.handle
 
 
-	env.app.post "/register", (req, res) ->
+	env.app.post "/register", urlencodedParser, (req, res) ->
 		validateNewRego req.body.login, req.body.email, (u) ->
 			if u then return res.status(404).send u
 			password_salt = crypto.generateSalt()
@@ -180,7 +182,7 @@ module.exports = (env) ->
 				env.respond req, res, null, null, g
 
 
-	env.app.post "/verify/:user", (req, res) ->
+	env.app.post "/verify/:user", urlencodedParser, (req, res) ->
 		Guest.findOne {handle:req.params.user}, (err, doc) ->
 			sendVerification env, req.params.user, doc	if not err and doc
 

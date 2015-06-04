@@ -11,6 +11,9 @@ _ = require 'underscore'
 Grant = require 'grant-express'
 Purest = require 'purest'
 
+bodyParser = require 'body-parser'
+urlencodedParser = bodyParser.urlencoded extended:true
+
 module.exports = (env) ->
 
 	storyToLink = (o) ->
@@ -212,7 +215,7 @@ module.exports = (env) ->
 		Tag.find {}, (err, tags) ->
 			env.respond req, res, null, null, _.uniq _.pluck tags, 'name'
 
-	env.app.post "/blog", (req, res, next) ->
+	env.app.post "/blog", urlencodedParser, (req, res, next) ->
 		protocol = "http://"
 		s = comment: req.body.comment
 		today = new Date()

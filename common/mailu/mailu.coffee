@@ -4,6 +4,9 @@ crypto = require "../../justsayno.de/crypto"
 request = require 'request'	# used for easydns api
 MailgunJS = require 'mailgun-js'	# used for mailgun api
 
+bodyParser = require 'body-parser'
+jsonParser = bodyParser.json()
+urlencodedParser = bodyParser.urlencoded extended: true
 
 module.exports = (env)->
 	Mailer = require("../../justsayno.de/mail")(env)
@@ -74,7 +77,6 @@ module.exports = (env)->
 					}, (err, resp) ->
 						if err then console.log "alerting admin of potential user => mail fail: #{err}"
 						else console.log "alerted #{env.admintoemail} about potential user #{user.handle}<#{email}> on #{env.appname}"
-						res.send "OK"
 
 					temps = [{selector:'#maindiv', filename:'confirm.jade'} ]
 					return env.respond req, res, env.basetemps, temps,
@@ -100,9 +102,14 @@ module.exports = (env)->
 
 	# respond to post from mailhook (cloudmailin)
 
-	env.app.post '/confirm', (req, res, next)->
-		subj = req.body.headers.Subject
-		themail = req.body.headers.From
+	env.app.post '/confirm', jsonParser, (req, res, next)->
+		subj = req.body.headers?.Subject
+		themail = req.body.headers?.From
+
+		if not themail
+			console.dir 'unrecognised mailhook:'
+			console.dir req.body
+			return res.status(500).send "error"
 
 		# strip down sending email address from header
 		i = themail.indexOf '<'
@@ -114,7 +121,7 @@ module.exports = (env)->
 		_doConfirm = (res, user)->
 			_doConfirmCode subj, user, (user)->
 				_doAddMailMap user, ->
-					return res.send "OK", 200
+					return res.status(200).send "OK"
 
 		# get guest record for that email
 		Mailuser.findOne {newemail:themail}, (err, user) ->
@@ -151,7 +158,7 @@ module.exports = (env)->
 		Mailer.send mailClient, {
 			to: env.admintoemail
 			subject: "new user on #{env.appname}"
-			html: "<p>New user #{handle}<br></p>"
+			html: "<p>New user #{user.handle}<br></p>"
 		}, (err, resp) ->
 			if err then console.log "alerting admin of new user => mail fail: #{err}"
 			else console.log "alerted #{env.admintoemail} about new user on #{env.appname}"
@@ -161,7 +168,7 @@ module.exports = (env)->
 	_doEachMap =
 		Mailgun: (user, cb)->	# use Mailgun API to add mailmap
 			operation =
-				expression: "match_recipient:(\"#{user.handle}@#{env.emaildomain}\")"
+				expression: "match_recipient(\"#{user.handle}@#{env.emaildomain}\")"
 				action: "forward(\"#{user.email}\")"
 				description: user.handle
 			mailgun = new MailgunJS
@@ -176,6 +183,7 @@ module.exports = (env)->
 					# will fall through save the user with the new ID
 					return cb? null
 				console.log "mailgun API did not create new map"
+				console.dir op
 				console.dir operation
 				console.dir err
 				console.dir body
@@ -300,7 +308,7 @@ module.exports = (env)->
 		if not pass?.length then return cb "Pass must have length"
 		return cb null
 
-	env.app.post '/dorego', mustHaveHandle, (req, res, next)->
+	env.app.post '/dorego', mustHaveHandle, urlencodedParser, (req, res, next)->
 		email = req.body.email
 		pass = req.body.password
 		_verifyEmail email, (err)->
@@ -317,7 +325,7 @@ module.exports = (env)->
 								email: email
 							_addVerCode user, req, res
 
-	env.app.post '/doedit', mustHaveHandle, (req, res, next)->
+	env.app.post '/doedit', mustHaveHandle, urlencodedParser, (req, res, next)->
 		email = req.body.email
 		pass = req.body.pass
 		_verifyEmail email, (err)->
@@ -336,7 +344,7 @@ module.exports = (env)->
 					else res.send "no edits found", 404
 
 
-	env.app.post '/preregister', (req,res,next)->
+	env.app.post '/preregister', urlencodedParser, (req,res,next)->
 		if req.session?.user?.handle?.length
 			return env.AJAXredirect "/user/#{req.session.user.handle}"
 		unless req.body.handle.match /^[a-z0-9_\.]+$/
