@@ -12,9 +12,10 @@ Grant = require 'grant-express'
 Purest = require 'purest'
 
 bodyParser = require 'body-parser'
-urlencodedParser = bodyParser.urlencoded extended:true
 
 module.exports = (env) ->
+
+	urlencodedParser = bodyParser.urlencoded extended:true
 
 	storyToLink = (o) ->
 		"/#{o.created_date.getDate()}/#{o.created_date.getMonth()+1}/#{o.created_date.getFullYear()}/#{encodeURIComponent(o.name)}"

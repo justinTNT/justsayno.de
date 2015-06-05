@@ -2,6 +2,7 @@ var _ = require('underscore');
 var ft = require('../../justsayno.de/fieldtools');
 var card = require('./schema/card').name;
 var fs = require('fs');
+var bodyParser = require('body-parser');
 
 
 var awesome = {fb: '&#xf082;'
@@ -78,6 +79,8 @@ function STRstatdirlist(path, files, stats, cb) {
 
 
 module.exports = function(env){
+
+    var urlencodedParser = bodyParser.urlencoded({ extended: true });
 
     var Card = env.db.model(card);
 
@@ -207,7 +210,7 @@ module.exports = function(env){
 		}
 	});
 
-	env.app.post('/ck_page_upload', function(req,res) {
+	env.app.post('/ck_page_upload', urlencodedParser, function(req,res) {
 		if (! loggedIn(req.session.user)) next();
 		else {
 			var subdir = '/' + env.appname + '/' + req.session.user.handle;
@@ -232,7 +235,7 @@ module.exports = function(env){
 	});
 
 
-	env.app.post('/:card/edit', function(req, res, next){
+	env.app.post('/:card/edit', urlencodedParser, function(req, res, next){
 		getMyCard(req, next, function(card){
 			var o = req.body;
 			o['modified_date'] = new Date();
@@ -256,7 +259,7 @@ module.exports = function(env){
 		});
 	});
 
-	env.app.post('/upgrade', function(req, res, next){
+	env.app.post('/upgrade', urlencodedParser, function(req, res, next){
 		getMyCard(req, next, function(card){
 			var o = {page:req.body.page, upgrade:true};
 			o['modified_date'] = new Date();
@@ -267,7 +270,7 @@ module.exports = function(env){
 		});
 	});
 
-	env.app.post('/downgrade', function(req, res, next){
+	env.app.post('/downgrade', urlencodedParser, function(req, res, next){
 		getMyCard(req, next, function(card){
 			var o = req.body;
 			o.upgrade = false;

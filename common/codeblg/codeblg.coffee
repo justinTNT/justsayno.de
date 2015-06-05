@@ -7,9 +7,12 @@ fs = require "fs"
 path = require "path"
 mongoose = require "mongoose"
 _ = require 'underscore'
+bodyParser = require 'body-parser'
 
 
 module.exports = (env) ->
+
+	urlencodedParser = bodyParser.urlencoded extended:true
 
 	doStories = (req, res, docs, objs) ->
 		temps = [
@@ -78,7 +81,7 @@ module.exports = (env) ->
 		Codetag.find {}, (err, tags) ->
 			env.respond req, res, null, null, _.uniq _.pluck tags, 'name'
 
-	env.app.post "/blog", (req, res, next) ->
+	env.app.post "/blog", urlencodedParser, (req, res, next) ->
 		protocol = "http://"
 		s = comment: req.body.comment
 		today = new Date()

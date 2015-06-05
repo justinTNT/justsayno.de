@@ -12,8 +12,12 @@ ft = require("../fieldtools")
 temptools = require("../temptools")
 schemetools = require("../schemetools")
 
+bodyParser = require 'body-parser'
+
 module.exports = (env, appenv, admdb) ->
 	
+	urlencodedParser = bodyParser.urlencoded extended:true
+
 	admins = admdb.model("justsayAdmins")
 	Fields = admdb.model("justsayAdminFields")
 	Taxon = admdb.model("taxon")
@@ -136,7 +140,7 @@ module.exports = (env, appenv, admdb) ->
 				, "browse.tpl"
 
 
-	env.app.post "/ck_upload", requiresLogin, (req, res) ->
+	env.app.post "/ck_upload", requiresLogin, urlencodedParser, (req, res) ->
 		topath = process.cwd() + "/apps/static/public/#{env.targetapp}/admcke/"
 		funcNum = req.param("CKEditorFuncNum")
 		url = "http://#{env.staticurl}/#{env.targetapp}/admcke/"
@@ -210,21 +214,21 @@ module.exports = (env, appenv, admdb) ->
 			env.respond req, res, null, null, snd_obj
 
 
-	env.app.post "/remove_voc", requiresLogin, onlyAdmVox, (req, res, next) ->
+	env.app.post "/remove_voc", requiresLogin, onlyAdmVox, urlencodedParser, (req, res, next) ->
 		vox = JSON.parse(req.body.id_array)
 		Taxon.remove {vocab:$in:vox}, (err, docs) ->
 			throw err	if err
 		res.send "OK"
 
 
-	env.app.post "/remove_voc/:vocab", requiresLogin, onlyAdmVox, (req, res, next) ->
+	env.app.post "/remove_voc/:vocab", requiresLogin, onlyAdmVox, urlencodedParser, (req, res, next) ->
 		tax = JSON.parse(req.body.id_array)
 		Taxon.remove {vocab:req.params.vocab, taxon:$in:tax}, (err, docs) ->
 			throw err	if err
 		res.send "OK"
 
 
-	env.app.post "/add_voc/:vocab", requiresLogin, onlyAdmVox, (req, res, next) ->
+	env.app.post "/add_voc/:vocab", requiresLogin, onlyAdmVox, urlencodedParser, (req, res, next) ->
 		o =
 			appname: env.targetapp
 			vocab: req.params.vocab
@@ -235,7 +239,7 @@ module.exports = (env, appenv, admdb) ->
 			res.send "OK"
 
 
-	env.app.post "/add_voc/:vocab/:taxon", requiresLogin, onlyAdmVox, (req, res, next) ->
+	env.app.post "/add_voc/:vocab/:taxon", requiresLogin, onlyAdmVox, urlencodedParser, (req, res, next) ->
 		o = appname:env.targetapp, vocab:req.params.vocab, taxon: req.params.taxon
 		new Taxon(o).save (err) ->
 			# TODO if it is a validation error, send something sensible back to the client...
@@ -261,7 +265,7 @@ module.exports = (env, appenv, admdb) ->
 			env.respond req, res, null, null, docs
 
 
-	env.app.post "/add_to/:table", requiresLogin, onlyAdminCanAdminAdmin, (req, res, next) ->
+	env.app.post "/add_to/:table", requiresLogin, urlencodedParser, onlyAdminCanAdminAdmin, (req, res, next) ->
 		Fields.find(
 			appname: env.targetapp
 			table: req.params.table
@@ -279,7 +283,7 @@ module.exports = (env, appenv, admdb) ->
 
 
 
-	env.app.post "/update/:table", requiresLogin, onlyAdminCanAdminAdmin, (req, res, next) ->
+	env.app.post "/update/:table", requiresLogin, urlencodedParser, onlyAdminCanAdminAdmin, (req, res, next) ->
 		Fields.find(
 			appname: env.targetapp
 			table: req.params.table
@@ -294,7 +298,7 @@ module.exports = (env, appenv, admdb) ->
 				res.send "OK"
 
 
-	env.app.post "/remove_from/:table", requiresLogin, onlyAdminCanAdminAdmin, (req, res, next) ->
+	env.app.post "/remove_from/:table", requiresLogin, urlencodedParser, onlyAdminCanAdminAdmin, (req, res, next) ->
 		ids = JSON.parse(req.body.id_array)
 		req.params.theTable.remove
 			_id:
@@ -304,7 +308,7 @@ module.exports = (env, appenv, admdb) ->
 		res.send "OK"
 
 
-	env.app.post "/update_config/:table", requiresLogin, (req, res) ->
+	env.app.post "/update_config/:table", requiresLogin, urlencodedParser, (req, res) ->
 		if req.session.user.login isnt "admin"
 			console.log "authorisation error for user :"
 			console.log req.session.user
@@ -321,7 +325,7 @@ module.exports = (env, appenv, admdb) ->
 		res.send "OK"
 
 
-	env.app.post "/refresh", requiresLogin, (req, res) ->
+	env.app.post "/refresh", requiresLogin, urlencodedParser, (req, res) ->
 		if req.session.user.login isnt "admin"
 			console.log "authorisation error for user :"
 			console.log req.session.user
@@ -343,7 +347,7 @@ module.exports = (env, appenv, admdb) ->
 		env.respond req, res, env.basetemps, temps, null
 
 
-	env.app.post "/sessions", (req, res) ->
+	env.app.post "/sessions", urlencodedParser, (req, res) ->
 		authenticate req.body.login, req.body.password, env.targetapp, (user) ->
 			if not user then return res.redirect "/sessions/new"
 			req.session.user = {}
@@ -352,7 +356,7 @@ module.exports = (env, appenv, admdb) ->
 			res.redirect "/list"
 
 
-	env.app.post "/session/end", (req, res) ->
+	env.app.post "/session/end", urlencodedParser, (req, res) ->
 		if req.session and req.session.destroy
 			req.session.destroy ->
 		req.session = null
@@ -371,7 +375,7 @@ module.exports = (env, appenv, admdb) ->
 				env.respond req, res, null, null, stats
 
 
-	env.app.post "/upload/:where", requiresLogin, (req, res) ->
+	env.app.post "/upload/:where", requiresLogin, urlencodedParser, (req, res) ->
 		topath = "#{process.cwd()}/apps/static/public/#{env.targetapp}/#{req.param("subdir")}/"
 		frompath = "/tmp/#{req.params.where}_"
 		filename = req.headers["x-file-name"]

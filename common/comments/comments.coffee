@@ -1,9 +1,12 @@
 ft = require "../../justsayno.de/fieldtools"
 commm = require("./schema/comment").name
 _ = require "underscore"
+bodyParser = require 'body-parser'
 
 module.exports = (env) ->
 	
+	urlencodedParser = bodyParser.urlencoded extended:true
+
 	Mailer = require("../../justsayno.de/mail")(env)
 
 	# this function is returned when the module is applied
@@ -46,10 +49,10 @@ module.exports = (env) ->
 			env.respond req, res, null, null, o
 
 
-	env.app.post "/:subject/comment", (req, res) ->
+	env.app.post "/:subject/comment", urlencodedParser, (req, res) ->
 		comment req, res
 
-	env.app.post "/:subject/comment/:parent", (req, res) ->
+	env.app.post "/:subject/comment/:parent", urlencodedParser, (req, res) ->
 		comment req, res, req.params.parent
 
 	countComments
