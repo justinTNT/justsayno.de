@@ -13,6 +13,7 @@ temptools = require("../temptools")
 schemetools = require("../schemetools")
 
 bodyParser = require 'body-parser'
+multer = require 'multer'
 
 module.exports = (env, appenv, admdb) ->
 	
@@ -140,6 +141,7 @@ module.exports = (env, appenv, admdb) ->
 				, "browse.tpl"
 
 
+	###
 	env.app.post "/ck_upload", requiresLogin, urlencodedParser, (req, res) ->
 		topath = process.cwd() + "/apps/static/public/#{env.targetapp}/admcke/"
 		funcNum = req.param("CKEditorFuncNum")
@@ -147,7 +149,13 @@ module.exports = (env, appenv, admdb) ->
 		finishFileLoad req.files.upload.path, topath + req.files.upload.name, 0, (to) ->
 			res.set 'X-Frame-Options','SAMEORIGIN'
 			res.send "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
-
+	###
+	topath = process.cwd() + "/apps/static/public/#{env.targetapp}/admcke/"
+	env.app.post "/ck_upload", requiresLogin, multer(dest: topath), (req, res) ->
+		funcNum = req.param("CKEditorFuncNum")
+		url = "http://#{env.staticurl}/#{env.targetapp}/admcke/"
+		res.set 'X-Frame-Options','SAMEORIGIN'
+		res.send "<script type='text/javascript'> window.parent.CKEDITOR.tools.callFunction(#{funcNum}, '#{url}#{req.files.upload.name}', '');</script>"
 
 	# list tables
 

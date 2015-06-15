@@ -1,4 +1,4 @@
-var env = { staticurl:'larak.in' };
+var env = { staticurl:'saymay.be' };
 
 var express = require('express');
 
