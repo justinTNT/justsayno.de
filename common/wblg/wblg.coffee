@@ -57,12 +57,12 @@ module.exports = (env) ->
 					cb()
 			when 'facebook'
 				data =
-					message: story.comment
+					message: story.comment or env.url
 					link: linkToStory story
 					picture: story.image
-					name: story.title
+					name: story.title or env.url
 					caption: env.url
-					description: story.teaser.replace(/<br>/g, '')
+					description: story.teaser?.replace(/<br>/g, '') or env.url
 				return auth.handler.post 'me/feed', {
 					qs: { access_token: auth.granted.access_token}
 					form: data

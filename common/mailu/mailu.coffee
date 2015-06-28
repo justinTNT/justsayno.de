@@ -162,7 +162,6 @@ module.exports = (env)->
 		}, (err, resp) ->
 			if err then console.log "alerting admin of new user => mail fail: #{err}"
 			else console.log "alerted #{env.admintoemail} about new user on #{env.appname}"
-			resp.send "OK"
 
 	# use API to add mailmap
 	_doEachMap =
