@@ -1,0 +1,108 @@
+<div class='editcard'>
+
+    <h2>Edit details</h2>
+	<div class='labels'>
+
+		<div class='label' id='title-label'>
+			Name
+		</div>
+		<div class='label' id='longtitle-label'>
+			Detail
+		</div>
+		<div class='label' id='description-label'>
+			Description
+		</div>
+		<div class='label' id='tag-label'>
+			Tag line
+		</div>
+		<div class='label-group'>
+			<span class='group-label'>Addresses</span>
+			<div class='label' id='postal-label'>
+				postal address
+			</div>
+			<div class='label' id='street-label'>
+				street address
+			</div>
+		</div>
+		<div class='label-group'>
+			<span class='group-label'>Phone Numbers</span>
+			<div class='label' id='phone-label'>
+				phone number
+			</div>
+			<div class='label' id='mobile-label'>
+				mobile number
+			</div>
+			<div class='label' id='fax-label'>
+				fax number
+			</div>
+		</div>
+		<div class='label-group'>
+			<span class='group-label'>Links</span>
+			<div class='label' id='link-label'>
+				website
+			</div>
+			<div class='label' id='plus-label'>
+				Google+
+			</div>
+			<div class='label' id='twitter-label'>
+				Twitter
+			</div>
+			<div class='label' id='facebook-label'>
+				FaceBook
+			</div>
+		</div>
+
+	</div>
+
+	<div class='values'>
+		<form id='editcardform' action='/editcard'>
+
+			<div class='editbox-group'>
+				<input class='editbox title' name='title'>
+				</input>
+				<input class='editbox longtitle' name='longtitle'>
+				</input>
+				<input class='editbox description' name='description'>
+				</input>
+				<input class='editbox tag' name='tag'>
+				</input>
+			</div>
+			<div class='editbox-group'>
+				<input class='editbox address postal' name='postal'>
+				</input>
+				<input class='editbox address street' name='street'>
+				</input>
+			</div>
+			<div class='editbox-group'>
+				<input class='editbox numfone phone ntnumber' name='phone'>
+				</input>
+				<input class='editbox numfone mobile ausmobile' name='mobile'>
+				</input>
+				<input class='editbox numfone fax ntnumber' name='fax'>
+				</input>
+			</div>
+			<div class='editbox-group'>
+				<input class='editbox link' name='link'>
+				</input>
+				<input class='editbox goog' name='goog'>
+				</input>
+				<input class='editbox twit' name='twit'>
+				</input>
+				<input class='editbox fb' name='fb'>
+				</input>
+			</div>
+
+    		<div class='editbox-group'>
+                <input type='checkbox' class='active' name='active' />
+                Activate
+            </div>
+            
+            <div id='butts'>
+                <input type='button' class='ok' name='ok' value='Save' />
+                <input type='button' class='cancel' name='cancel' value='Cancel' />
+                <input type='button' class='upgr' name='upgr' value='upgrade' />
+            </div>
+        </form>
+	</div>
+    <div style='clear:both'></div>
+</div>

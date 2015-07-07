@@ -1,0 +1,15 @@
+#loginbackdrop
+#loginpage
+	#loginbox
+		form(action='/login')
+			span Name:
+			input(type='text',name='login')
+			br
+			span Password:
+			input(type='password',name='password')
+			.buttons
+				input(type='submit',value='Login')
+				input(type='button',name='cancel',value='Cancel')
+			.reminder
+				input(type='checkbox',name='remember')
+				span remember me on this computer
