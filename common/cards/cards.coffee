@@ -162,7 +162,7 @@ module.exports = (env) ->
           'email'
         ]
         card.url = env.url
-        card.email = req.session.user.handle + '@alicesprings.email'
+        card.email = "#{req.session.user.handle}@#{env.domainemail}"
         o = {}
         for keys of card
           if _.indexOf(f, keys) == -1
@@ -178,7 +178,7 @@ module.exports = (env) ->
       c =
         name: req.params.notfound
         contactemail: req.session.user.email
-        email: req.session.user.handle + '@alicesprings.email'
+        email: "#{req.session.user.handle}@#{env.domainemail}"
         active: false
       new Card(c).save (err) ->
         rspnd env, err, c, req, res, next, 'editcard.htm', card: ft.translateFields(c)
@@ -224,7 +224,7 @@ module.exports = (env) ->
         res.end()
 
   env.app.get '/', (req, res, next) ->
-    Card.findOne { name: 'alicesprings' }, (err, doc) ->
+    Card.findOne { name: 'frontpage' }, (err, doc) ->
       rspnd env, err, doc, req, res, next, 'showcard.htm', doc2card(doc)
 
   env.app.post '/:card/edit', urlencodedParser, (req, res, next) ->
@@ -238,11 +238,11 @@ module.exports = (env) ->
 
       # generically, it might be good to have a switch to turn email on,
       # and contactemail might be the default email.
-      # but for alicesprings.email, we want to force display of email,
+      # but for some domains, we want to force display of email,
       # and we want to force use of the domain mail
-      o.use_email = true # specific to alicesprings.email !!
-      o.use_dmail = true # specific to alicesprings.email !!
-      o.email = req.session.user.handle + '@alicesprings.email'
+      o.use_email = env.force_email
+      o.use_dmail = env.force_dmail
+      o.email = "#{req.session.user.handle}@#{env.emaildomain}"
       if !o.active
         o.active = false
       Card.update { _id: card['_id'] }, { $set: o }, (err) ->

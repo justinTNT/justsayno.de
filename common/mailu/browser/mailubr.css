@@ -1,0 +1,178 @@
+#main {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  BACKGROUND-COLOR: #bbb;
+}
+#main .backdiv {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.2;
+  overflow: hidden;
+}
+#main .backdiv img {
+  width: 100%;
+}
+#maindiv {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 200%;
+}
+#maindiv div.rego {
+  margin: 2em;
+  margin-top: -4em;
+  height: 3em;
+}
+#maindiv div.rego .errmsg {
+  margin-top: 0.5em;
+}
+#maindiv div.registration,
+#maindiv div.edit {
+  margin: 2em;
+  margin-top: -7em;
+  height: 8em;
+}
+#maindiv div.registration .errmsg,
+#maindiv div.edit .errmsg {
+  margin-top: -0.5em;
+}
+#maindiv div.registration .buttons,
+#maindiv div.edit .buttons {
+  position: absolute;
+  bottom: 1em;
+  width: 50%;
+  margin-left: 25%;
+}
+#maindiv div.registration .buttons input,
+#maindiv div.edit .buttons input {
+  border-radius: 0.5em;
+}
+#maindiv div.registration .buttons input.save,
+#maindiv div.edit .buttons input.save {
+  float: left;
+  color: #00008b;
+}
+#maindiv div.registration .buttons input.cancel,
+#maindiv div.edit .buttons input.cancel {
+  float: right;
+  color: #8b0000;
+}
+#maindiv div.registration div.regoitem,
+#maindiv div.edit div.regoitem {
+  height: 4em;
+}
+#maindiv div.registration div.regoitem span.label,
+#maindiv div.edit div.regoitem span.label {
+  display: inline-block;
+  width: 9em;
+  text-align: right;
+}
+#maindiv div.registration div.regoitem input,
+#maindiv div.edit div.regoitem input {
+  border-radius: 0.5em;
+  padding-left: 0.5em;
+  margin-left: 0.5em;
+}
+#maindiv div.registration div.regoitem i.icon-info-sign,
+#maindiv div.edit div.regoitem i.icon-info-sign {
+  display: none;
+  color: #00f;
+  margin-left: 0.4em;
+}
+#maindiv div.registration div.regoitem .desc,
+#maindiv div.edit div.regoitem .desc {
+  display: none;
+  margin-right: 5em;
+  font-style: italic;
+  margin-top: 10px;
+}
+#maindiv div.registration div.regoitem div.desc,
+#maindiv div.edit div.regoitem div.desc {
+  font-size: 75%;
+  margin-left: 6em;
+  color: #808080;
+}
+#maindiv div.registration div.regoitem p.desc,
+#maindiv div.edit div.regoitem p.desc {
+  font-size: 50%;
+  margin-left: 9em;
+  color: #000;
+}
+#maindiv div.edit div.regoitem input {
+  width: 50%;
+}
+#maindiv div.rego,
+#maindiv div.registration {
+  width: 80%;
+  background-color: #dfd;
+  border-radius: 15px;
+  padding: 2em;
+  top: 50%;
+  position: relative;
+  -webkit-box-shadow: 0 0 2em #efe;
+  -moz-box-shadow: 0 0 3em #efe;
+  box-shadow: 0 0 2em #efe;
+}
+#maindiv div.rego span.rego,
+#maindiv div.registration span.rego {
+  position: absolute;
+  top: -1em;
+  left: 2em;
+  font-weight: bold;
+  color: #808080;
+}
+#maindiv div.rego .confirmation,
+#maindiv div.registration .confirmation {
+  font-size: 90%;
+}
+#maindiv div.rego .bigrego,
+#maindiv div.registration .bigrego {
+  font-size: 200%;
+  text-align: center;
+}
+#maindiv div.rego .bigrego input.handle,
+#maindiv div.registration .bigrego input.handle {
+  border-radius: 1em;
+  font-size: 1em;
+  width: 8em;
+  padding-right: 0.5em;
+  text-align: right;
+  width: 6em;
+}
+#maindiv div.rego .bigrego span.domain,
+#maindiv div.registration .bigrego span.domain {
+  color: #000;
+}
+#maindiv div.rego span.login,
+#maindiv div.registration span.login {
+  position: absolute;
+  right: 2em;
+  bottom: -1em;
+}
+#maindiv div.rego .errmsg,
+#maindiv div.registration .errmsg {
+  color: #f00;
+  font-style: italic;
+  text-align: center;
+}
+#maindiv div.rego input.error,
+#maindiv div.registration input.error {
+  background-color: #fed;
+}
+#maindiv div.rego input.error,
+#maindiv div.registration input.error {
+  background-color: #fed;
+}
+#loginpage #loginbox .buttons,
+#loginpage form .buttons {
+  width: 70%;
+  margin-left: 15%;
+}

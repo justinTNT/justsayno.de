@@ -1,0 +1,36 @@
+.edit.registration
+	span.rego
+		span edit&nbsp;
+		span.handle
+		span @
+		span.emaildomain
+	form.edit(action='/doedit')
+		.regoitem
+			span.label New address:
+			input.email(type='text',name='email',placeholder='placeholder')
+			i.icon.icon-info-sign
+			div.desc
+				span This is the mailbox where you will receive mails addressed to&nbsp;
+				span.handle
+				span @
+				span.emaildomain
+			p.desc
+				span.emaildomain
+				span &nbsp;redirects mail to a mailbox that you already use.  This address will be used to manage your&nbsp;
+				span.emaildomain
+				span &nbsp;account, so make sure its an address you can also send from. Ignore this field if you only need to change your password.
+		.regoitem
+			span.label New Password:
+			input.password(type='password',name='password',placeholder='Leave this blank if only changing email' )
+			i.icon.icon-info-sign
+			div.desc
+				span This is the new password you'll use to manage settings for&nbsp;
+				span.handle
+				span @
+				span.emaildomain
+			p.desc For security reasons, don't use the same password that you use to log in to your existing mailbox. If you ever forget your password, you can request a reset link to be sent to the email address nominated above. Ignore this field if you only need to change your email address.
+		.errmsg
+		.buttons
+			input.save(type='submit',value='Update')
+			input.cancel(type='button',value='Cancel')
+			

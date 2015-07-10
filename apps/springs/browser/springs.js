@@ -278,7 +278,7 @@ function runLoginAnim(o){
 
 $(function(){
 	runWithAuth(runLoginAnim, true);		// if there's a session, update the controls ... but don't prompt for logon just yet ...
-	ustsayUpdate(callAfter, callFirst);	// setup link handling etc
+	justsayUpdate(callAfter, callFirst);	// setup link handling etc
 	callAfter();							// call for first hash
 
 	$('div#edithomebutt').hover(function(){

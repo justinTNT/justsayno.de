@@ -14,6 +14,22 @@ module.exports = (env)->
 	Guest = env.db.model 'Guest'		# piggy-back on auth module
 	Mailuser = env.db.model mailuser
 
+	# utilities
+
+	checkFullyConfirmed = (handle, cb)->
+		return cb false unless handle?.length
+		Mailuser.findOne handle: handle, (err, user) ->
+			cb not err and user and not user.code
+
+	getUser2Confirm  = (handle, cb) ->
+		return cb null unless handle?.length
+		Mailuser.findOne handle: handle, (err, user) ->
+			if not err and user?.code
+				cb user
+			else
+				cb null
+				
+	# routes
 
 	env.AJAXredirect = (req, res, path)->
 		if req.xhr then res.send path, 303
@@ -42,59 +58,77 @@ module.exports = (env)->
 			handle: req.session.user.handle
 			emaildomain:env.emaildomain
 
+
 	env.app.get '/deregister', mustHaveHandle, doesntHavePass, (req,res,next)->
-		Mailuser.remove {handle:req.session.user.handle}, (err, docs) ->
-			Guest.remove {handle:req.session.user.handle}, (err, docs) ->
-				env.AJAXredirect req, res, '/logout'
+		handle = req.session.user.handle
+		checkFullyConfirmed handle, (alreadyConfirmed) ->
+			if alreadyConfirmed
+				return env.AJAXredirect req, res, '/logout'
+
+			Mailuser.remove { handle: handle }, ->
+				Guest.remove { handle: handle }, ->
+					env.AJAXredirect req, res, '/logout'
+
 
 	env.app.get '/register', doesntHavePass, (req, res, next)->
-		if req.session?.user?.handle?.length
-			return env.AJAXredirect req, res, "/registration"
-		temps = [{selector:'#maindiv', filename:'rego.jade'} ]
-		env.respond req, res, env.basetemps, temps, emaildomain:env.emaildomain
+		handle = req.session.user?.handle
+		checkFullyConfirmed handle, (alreadyConfirmed) ->
+			if alreadyConfirmed
+				return env.AJAXredirect req, res, "/user/#{handle}"
+
+			getUser2Confirm handle, (user) ->
+				if user
+					return env.AJAXredirect req, res, "/confirm"
+				else if handle?.length
+					return env.AJAXredirect req, res, "/registration"
+
+				# fall thru: no user to confirm rego to continue
+				temps = [{selector:'#maindiv', filename:'rego.jade'} ]
+				env.respond req, res, env.basetemps, temps, emaildomain:env.emaildomain
+
 
 	env.app.get '/user/:handle', mustHaveThisHandle, (req,res,next)->
-		Mailuser.findOne {handle:req.session.user.handle}, (err, user) ->
-			if not err and user
-				if user.code?.length
-					return res.redirect '/confirm'
+		getUser2Confirm req.session.user.handle, (user) ->
+			if user
+				return res.redirect '/confirm'
 			temps = [{selector:'#maindiv', filename:'user.jade'} ]
 			env.respond req, res, env.basetemps, temps,
 				handle: req.params.handle
 				emaildomain: env.emaildomain
 
 	env.app.get '/confirm', mustHaveHandle, (req, res, next)->
-		Mailuser.findOne {handle:req.session.user.handle}, (err, user) ->
-			if not err and user
-				if user.code?.length
-					email = user.newemail or user.email
+		getUser2Confirm  req.session.user.handle, (user) ->
+			unless user
+				env.AJAXredirect req, res, "/user/#{req.session.user.handle}"
 
-					mailClient = Mailer.connect()
-					Mailer.send mailClient, {
-						to: env.admintoemail
-						subject: "waiting for confirmation of new user #{user.handle} <#{email}>on #{env.appname}"
-						html: "<p>waiting for confirmation of new user #{user.handle} <#{email}><br></p>"
-					}, (err, resp) ->
-						if err then console.log "alerting admin of potential user => mail fail: #{err}"
-						else console.log "alerted #{env.admintoemail} about potential user #{user.handle}<#{email}> on #{env.appname}"
+			email = user.newemail or user.email
 
-					temps = [{selector:'#maindiv', filename:'confirm.jade'} ]
-					return env.respond req, res, env.basetemps, temps,
-						handle: user.handle
-						email: email
-						code: user.code
-						emaildomain:env.emaildomain
-			# fall thru to redirect
-			env.AJAXredirect req, res, "/user/#{req.session.user.handle}"
+			mailClient = Mailer.connect()
+			Mailer.send mailClient,
+				to:      env.admintoemail
+				subject: "waiting for confirmation of new user #{user.handle} <#{email}>on #{env.appname}"
+				html:    "<p>waiting for confirmation of new user #{user.handle} <#{email}><br></p>"
+			, (err, resp) ->
+				if err
+					console.log "alerting admin of potential user => mail fail: #{err}"
+				else
+					console.log "alerted #{env.admintoemail} about potential user #{user.handle}<#{email}> on #{env.appname}"
+
+			temps = [{selector:'#maindiv', filename:'confirm.jade'} ]
+			return env.respond req, res, env.basetemps, temps,
+				handle:      user.handle
+				email:       email
+				code:        user.code
+				emaildomain: env.emaildomain
 
 
 	env.app.get '/edit/:handle', mustHaveThisHandle, (req, res, next)->
 		temps = [{selector:'#maindiv', filename:'edit.jade'}]
-		Mailuser.findOne {handle:req.session.user.handle}, (err, user) ->
+		Mailuser.findOne handle: req.session.user.handle, (err, user) ->
 			if not err and user
 				return env.respond req, res, env.basetemps, temps,
-					handle: req.params.handle
-					emaildomain:env.emaildomain
+					handle:              req.params.handle
+					emaildomain:         env.emaildomain
 					"email.placeholder": user.email
 			# fall thru to redirect
 			env.AJAXredirect req, res, "/user/#{req.session.user.handle}"
@@ -124,9 +158,9 @@ module.exports = (env)->
 					return res.status(200).send "OK"
 
 		# get guest record for that email
-		Mailuser.findOne {newemail:themail}, (err, user) ->
+		Mailuser.findOne newemail: themail, (err, user) ->
 			if not err and user then return _doConfirm res, user
-			Mailuser.findOne {email:themail}, (err, user) ->
+			Mailuser.findOne email: themail, (err, user) ->
 				if err or not user
 					console.log "User #{themail} not found from confirmation email:"
 				_doConfirm res, user
@@ -151,7 +185,7 @@ module.exports = (env)->
 		Mailer.send mailClient, msg, (error, resp) ->
 			if error
 				console.dir msg
-				console.log "error sending confirmation for #{user.handle} to #{g.email}"
+				console.log "error sending confirmation for #{user.handle}"
 				console.dir error
 				if resp and resp.length then console.log "got response: #{resp}"
 
@@ -221,7 +255,7 @@ module.exports = (env)->
 		_doEachMap[env.MapAPI] user, (err)->
 			unless err
 				_doCompleteUser user, ->
-					Mailuser.findOne {code:null, complete:{$ne:true}}, (err, user) ->
+					Mailuser.findOne {code:null, complete:$ne:true}, (err, user) ->
 						if err
 							console.log "Error looking for incomplete users to map"
 							return console.dir err
@@ -314,7 +348,7 @@ module.exports = (env)->
 			if err then return res.send "email", 400
 			_verifyPass pass, (err)->
 				if err then return res.send "pass", 400
-				Mailuser.findOne {email:email}, (err, user) ->
+				Mailuser.findOne email: email, (err, user) ->
 					if not err and user then return res.send "Email already used", 409
 					Guest.findOne {handle:req.session.user.handle}, (err, guest) ->
 						if err or not guest then return res.send "Guest not found", 404

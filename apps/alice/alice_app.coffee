@@ -4,7 +4,7 @@ env =
 	app: express()
 	plugins: ['auth', 'mailu']
 	dir: __dirname
-	emaildomain: 'alicesprin.gs'
+	emaildomain: 'alicesprings.email'
 	MapUser: "app"
 	MapPass: "YOUR_MAILGUN_KEY_HERE"
 	MapAPI: "Mailgun"
