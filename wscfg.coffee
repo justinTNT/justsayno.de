@@ -13,14 +13,14 @@ options =
 		dname: "saymay.loc"
 		appname: "static"
 	,
-		dname: ["territorytoday.loc"]
-		appname: "tt"
+		dname: ["ntbases.loc"]
+		appname: "ntbases"
 	]
 
 	# webserver entry point.
 	# default values, pull in Command Line Arguments
 	# start webserver, then start proxy (one of server/ client)
-	server_port : 80
+	server_port : 8080
 	proxy_port : 8780
 	proxy_name : ""
 	proxies : []

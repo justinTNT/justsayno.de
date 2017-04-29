@@ -6,8 +6,8 @@
 
 if (typeof $ == 'undefined') {					// no jquery? server side
 var jsdom = require('jsdom');
-  window = jsdom.jsdom().createWindow();		// global window object: we should really move to cheerio
-  document = window.document;
+  document = jsdom.jsdom();		// global window object: we should really move to cheerio
+  window = document.defaultView;
   $ = require('jquery').create(window);
   _ = require('underscore');
 }
@@ -120,8 +120,12 @@ function weldItem (dat, $s) {
 								$tmp = $item.children().clone()
 								$item.html(str);
 								$item.prepend($tmp);
-							} else $item.attr(attrib, str);
-						} else setItem($item,str);
+							} else {
+								$item.attr(attrib, str);
+							}
+						} else {
+							setItem($item,str);
+						}
 					}
 				}
 			}
@@ -173,6 +177,12 @@ function weldTemps(templates, objects, data, sendEmOff) {
 						}
 					}
 				} else weldItem(dat, $s);
+			} else { 
+				// at some point I thought this was useful:
+				/*
+				var tempo = {};
+				tempo[sel] = objects[sel];
+				weldItem(tempo, data); */
 			}
 		}
 
@@ -302,7 +312,10 @@ var o;
 		if (tpls) {
 			o = {objects:objs, templates:tpls};
 			response.send(JSON.stringify(o));
-		} else response.send(JSON.stringify(objs));
+		} else {
+			if (arguments.length == 4) objs = base_tpls;
+			response.send(JSON.stringify(objs));
+		}
 	} else {
 		try {
 			if (typeof objs == 'string') { // a few admin / debug pages may be built as strings

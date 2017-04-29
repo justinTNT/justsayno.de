@@ -3,8 +3,19 @@ os = require 'os'
 net = require 'net'
 http = require 'http'
 express = require 'express'
+helmet = require 'helmet'
 mongoose = require 'mongoose'
-mongoStore = require('connect-mongo')(express)
+
+session = require 'express-session'
+MongoStore = require('connect-mongo') session
+cookieParser = require 'cookie-parser'
+methodOverride = require 'method-override'
+favicon = require 'serve-favicon'
+createStatic = require 'connect-static'
+vhost = require 'vhost'
+logger = require 'morgan'
+errorHandler = require 'errorhandler'
+
 
 temptools = require './temptools'
 schemetools = require './schemetools'
@@ -14,16 +25,36 @@ proxies = {}
 
 # configureAppEnv - setup some basic app functionality,
 
-configureAppEnv = (e) ->
+configureAppEnv = (e, dbname) ->
 	clandestine = "#{e.clandestine}_" + os.hostname() + "_#{e.appname}"
 	if e.targetapp then clandestine = "#{clandestine}_#{e.targetapp}"
 	temptools.configureTemplates e
-	e.app.use express.staticCache()
-	e.app.use express.bodyParser()
-	e.app.use express.cookieParser(clandestine)
-	e.app.use express.cookieSession key: if e.targetapp then "#{e.targetapp}-admin.sid" else "#{e.appname}.sid"
-	e.app.use '/browser/', express.static "#{e.dir}/browser/"
-	e.app.use express.logger {immediate:true, format: '[:date] ' + e.appname + ' :remote-addr ":method :url" :status ":referrer"'}
+
+	# session support in expressjs, using a Mongo backend
+	# access session variables via req.session.varname
+	e.app.use cookieParser()
+	e.app.use session
+		secret: 'keybored cat'
+		store: new MongoStore(url: dbname)
+		saveUninitialized: true
+		resave: true
+
+	# don't broadcasting webserver info to potential attackers
+	e.app.disable 'x-powered-by'
+
+	e.app.use helmet.xframe()
+	e.app.use helmet.noSniff()
+	e.app.use helmet.noCache()
+	e.app.use methodOverride()
+
+	d = "#{e.dir}/browser"
+	fs.stat d, (err, stat) ->
+		return if err
+		createStatic { dir: d }, (err, middleware) ->
+			if err then throw err
+			else e.app.use '/browser', middleware
+
+	e.app.use logger '[:date] ' + e.appname + ' :remote-addr ":method :url" :status ":referrer"', {immediate:true}
 	e['hook'] = []
 	e.app
 
@@ -31,11 +62,8 @@ configureAppEnv = (e) ->
 setupFavico = (ea, done) ->
 	d = "#{__dirname}/../apps/#{ea.env.appname}/browser/favicon.ico"
 	fs.stat d, (err, stat) ->
-		if err
-			ea.app.use express.favicon()
-		else
-			ea.app.use express.favicon(d)
-		done ea
+		ea.app.use favicon(d) unless err
+		done()
 
 
 ###
@@ -48,41 +76,47 @@ setupFavico = (ea, done) ->
 ###
 setupRoutes = (ea) ->
 	# don't do anything until we've hijacked the favico
-	setupFavico ea, (a) ->
+	setupFavico ea, ->
 
 		# first, these serve up the compiled js and css
 
-		a.app.get "/#{a.env.appname}.css", (req, res) ->
+		ea.app.get "/#{ea.env.appname}.css", (req, res) ->
 			res.contentType 'text/css'
-			res.send a.env.cssstring
+			res.send ea.env.cssstring
 
-		a.app.get "/#{a.env.appname}.js", (req, res) ->
+		ea.app.get "/#{ea.env.appname}.js", (req, res) ->
 			res.contentType 'text/javascript'
-			res.send a.env.scriptplatestring
+			res.send ea.env.scriptplatestring
 
 		# then comes routing for any plugins
-		if a.env.plugins
-			for plugin in a.env.plugins  # some common modules return a hook, or array of hooks
-				a.env.hook[plugin] = require("../common/#{plugin}/#{plugin}.js") a.env  # common routing (server script)
-
-		a.setRoutes?()		# now we add all the app-specific routes
+		if ea.env.plugins
+			for plugin in ea.env.plugins  # some common modules return a hook, or array of hooks
+				filename = "../common/#{plugin}/#{plugin}.coffee"
+				try ea.env.hook[plugin] = require(filename) ea.env  # common routing (server script)
+				catch err then console.dir err
+		ea.setRoutes?()		# now we add all the app-specific routes
 
 		###
 		* and finally, this makes sure that ajax pages serve up the skeleton
 		* in the case of where there is nothing else to server at the route
 		* i.e. it's all built on the client by a script
 		###
-		if a.env.urlprefix
-			matchx = new RegExp "^\/#{a.env.urlprefix}\/"
-			a.app.get matchx, (req, res) ->
-				a.env.respond req, res, a.env.basetemps
-			matchx = new RegExp "^\/#{a.env.urlprefix}$"
-			a.app.get matchx, (req, res) ->
-				a.env.respond req, res, a.env.basetemps
-			a.app.get /\/$/, (req, res) ->
-				res.redirect "\/#{a.env.urlprefix}"
-		else a.app.get /\/$/, (req, res) ->
-			a.env.respond req, res, a.env.basetemps
+		if ea.env.urlprefix
+			matchx = new RegExp "^\/#{ea.env.urlprefix}\/"
+			ea.app.get matchx, (req, res) ->
+				ea.env.respond req, res, ea.env.basetemps
+			matchx = new RegExp "^\/#{ea.env.urlprefix}$"
+			ea.app.get matchx, (req, res) ->
+				ea.env.respond req, res, ea.env.basetemps
+			ea.app.get /\/$/, (req, res) ->
+				res.redirect "\/#{ea.env.urlprefix}"
+		else ea.app.get /\/$/, (req, res) ->
+			ea.env.respond req, res, ea.env.basetemps
+
+		ea.app.get '*', (req, res)->
+			msg = "cant find #{req.url} from #{req.headers.host}"
+			console.dir msg
+			res.status(404).send msg
 
 
 ###
@@ -99,7 +133,8 @@ setupRoutes = (ea) ->
 webserver_app = null
 setupServer = (port, applist, ip, setuid, passon) ->
 	webserver_app = express()
-	admdb = mongoose.createConnection schemetools.URIofDB passon.mongopts, 'justsayadmin'
+	dbname = schemetools.URIofDB passon.mongopts, 'justsayadmin'
+	admdb = mongoose.createConnection dbname
 	dbs = [admdb]
 
 	for app in applist
@@ -107,7 +142,7 @@ setupServer = (port, applist, ip, setuid, passon) ->
 		if not _.isArray app.dname
 			app.dname = [app.dname]
 	
-		eachapp = require('../apps/' + n + '/' + n + '_app')
+		eachapp = require "../apps/#{n}/#{n}_app"
 		e=eachapp.env
 
 		if (e)							# not static ...
@@ -118,25 +153,26 @@ setupServer = (port, applist, ip, setuid, passon) ->
 				if not e[key]
 					e[key] = passon[key]
 
-			eachapp.app = configureAppEnv e
-			setupRoutes eachapp
+			eachapp.app = configureAppEnv e, dbname
 
 			this_admin = require('./admin/admin') e, admdb
-			this_admin.app = configureAppEnv this_admin.env
+			this_admin.app = configureAppEnv this_admin.env, dbname
 			setupRoutes this_admin
-			webserver_app.use express.vhost("admin." + e.url, this_admin.app)
+			webserver_app.use vhost("admin.#{e.url}", this_admin.app)
 
-			schemetools.configureDBschema admdb, e
-			e.db = mongoose.createConnection schemetools.URIofDB(e.mongopts, n)
-			dbs.push e.db
+			do (eachapp) ->
+				schemetools.configureDBschema admdb, eachapp.env, ->
+					eachapp.env.db = mongoose.createConnection schemetools.URIofDB(eachapp.env.mongopts, eachapp.env.appname)
+					dbs.push eachapp.env.db
+					setupRoutes eachapp
 
 		for dname in app.dname
-			webserver_app.use express.vhost(dname, eachapp.app)
-			webserver_app.use express.vhost("www." + dname, eachapp.app)
+			webserver_app.use vhost(dname, eachapp.app)
+			webserver_app.use vhost("www.#{dname}", eachapp.app)
 
 
-	webserver_app.use express.logger()
-	webserver_app.use express.errorHandler({ dumpExceptions: true, showStack: true })
+	webserver_app.use logger '[:date] SERVER :remote-addr ":method :url" :status ":referrer"', {immediate:true}
+	webserver_app.use errorHandler({ dumpExceptions: true, showStack: true })
 
 	###
 	// see above, we .use vhosts for all matching apps.
@@ -190,11 +226,10 @@ setupServer = (port, applist, ip, setuid, passon) ->
 	process.on "SIGINT", ->
 		console.log 'closing webservers ...'
 
-		if proxy_server
-			proxy_server.close()
-			proxy_server = null
+		proxy_server?.close()
+		proxy_server = null
 
-		for i in [0..dbs.length]
+		for i in [0...dbs.length]
 			dbs[i].close()
 
 		if (webserverserver)
@@ -205,11 +240,12 @@ setupServer = (port, applist, ip, setuid, passon) ->
 
 	webserverserver.on 'close', ->
 		console.log 'webserver closing'
-	proxy_server.on 'close', ->
+	proxy_server?.on 'close', ->
 		console.log 'proxyserver closing'
 
 
 getProxy = (name, port, clandestine, proxies) ->
+	return unless port
 	# connect to name:port, to let the proxy server know where we are
 	c = net.createConnection port, name
 	c.on 'connect', (s) ->
@@ -227,6 +263,7 @@ getProxy = (name, port, clandestine, proxies) ->
 
 proxy_server = null
 setProxy = (port, ip, clandestine) ->
+	return unless port
 	prollyproxy = {}
 	# listen to port.
 	# when someone connects, match their IP to the nominated list of hosts to serve for them
@@ -251,8 +288,8 @@ setProxy = (port, ip, clandestine) ->
 
 
 module.exports =
-	setupServer:setupServer
-	setProxy:setProxy
-	getProxy:getProxy
-	server:webserver_app
+	setupServer: setupServer
+	setProxy:    setProxy
+	getProxy:    getProxy
+	server:      webserver_app
 
